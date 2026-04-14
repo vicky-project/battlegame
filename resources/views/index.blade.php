@@ -41,7 +41,7 @@
   try {
   return await tg.fetchWithAuth(API_BASE + endpoint, options);
   } catch (error) {
-  tg.showToast('Gagal terhubung ke server', 'danger');
+  tg.showToast('Gagal terhubung ke server: ' + error.message, 'danger');
   throw error;
   }
   }
