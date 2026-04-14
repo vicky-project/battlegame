@@ -55,155 +55,6 @@ class BattleController extends Controller
   public function startBattleVsComputer(Request $request) {
     $user = $request->user();
     $heroId = $request->input('user_hero_id');
-
-    $userHero = BattleUserHero::where('telegram_user_id', $user->id)
-    ->where('id', $heroId)
-    ->with('hero')
-    ->firstOrFail();
-
-    $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
-
-    // Pilih musuh berdasarkan level user
-    $enemy = BattleEnemy::where('min_level', '<=', $progress->level)
-    ->where(function ($q) use ($progress) {
-      $q->whereNull('max_level')->orWhere('max_level', '>=', $progress->level);
-    })
-    ->where('is_active', true)
-    ->inRandomOrder()
-    ->first();
-
-    if (!$enemy) {
-      // fallback
-      $enemy = BattleEnemy::where('is_active', true)->first();
-    }
-
-    $playerStats = $userHero->calculated_stats;
-    $enemyStats = $enemy->getStatsForLevel($progress->level);
-
-    $simulator = new BattleSimulator(
-      array_merge(['name' => $userHero->hero->name], $playerStats),
-      array_merge(['name' => $enemy->name], $enemyStats)
-    );
-    $result = $simulator->runSimulation();
-
-    // Simpan history
-    $history = BattleHistory::create([
-      'telegram_user_id' => $user->id,
-      'battle_user_hero_id' => $userHero->id,
-      'battle_enemy_id' => $enemy->id,
-      'battle_type' => 'vs_computer',
-      'result' => $result['winner'] === $userHero->hero->name ? 'win' : 'lose',
-      'battle_log' => $result['log'],
-      'player_hp_remaining' => $result['player_hp_remaining'],
-      'enemy_hp_remaining' => $result['enemy_hp_remaining'],
-      'duration' => $result['duration'],
-    ]);
-
-    // Update progress
-    $progress->total_battles++;
-    if ($history->result === 'win') {
-      $progress->total_wins++;
-      $expGained = $enemy->rewards['exp'] ?? 50;
-      $progress->addExp($expGained);
-      $history->exp_gained = $expGained;
-
-      // Hero dapat exp juga
-      $userHero->exp += $expGained;
-      // level up hero jika perlu
-      while ($userHero->exp >= $this->getHeroExpForNextLevel($userHero->level)) {
-        $userHero->exp -= $this->getHeroExpForNextLevel($userHero->level);
-        $userHero->level++;
-      }
-      $userHero->save();
-    } else {
-      $progress->total_losses++;
-      $expGained = 10; // consolation
-      $progress->addExp($expGained);
-      $history->exp_gained = $expGained;
-    }
-    $progress->save();
-    $history->save();
-
-    return response()->json([
-      'success' => true,
-      'data' => [
-        'result' => $result,
-        'history_id' => $history->id,
-        'exp_gained' => $history->exp_gained,
-        'user_new_level' => $progress->level,
-        'user_new_exp' => $progress->exp,
-      ]
-    ]);
-  }
-
-  protected function getHeroExpForNextLevel($currentLevel) {
-    return 100 * $currentLevel;
-  }
-
-  // Endpoint untuk mendapatkan history detail (opsional)
-  public function getBattleHistory(Request $request, $id) {
-    $history = BattleHistory::where('telegram_user_id', $request->user()->id)
-    ->findOrFail($id);
-    return response()->json(['success' => true, 'data' => $history]);
-  }
-
-  public function setSelectedHero(Request $request) {
-    $user = $request->user();
-    $heroId = $request->input('user_hero_id');
-
-    BattleUserHero::where('telegram_user_id', $user->id)
-    ->update(['is_selected' => false]);
-
-    BattleUserHero::where('telegram_user_id', $user->id)
-    ->where('id', $heroId)
-    ->update(['is_selected' => true]);
-
-    return response()->json(['success' => true]);
-  }
-
-  public function unlockHero(Request $request) {
-    $user = $request->user();
-    $heroId = $request->input('hero_id');
-
-    $hero = BattleHero::findOrFail($heroId);
-    $progress = BattleUserProgress::where('telegram_user_id', $user->id)->first();
-    if (!$progress) {
-      return response()->json(['success' => false, 'message' => 'Progress tidak ditemukan'], 400);
-    }
-
-    // Cek apakah sudah punya
-    $alreadyOwned = BattleUserHero::where('telegram_user_id', $user->id)
-    ->where('battle_hero_id', $heroId)->exists();
-    if ($alreadyOwned) {
-      return response()->json(['success' => false, 'message' => 'Hero sudah dimiliki'], 400);
-    }
-
-    // Cek syarat level
-    if ($progress->level < $hero->required_user_level) {
-      return response()->json(['success' => false, 'message' => 'Level user belum mencukupi'], 400);
-    }
-
-    // Cek gold
-    $currency = UserCurrency::forUser($user);
-    if (!$currency->deductGold($hero->unlock_cost_gold)) {
-      return response()->json(['success' => false, 'message' => 'Gold tidak cukup'], 400);
-    }
-
-    // Buat user hero
-    BattleUserHero::create([
-      'telegram_user_id' => $user->id,
-      'battle_hero_id' => $hero->id,
-      'level' => 1,
-      'exp' => 0,
-      'is_selected' => false,
-    ]);
-
-    return response()->json(['success' => true, 'message' => 'Hero berhasil di-unlock!']);
-  }
-
-  public function startBattleVsComputer(Request $request) {
-    $user = $request->user();
-    $heroId = $request->input('user_hero_id');
     $enemyLevel = $request->input('enemy_level'); // opsional
 
     $userHero = BattleUserHero::where('telegram_user_id', $user->id)
@@ -296,6 +147,72 @@ class BattleController extends Controller
       ]
     ]);
   }
+
+  protected function getHeroExpForNextLevel($currentLevel) {
+    return 100 * $currentLevel;
+  }
+
+  // Endpoint untuk mendapatkan history detail (opsional)
+  public function getBattleHistory(Request $request, $id) {
+    $history = BattleHistory::where('telegram_user_id', $request->user()->id)
+    ->findOrFail($id);
+    return response()->json(['success' => true, 'data' => $history]);
+  }
+
+  public function setSelectedHero(Request $request) {
+    $user = $request->user();
+    $heroId = $request->input('user_hero_id');
+
+    BattleUserHero::where('telegram_user_id', $user->id)
+    ->update(['is_selected' => false]);
+
+    BattleUserHero::where('telegram_user_id', $user->id)
+    ->where('id', $heroId)
+    ->update(['is_selected' => true]);
+
+    return response()->json(['success' => true]);
+  }
+
+  public function unlockHero(Request $request) {
+    $user = $request->user();
+    $heroId = $request->input('hero_id');
+
+    $hero = BattleHero::findOrFail($heroId);
+    $progress = BattleUserProgress::where('telegram_user_id', $user->id)->first();
+    if (!$progress) {
+      return response()->json(['success' => false, 'message' => 'Progress tidak ditemukan'], 400);
+    }
+
+    // Cek apakah sudah punya
+    $alreadyOwned = BattleUserHero::where('telegram_user_id', $user->id)
+    ->where('battle_hero_id', $heroId)->exists();
+    if ($alreadyOwned) {
+      return response()->json(['success' => false, 'message' => 'Hero sudah dimiliki'], 400);
+    }
+
+    // Cek syarat level
+    if ($progress->level < $hero->required_user_level) {
+      return response()->json(['success' => false, 'message' => 'Level user belum mencukupi'], 400);
+    }
+
+    // Cek gold
+    $currency = UserCurrency::forUser($user);
+    if (!$currency->deductGold($hero->unlock_cost_gold)) {
+      return response()->json(['success' => false, 'message' => 'Gold tidak cukup'], 400);
+    }
+
+    // Buat user hero
+    BattleUserHero::create([
+      'telegram_user_id' => $user->id,
+      'battle_hero_id' => $hero->id,
+      'level' => 1,
+      'exp' => 0,
+      'is_selected' => false,
+    ]);
+
+    return response()->json(['success' => true, 'message' => 'Hero berhasil di-unlock!']);
+  }
+
 
   protected function getHeroExpForNextLevel($currentLevel) {
     return 100 * $currentLevel;
