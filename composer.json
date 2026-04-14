@@ -1,0 +1,33 @@
+{
+  "name": "vicky-project/battlegame-module",
+  "type": "laravel-module",
+  "description": "",
+  "license": "MIT",
+  "authors": [{
+    "name": "Vicky Rahman",
+    "email": "pratamavr@gmail.com"
+  }],
+  "extra": {
+    "laravel": {
+      "providers": [],
+      "aliases": {}
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "joshbrw/laravel-module-installer": "^1.0",
+    "vicky-project/telegram-module": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Modules\\BattleGame\\": "app/",
+      "Modules\\BattleGame\\Database\\Factories\\": "database/factories/",
+      "Modules\\BattleGame\\Database\\Seeders\\": "database/seeders/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Modules\\BattleGame\\Tests\\": "tests/"
+    }
+  }
+}

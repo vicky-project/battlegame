@@ -1,0 +1,11 @@
+{
+    "name": "BattleGame",
+    "alias": "battlegame",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\BattleGame\\Providers\\BattleGameServiceProvider"
+    ],
+    "files": []
+}
