@@ -13,7 +13,12 @@ class BattleUserProgress extends Model
     'exp',
     'total_battles',
     'total_wins',
-    'total_losses'
+    'total_losses',
+    'upgrades'
+  ];
+
+  protected $casts = [
+    'upgrades' => 'array'
   ];
 
   public function user() {
@@ -35,5 +40,16 @@ class BattleUserProgress extends Model
   public function getExpForNextLevel(): int
   {
     return 100 * $this->level; // sederhana
+  }
+
+  public function getUpgradeLevel(string $key): int {
+    return $this->upgrades[$key] ?? 0;
+  }
+
+  public function setUpgradeLevel(string $key, int $level): void {
+    $upgrades = $this->upgrades ?? [];
+    $upgrades[$key] = $level;
+    $this->upgrades = $upgrades;
+    $this->save();
   }
 }

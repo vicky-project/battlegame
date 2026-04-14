@@ -28,14 +28,25 @@ class BattleUserHero extends Model
     $base = $this->hero->stats;
     $level = $this->level;
     // Formula scaling sederhana: +10% per level
+
+    $progress = BattleUserProgress::where('telegram_user_id', $this->telegram_user_id)->first();
+    $upgrades = $progress ? $progress->upgrades : [];
+
+    $attackBonus = ($upgrades['attack_boost'] ?? 0) * 5;
+    $defenseBonus = ($upgrades['defense_boost'] ?? 0) * 3;
+    $hpBonus = ($upgrades['hp_boost'] ?? 0) * 20;
+    $critChanceBonus = ($upgrades['critical_chance'] ?? 0) * 0.02;
+
     return [
-      'hp' => round($base['hp'] * (1 + 0.1 * ($level - 1))),
-      'atk' => round($base['atk'] * (1 + 0.1 * ($level - 1))),
-      'def' => round($base['def'] * (1 + 0.1 * ($level - 1))),
+      'hp' => round($base['hp'] * (1 + 0.1 * ($level - 1))) + $hpBonus,
+      'atk' => round($base['atk'] * (1 + 0.1 * ($level - 1))) + $attackBonus,
+      'def' => round($base['def'] * (1 + 0.1 * ($level - 1))) + $defenseBonus,
       'aspd' => $base['aspd'],
       // tidak scaling
       'block_chance' => min($base['block_chance'] + 0.02 * ($level - 1), 0.8),
       'block_reduction' => $base['block_reduction'],
+      'critical_chance' => $critChanceBonus,
+      // tambahkan di BattleSimulator jika mau
     ];
   }
 }
