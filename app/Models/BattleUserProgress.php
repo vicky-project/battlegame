@@ -32,7 +32,7 @@ class BattleUserProgress extends Model
     $this->save();
   }
 
-  protected function getExpForNextLevel(): int
+  public function getExpForNextLevel(): int
   {
     return 100 * $this->level; // sederhana
   }
