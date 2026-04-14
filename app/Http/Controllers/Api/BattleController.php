@@ -212,9 +212,4 @@ class BattleController extends Controller
 
     return response()->json(['success' => true, 'message' => 'Hero berhasil di-unlock!']);
   }
-
-
-  protected function getHeroExpForNextLevel($currentLevel) {
-    return 100 * $currentLevel;
-  }
 }
