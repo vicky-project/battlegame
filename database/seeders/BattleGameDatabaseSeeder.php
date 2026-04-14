@@ -9,7 +9,7 @@ use Modules\BattleGame\Models\BattleEnemy;
 class BattleGameDatabaseSeeder extends Seeder
 {
   public function run() {
-    // === HEROES ===
+    // ==================== HEROES ====================
     $heroes = [
       [
         'name' => 'Warrior',
@@ -21,8 +21,10 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_aspd' => 2.5,
         'base_block_chance' => 0.4,
         'base_block_reduction' => 0.5,
-        'required_user_level' => 1,
-        'unlock_cost_gold' => 0,
+        'unlock_requirements' => [
+          'required_user_level' => 1,
+          'unlock_cost_gold' => 0,
+        ],
         'is_active' => true,
       ],
       [
@@ -35,8 +37,10 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_aspd' => 1.2,
         'base_block_chance' => 0.1,
         'base_block_reduction' => 0.5,
-        'required_user_level' => 3,
-        'unlock_cost_gold' => 500,
+        'unlock_requirements' => [
+          'required_user_level' => 3,
+          'unlock_cost_gold' => 500,
+        ],
         'is_active' => true,
       ],
       [
@@ -49,8 +53,10 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_aspd' => 3.0,
         'base_block_chance' => 0.05,
         'base_block_reduction' => 0.5,
-        'required_user_level' => 5,
-        'unlock_cost_gold' => 1000,
+        'unlock_requirements' => [
+          'required_user_level' => 5,
+          'unlock_cost_gold' => 1000,
+        ],
         'is_active' => true,
       ],
       [
@@ -63,8 +69,10 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_aspd' => 1.8,
         'base_block_chance' => 0.15,
         'base_block_reduction' => 0.4,
-        'required_user_level' => 8,
-        'unlock_cost_gold' => 2000,
+        'unlock_requirements' => [
+          'required_user_level' => 8,
+          'unlock_cost_gold' => 2000,
+        ],
         'is_active' => true,
       ],
       [
@@ -77,20 +85,24 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_aspd' => 2.2,
         'base_block_chance' => 0.5,
         'base_block_reduction' => 0.6,
-        'required_user_level' => 10,
-        'unlock_cost_gold' => 3000,
+        'unlock_requirements' => [
+          'required_user_level' => 10,
+          'unlock_cost_gold' => 3000,
+        ],
         'is_active' => true,
       ],
     ];
 
     foreach ($heroes as $heroData) {
+      // Konversi unlock_requirements ke JSON string jika diperlukan
+      // Model sudah memiliki cast 'array', jadi bisa langsung array
       BattleHero::firstOrCreate(
         ['name' => $heroData['name']],
         $heroData
       );
     }
 
-    // === ENEMIES ===
+    // ==================== ENEMIES ====================
     $enemies = [
       [
         'name' => 'Goblin',
@@ -103,7 +115,8 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_block_chance' => 0.1,
         'base_block_reduction' => 0.5,
         'level_scaling_factor' => 0.1,
-        'rewards' => json_encode(['exp' => 30, 'gold' => 10]),
+        'rewards' => ['exp' => 30,
+          'gold' => 10],
         'is_active' => true,
       ],
       [
@@ -117,7 +130,8 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_block_chance' => 0.15,
         'base_block_reduction' => 0.5,
         'level_scaling_factor' => 0.12,
-        'rewards' => json_encode(['exp' => 60, 'gold' => 25]),
+        'rewards' => ['exp' => 60,
+          'gold' => 25],
         'is_active' => true,
       ],
       [
@@ -131,7 +145,8 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_block_chance' => 0.25,
         'base_block_reduction' => 0.5,
         'level_scaling_factor' => 0.15,
-        'rewards' => json_encode(['exp' => 100, 'gold' => 50]),
+        'rewards' => ['exp' => 100,
+          'gold' => 50],
         'is_active' => true,
       ],
       [
@@ -145,7 +160,8 @@ class BattleGameDatabaseSeeder extends Seeder
         'base_block_chance' => 0.2,
         'base_block_reduction' => 0.5,
         'level_scaling_factor' => 0.2,
-        'rewards' => json_encode(['exp' => 200, 'gold' => 100]),
+        'rewards' => ['exp' => 200,
+          'gold' => 100],
         'is_active' => true,
       ],
     ];

@@ -30,7 +30,8 @@
   userHeroes: [],
   selectedHeroId: null,
   currentScreen: 'home', // 'home', 'select-hero', 'battle', 'result'
-  battleResult: null
+  battleResult: null,
+  gold: null
   };
 
   // API base
@@ -53,6 +54,7 @@
   state.user = response.data;
   state.userHeroes = response.data.heroes;
   state.selectedHeroId = response.data.selected_hero_id;
+  state.gold = response.data.gold;
   renderHomeScreen();
   }
   }
@@ -65,7 +67,7 @@
   <i class="bi bi-controller me-2 fs-3"></i>
   <h1 class="h3 mb-0">Battle Arena</h1>
   </div>
-  <div class="card mb-3">
+  <div class="card shadow mb-3">
   <div class="card-body">
   <h5 class="card-title">Level ${state.user.user_level}</h5>
   <div class="progress mb-2" style="height: 20px;">
@@ -75,6 +77,7 @@
   </div>
   </div>
   <p class="card-text">Total Battle: ${state.user.total_battles || 0} | Menang: ${state.user.total_wins || 0}</p>
+  <p><i class="bi bi-coin"></i> Gold: ${state.gold}</p>
   </div>
   </div>
   <div class="d-grid gap-2">
@@ -144,6 +147,7 @@
   <button class="btn btn-primary" id="btn-done-select">Selesai</button>
   </div>
   `;
+  // ...
   appEl.innerHTML = html;
 
   document.querySelectorAll('.select-hero-btn').forEach(btn => {

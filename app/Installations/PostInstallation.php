@@ -15,6 +15,9 @@ class PostInstallation
       }
 
       Artisan::call("migrate");
+      Artisan::call("module:seed", [
+        'module' => $modulename
+      ]);
     } catch (\Exception $e) {
       logger()->error(
         "Failed to run post installation of gold price module: " .
