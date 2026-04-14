@@ -5,6 +5,7 @@ namespace Modules\BattleGame\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\BattleGame\Models\BattleEnemy;
+use Modules\BattleGame\Models\BattleHero;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
 use Modules\BattleGame\Models\BattleUserProgress;
