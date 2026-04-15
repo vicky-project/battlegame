@@ -37,7 +37,7 @@
   battleResult: null
   };
 
-  const API_BASE = '/api/battle';
+  const API_BASE = '{{ config("app.url") }}/api/battle';
 
   // Mining timer interval
   let miningInterval = null;
