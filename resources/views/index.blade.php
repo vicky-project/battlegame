@@ -238,7 +238,7 @@
   tg.showToast(resp.message || 'Gagal bertarung', 'danger');
   }
   } catch (error) {
-  tg.showToast('Gagal memulai pertarungan', 'danger');
+  tg.showToast('Gagal memulai pertarungan. ' + error.message, 'danger');
   } finally {
   tg.hideLoading();
   }
