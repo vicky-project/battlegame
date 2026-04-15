@@ -28,7 +28,6 @@ class BattleService
     // 1. Ambil hero milik user
     $userHero = BattleUserHero::where('telegram_user_id', $user->id)
     ->where('id', $userHeroId)
-    ->with('hero')
     ->firstOrFail();
 
     // 2. Ambil atau buat progress user
@@ -41,7 +40,7 @@ class BattleService
     $targetLevel = $enemyLevel ?? $progress->level;
 
     // 4. Ambil class hero dari registry
-    $heroClass = CharacterRegistry::getHero($userHero->hero->id ?? 'warrior');
+    $heroClass = CharacterRegistry::getHero($userHero->hero_id ?? 'warrior');
     if (!$heroClass) {
       throw new \Exception('Hero tidak ditemukan dalam registry.');
     }
