@@ -34,13 +34,13 @@
   diamondPackages: [],
   upgrades: [],
   currentScreen: 'home',
-  battleResult: null
+  battleResult: null,
+  miningData: { gold_per_interval: 60, next_claim_seconds: 0, can_claim: false }
   };
 
   const API_BASE = '{{ config("app.url") }}/api/battle';
-
-  // Mining timer interval
   let miningInterval = null;
+  let overlayTimeout = null;
 
   // ======================== HELPER API ========================
   async function apiFetch(endpoint, options = {}) {
@@ -88,7 +88,6 @@
   `;
   }
 
-  // Event delegation untuk top bar (dipasang sekali di init)
   function setupGlobalDelegation() {
   appEl.addEventListener('click', (e) => {
   if (e.target.closest('#btn-store-bar')) {
@@ -99,6 +98,34 @@
   renderStoreDiamond();
   }
   });
+  }
+
+  // ======================== OVERLAY NOTIFIKASI ========================
+  function showMiningClaimOverlay(amount) {
+  // Hapus overlay lama jika ada
+  const existing = document.getElementById('mining-claim-overlay');
+  if (existing) existing.remove();
+  if (overlayTimeout) clearTimeout(overlayTimeout);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'mining-claim-overlay';
+  overlay.style.cssText = `
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 24px; flex-direction: column;
+  `;
+  overlay.innerHTML = `
+  <span style="font-size: 80px;">⛏️💰</span>
+  <h2 style="color: #FFD700;">+${amount} Gold</h2>
+  <p>Berhasil diklaim!</p>
+  `;
+  document.body.appendChild(overlay);
+
+  overlayTimeout = setTimeout(() => {
+  overlay.remove();
+  overlayTimeout = null;
+  }, 2000);
   }
 
   // ======================== RENDER HOME ========================
@@ -337,7 +364,7 @@
   document.getElementById('btn-back-home-result')?.addEventListener('click', backHome);
   }
 
-  // ======================== MINING SCREEN ========================
+  // ======================== MINING SCREEN (AUTO-CLAIM) ========================
   async function renderMiningScreen() {
   state.currentScreen = 'mining';
   tg.showLoading();
@@ -345,7 +372,20 @@
   const resp = await apiFetch('/mining/status');
   if (resp.success) {
   const data = resp.data;
-  let html = `
+  state.miningData = {
+  gold_per_interval: data.gold_per_interval || 60,
+  next_claim_seconds: data.next_claim_seconds,
+  can_claim: data.can_claim,
+  gold: data.gold
+  };
+  state.storeData.gold = data.gold;
+
+  // Jika ada gold otomatis terklaim saat load (interval terlewati)
+  if (data.earned > 0) {
+  showMiningClaimOverlay(data.earned);
+  }
+
+  const html = `
   ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home">
@@ -357,14 +397,14 @@
   <div class="card-body">
   <span style="font-size: 64px;">⛏️💰</span>
   <h4>Gold kamu: ${data.gold}</h4>
-  <p>Gold terkumpul: +${data.earned || 0}</p>
+  <p>Gold per jam: ${state.miningData.gold_per_interval}</p>
   <p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(data.next_claim_seconds)}</span></p>
-  <button class="btn btn-primary w-100 mt-3" id="btn-claim-mining">Klaim Sekarang</button>
+  <p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p>
   </div>
   </div>
   `;
   appEl.innerHTML = html;
-  startMiningTimer(data.next_claim_seconds);
+  startMiningTimer(data.next_claim_seconds, data.can_claim);
   }
   } finally {
   tg.hideLoading();
@@ -373,32 +413,75 @@
   }
 
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
-  document.getElementById('btn-claim-mining')?.addEventListener('click', async () => {
-  tg.showLoading();
+  }
+
+  async function performAutoClaim() {
   try {
   const resp = await apiFetch('/mining/claim', { method: 'POST' });
   if (resp.success) {
-  tg.showToast(`+${resp.data.earned} Gold!`, 'success');
+  const earned = resp.data.earned;
   state.storeData.gold = resp.data.gold;
-  renderMiningScreen();
+  showMiningClaimOverlay(earned);
+  // Update data mining untuk restart timer
+  const newResp = await apiFetch('/mining/status');
+  if (newResp.success) {
+  state.miningData = {
+  gold_per_interval: newResp.data.gold_per_interval || 60,
+  next_claim_seconds: newResp.data.next_claim_seconds,
+  can_claim: false,
+  gold: newResp.data.gold
+  };
+  // Update tampilan timer
+  const timerEl = document.getElementById('mining-timer');
+  if (timerEl) {
+  startMiningTimer(newResp.data.next_claim_seconds, false);
   }
-  } finally {
-  tg.hideLoading();
   }
-  });
+  } else {
+  // Jika claim gagal (misal belum waktunya), refresh status
+  const statusResp = await apiFetch('/mining/status');
+  if (statusResp.success) {
+  state.miningData = {
+  gold_per_interval: statusResp.data.gold_per_interval || 60,
+  next_claim_seconds: statusResp.data.next_claim_seconds,
+  can_claim: statusResp.data.can_claim,
+  gold: statusResp.data.gold
+  };
+  startMiningTimer(statusResp.data.next_claim_seconds, statusResp.data.can_claim);
+  }
+  }
+  } catch (error) {
+  console.error('Auto claim failed', error);
+  }
   }
 
-  function startMiningTimer(initialSeconds) {
+  function startMiningTimer(initialSeconds, canClaimNow = false) {
   if (miningInterval) clearInterval(miningInterval);
   let seconds = initialSeconds;
   const timerEl = document.getElementById('mining-timer');
   if (!timerEl) return;
-  miningInterval = setInterval(() => {
-  seconds = Math.max(0, seconds - 1);
+
+  const updateTimerDisplay = () => {
   timerEl.textContent = formatTime(seconds);
+  };
+  updateTimerDisplay();
+
+  // Jika saat inisialisasi sudah bisa claim, langsung auto-claim
+  if (canClaimNow && seconds === 0) {
+  performAutoClaim();
+  return;
+  }
+
+  miningInterval = setInterval(() => {
+  if (seconds > 0) {
+  seconds--;
+  updateTimerDisplay();
+  }
   if (seconds <= 0) {
   clearInterval(miningInterval);
   timerEl.textContent = 'Siap diklaim!';
+  // Auto claim
+  performAutoClaim();
   }
   }, 1000);
   }

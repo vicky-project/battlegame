@@ -8,14 +8,22 @@ use Carbon\Carbon;
 
 class UserCurrency extends Model
 {
-  protected $fillable = ['telegram_user_id',
+  protected $fillable = [
+    'telegram_user_id',
     'gold',
     'diamond',
-    'last_mining_at'];
+    'last_mining_at'
+  ];
 
   protected $casts = [
     'last_mining_at' => 'datetime',
   ];
+
+  // Interval mining dalam detik (1 jam)
+  public const MINING_INTERVAL_SECONDS = 3600;
+
+  // Gold yang dihasilkan per interval
+  public const GOLD_PER_INTERVAL = 60;
 
   public function telegramUser() {
     return $this->belongsTo(TelegramUser::class);
@@ -45,39 +53,52 @@ class UserCurrency extends Model
     return true;
   }
 
-  // Mining: berapa gold per jam? (default 60 gold per jam)
-  public function getMiningRatePerSecond(): float
-  {
-    return 60 / 3600; // 60 gold per jam
-  }
-
+  /**
+  * Klaim gold mining jika interval sudah terlewati.
+  * Mengembalikan jumlah gold yang didapat (0 jika belum waktunya).
+  */
   public function claimMiningReward(): int
   {
     $now = now();
     $last = $this->last_mining_at ?? $now;
-    $seconds = $last->diffInSeconds($now);
-    if ($seconds <= 0) {
-      return 0;
+    $elapsed = $last->diffInSeconds($now);
+
+    if ($elapsed < self::MINING_INTERVAL_SECONDS) {
+      return 0; // belum waktunya klaim
     }
-    $earned = (int) floor($seconds * $this->getMiningRatePerSecond());
+
+    // Hitung berapa kali interval penuh terlewati (maksimal 1x untuk mencegah akumulasi berlebihan)
+    $intervals = floor($elapsed / self::MINING_INTERVAL_SECONDS);
+    $intervals = min($intervals, 1); // hanya ambil 1 interval meskipun lama tidak klaim (opsional)
+    $earned = (int)($intervals * self::GOLD_PER_INTERVAL);
+
     if ($earned > 0) {
       $this->gold += $earned;
-      $this->last_mining_at = $now;
+      // Set last_mining_at ke waktu terakhir yang sesuai dengan interval
+      $this->last_mining_at = $last->addSeconds($intervals * self::MINING_INTERVAL_SECONDS);
       $this->save();
     }
+
     return $earned;
   }
 
+  /**
+  * Mendapatkan sisa waktu (detik) hingga klaim berikutnya bisa dilakukan.
+  */
   public function getMiningSecondsRemaining(): int
   {
-    // Untuk UI countdown, kita bisa tentukan interval klaim manual (misal bisa klaim tiap 10 detik)
-    // Atau pakai progress bar ke max capacity. Saya pilih: hitung waktu sejak last mining hingga max capacity tertentu (misal 100 gold)
-    $maxGoldPerClaim = 100;
-    $rate = $this->getMiningRatePerSecond();
-    $secondsForMax = (int)($maxGoldPerClaim / $rate);
-    $last = $this->last_mining_at ?? now();
-    $elapsed = $last->diffInSeconds(now());
-    $remaining = max(0, $secondsForMax - $elapsed);
-    return $remaining;
+    $now = now();
+    $last = $this->last_mining_at ?? $now;
+    $elapsed = $last->diffInSeconds($now);
+    $remaining = max(0, self::MINING_INTERVAL_SECONDS - $elapsed);
+    return (int) $remaining;
+  }
+
+  /**
+  * Cek apakah mining reward bisa diklaim sekarang.
+  */
+  public function canClaimMining(): bool
+  {
+    return $this->getMiningSecondsRemaining() === 0;
   }
 }
