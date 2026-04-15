@@ -62,10 +62,14 @@
 
   // ======================== CURRENCY BAR ========================
   function renderCurrencyBar() {
+  const userLevel = state.storeData?.user_level ?? 1;
   const gold = state.storeData?.gold ?? 0;
   const diamond = state.storeData?.diamond ?? 0;
   return `
   <div class="currency-bar d-flex justify-content-end mb-2">
+  <span class="badge bg-secondary">
+  <i class="bi bi-star-fill"></i> Lv. ${userLevel}
+  </span>
   <span class="badge bg-warning text-dark me-2">
   <i class="bi bi-coin"></i> ${gold}
   </span>

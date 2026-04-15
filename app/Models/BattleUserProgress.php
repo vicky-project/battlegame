@@ -43,7 +43,8 @@ class BattleUserProgress extends Model
   }
 
   public function getUpgradeLevel(string $key): int {
-    return $this->upgrades[$key] ?? 0;
+    $level = $this->upgrades[$key] ?? 1;
+    return max(1, $level);
   }
 
   public function setUpgradeLevel(string $key, int $level): void {

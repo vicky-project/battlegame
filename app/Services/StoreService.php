@@ -94,6 +94,12 @@ class StoreService
     $upgrades = [];
     foreach (UpgradeId::cases() as $upgradeId) {
       $currentLevel = $progress->getUpgradeLevel($upgradeId->value);
+      // Pastikan level minimal 1
+      if ($currentLevel < 1) {
+        $currentLevel = 1;
+        $progress->setUpgradeLevel($upgradeId->value, 1);
+      }
+
       $nextLevel = $currentLevel + 1;
       $maxLevel = $upgradeId->maxLevel();
 
@@ -101,9 +107,9 @@ class StoreService
       $canUpgrade = false;
 
       if ($nextLevel <= $maxLevel) {
-        $cost = $upgradeId->baseCost() * pow($upgradeId->costScaling(), $currentLevel);
+        $cost = $upgradeId->baseCost() * pow($upgradeId->costScaling(), $currentLevel - 1); // basis level 1
         $nextCost = (int) round($cost);
-        $canUpgrade = true; // Nanti pengecekan kecukupan mata uang dilakukan di frontend
+        $canUpgrade = true;
       }
 
       $upgrades[] = [
@@ -133,13 +139,14 @@ class StoreService
 
     $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
     $currency = UserCurrency::forUser($user);
-    $currentLevel = $progress->getUpgradeLevel($upgrade->value);
+    $currentLevel = $progress->getUpgradeLevel($upgrade->value); // sudah minimal 1
 
     if ($currentLevel >= $upgrade->maxLevel()) {
       throw new \Exception('Level maksimum tercapai');
     }
 
-    $cost = (int) round($upgrade->baseCost() * pow($upgrade->costScaling(), $currentLevel));
+    // Biaya untuk naik ke level berikutnya
+    $cost = (int) round($upgrade->baseCost() * pow($upgrade->costScaling(), $currentLevel - 1));
 
     if ($upgrade->costType() === CurrencyType::GOLD) {
       if ($currency->gold < $cost) {
