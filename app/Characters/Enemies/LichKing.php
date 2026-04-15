@@ -4,48 +4,47 @@ namespace Modules\BattleGame\Characters\Enemies;
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Enums\SkillType;
 
-class Goblin extends Enemy
+class LichKing extends Enemy
 {
   public function __construct() {
     parent::__construct(
-      id: 'goblin',
-      name: 'Goblin',
-      emoji: '👺',
-      minLevel: 1,
-      maxLevel: 2,
-      rewards: ['exp' => 30, 'gold' => 20],
+      id: 'lich_king',
+      name: 'Lich King',
+      emoji: '👑❄️',
+      minLevel: 10,
+      maxLevel: null,
+      rewards: ['exp' => 250, 'gold' => 200],
     );
   }
 
   public function baseHp(): int {
-    return 150;
+    return 550;
   }
   public function baseAtk(): int {
-    return 20;
+    return 70;
   }
   public function baseDef(): int {
-    return 8;
+    return 25;
   }
   public function baseAspd(): float {
-    return 2.0;
+    return 3.5;
   }
   public function baseBlockChance(): float {
-    return 0.1;
+    return 0.3;
   }
   public function baseBlockReduction(): float {
-    return 0.5;
+    return 0.6;
   }
   public function levelScalingFactor(): float {
-    return 0.15;
+    return 0.22;
   }
 
   public function specialAbility(): array
   {
     return [
-      'type' => SkillType::POISON,
+      'type' => SkillType::STUN,
       'chance' => 0.2,
-      'damage_per_tick' => 5,
-      'duration' => 3,
+      'duration' => 2,
     ];
   }
 }

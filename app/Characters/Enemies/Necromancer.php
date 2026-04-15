@@ -4,48 +4,47 @@ namespace Modules\BattleGame\Characters\Enemies;
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Enums\SkillType;
 
-class Goblin extends Enemy
+class Necromancer extends Enemy
 {
   public function __construct() {
     parent::__construct(
-      id: 'goblin',
-      name: 'Goblin',
-      emoji: '👺',
-      minLevel: 1,
-      maxLevel: 2,
-      rewards: ['exp' => 30, 'gold' => 20],
+      id: 'necromancer',
+      name: 'Necromancer',
+      emoji: '🧙‍♂️💀',
+      minLevel: 6,
+      maxLevel: 9,
+      rewards: ['exp' => 120, 'gold' => 80],
     );
   }
 
   public function baseHp(): int {
-    return 150;
+    return 280;
   }
   public function baseAtk(): int {
-    return 20;
+    return 45;
   }
   public function baseDef(): int {
-    return 8;
+    return 12;
   }
   public function baseAspd(): float {
-    return 2.0;
+    return 3.2;
   }
   public function baseBlockChance(): float {
-    return 0.1;
+    return 0.2;
   }
   public function baseBlockReduction(): float {
     return 0.5;
   }
   public function levelScalingFactor(): float {
-    return 0.15;
+    return 0.16;
   }
 
   public function specialAbility(): array
   {
     return [
-      'type' => SkillType::POISON,
-      'chance' => 0.2,
-      'damage_per_tick' => 5,
-      'duration' => 3,
+      'type' => SkillType::LIFESTEAL,
+      'chance' => 1.0,
+      'value' => 0.15,
     ];
   }
 }

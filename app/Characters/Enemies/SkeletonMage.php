@@ -4,30 +4,30 @@ namespace Modules\BattleGame\Characters\Enemies;
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Enums\SkillType;
 
-class Goblin extends Enemy
+class SkeletonMage extends Enemy
 {
   public function __construct() {
     parent::__construct(
-      id: 'goblin',
-      name: 'Goblin',
-      emoji: '👺',
-      minLevel: 1,
-      maxLevel: 2,
-      rewards: ['exp' => 30, 'gold' => 20],
+      id: 'skeleton_mage',
+      name: 'Skeleton Mage',
+      emoji: '💀🔮',
+      minLevel: 3,
+      maxLevel: 5,
+      rewards: ['exp' => 50, 'gold' => 30],
     );
   }
 
   public function baseHp(): int {
-    return 150;
+    return 140;
   }
   public function baseAtk(): int {
-    return 20;
+    return 35;
   }
   public function baseDef(): int {
-    return 8;
+    return 6;
   }
   public function baseAspd(): float {
-    return 2.0;
+    return 2.8;
   }
   public function baseBlockChance(): float {
     return 0.1;
@@ -36,7 +36,7 @@ class Goblin extends Enemy
     return 0.5;
   }
   public function levelScalingFactor(): float {
-    return 0.15;
+    return 0.12;
   }
 
   public function specialAbility(): array
@@ -44,7 +44,7 @@ class Goblin extends Enemy
     return [
       'type' => SkillType::POISON,
       'chance' => 0.2,
-      'damage_per_tick' => 5,
+      'damage_per_tick' => 4,
       'duration' => 3,
     ];
   }

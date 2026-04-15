@@ -4,48 +4,48 @@ namespace Modules\BattleGame\Characters\Enemies;
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Enums\SkillType;
 
-class Goblin extends Enemy
+class DemonLord extends Enemy
 {
   public function __construct() {
     parent::__construct(
-      id: 'goblin',
-      name: 'Goblin',
-      emoji: '👺',
-      minLevel: 1,
-      maxLevel: 2,
-      rewards: ['exp' => 30, 'gold' => 20],
+      id: 'demon_lord',
+      name: 'Demon Lord',
+      emoji: '👿🔥',
+      minLevel: 10,
+      maxLevel: null,
+      rewards: ['exp' => 300, 'gold' => 250],
     );
   }
 
   public function baseHp(): int {
-    return 150;
+    return 700;
   }
   public function baseAtk(): int {
-    return 20;
+    return 80;
   }
   public function baseDef(): int {
-    return 8;
+    return 30;
   }
   public function baseAspd(): float {
-    return 2.0;
+    return 4.0;
   }
   public function baseBlockChance(): float {
-    return 0.1;
+    return 0.25;
   }
   public function baseBlockReduction(): float {
     return 0.5;
   }
   public function levelScalingFactor(): float {
-    return 0.15;
+    return 0.25;
   }
 
   public function specialAbility(): array
   {
     return [
-      'type' => SkillType::POISON,
-      'chance' => 0.2,
-      'damage_per_tick' => 5,
-      'duration' => 3,
+      'type' => SkillType::ENRAGE,
+      'chance' => 1.0,
+      'value' => 1.0,
+      // +100% damage saat HP < 30%
     ];
   }
 }

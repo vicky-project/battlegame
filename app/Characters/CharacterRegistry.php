@@ -4,15 +4,8 @@ namespace Modules\BattleGame\Characters;
 
 use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Characters\Base\Enemy;
-use Modules\BattleGame\Characters\Heroes\Warrior;
-use Modules\BattleGame\Characters\Heroes\Ninja;
-use Modules\BattleGame\Characters\Heroes\Mage;
-use Modules\BattleGame\Characters\Heroes\Berserker;
-use Modules\BattleGame\Characters\Heroes\Paladin;
-use Modules\BattleGame\Characters\Enemies\Goblin;
-use Modules\BattleGame\Characters\Enemies\OrcWarrior;
-use Modules\BattleGame\Characters\Enemies\DarkKnight;
-use Modules\BattleGame\Characters\Enemies\AncientDragon;
+use Modules\BattleGame\Characters\Heroes;
+use Modules\BattleGame\Characters\Enemies;
 
 class CharacterRegistry
 {
@@ -22,21 +15,29 @@ class CharacterRegistry
   public static function registerHeroes(): void
   {
     self::$heroes = [
-      'warrior' => new Warrior(),
-      'ninja' => new Ninja(),
-      'mage' => new Mage(),
-      'berserker' => new Berserker(),
-      'paladin' => new Paladin(),
+      'warrior' => new Heroes\Warrior(),
+      'ninja' => new Heroes\Ninja(),
+      'mage' => new Heroes\Mage(),
+      'berserker' => new Heroes\Berserker(),
+      'paladin' => new Heroes\Paladin(),
     ];
   }
 
   public static function registerEnemies(): void
   {
     self::$enemies = [
-      'goblin' => new Goblin(),
-      'orc_warrior' => new OrcWarrior(),
-      'dark_knight' => new DarkKnight(),
-      'ancient_dragon' => new AncientDragon(),
+      'goblin' => new Enemies\Goblin(),
+      'wolf' => new Enemies\Wolf(),
+      'bandit' => new Enemies\Bandit(),
+      'orc_warrior' => new Enemies\OrcWarrior(),
+      'skeleton_mage' => new Enemies\SkeletonMage(),
+      'dark_archer' => new Enemies\DarkArcher(),
+      'dark_knight' => new Enemies\DarkKnight(),
+      'necromancer' => new Enemies\Necromancer(),
+      'shadow_assassin' => new Enemies\ShadowAssassin(),
+      'ancient_dragon' => new Enemies\AncientDragon(),
+      'lich_king' => new Enemies\LichKing(),
+      'demon_lord' => new Enemies\DemonLord(),
     ];
   }
 
