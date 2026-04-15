@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Telegram\Models\TelegramUser;
 use Modules\BattleGame\Enums\BattleType;
 use Modules\BattleGame\Enums\BattleResult;
+use Modules\BattleGame\Characters\CharacterRegistry;
 
 class BattleHistory extends Model
 {
   protected $fillable = [
     'telegram_user_id',
     'battle_user_hero_id',
-    'battle_enemy_id',
+    'enemy_id',
     'battle_type',
     'result',
     'battle_log',
@@ -40,8 +41,8 @@ class BattleHistory extends Model
   }
 
   // Relasi ke musuh (jika vs computer)
-  public function enemy() {
-    return $this->belongsTo(BattleEnemy::class, 'battle_enemy_id');
+  public function getEnemyAttribute() {
+    return CharacterRegistry::getEnemy($this->enemy_id);
   }
 
   // Scope untuk user tertentu

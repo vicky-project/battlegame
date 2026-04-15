@@ -4,7 +4,8 @@ namespace Modules\BattleGame\Services;
 
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Characters\CharacterRegistry;
-use Modules\BattleGame\Models\BattleEnemy;
+use Modules\BattleGame\Enums\BattleType;
+use Modules\BattleGame\Enums\BattleResult;;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
 use Modules\BattleGame\Models\BattleUserProgress;
@@ -56,19 +57,13 @@ class BattleService
     $result = $simulator->runSimulation();
     $isWin = $result['winner'] === $heroClass->name;
 
-    // 7. Cari atau buat data musuh di database (untuk foreign key)
-    $enemyDb = BattleEnemy::firstOrCreate(
-      ['name' => $enemyClass->name],
-      $enemyClass->toArray()
-    );
-
     // 8. Simpan riwayat pertarungan
     $history = BattleHistory::create([
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
-      'battle_enemy_id' => $enemyDb->id,
-      'battle_type' => 'vs_computer',
-      'result' => $isWin ? 'win' : 'lose',
+      'enemy_id' => $enemyClass->id,
+      'battle_type' => BattleType::VS_COMPUTER,
+      'result' => $isWin ? BattleResult::WIN : BattleResult::LOSE,
       'battle_log' => $result['log'],
       'player_hp_remaining' => $result['player_hp_remaining'],
       'enemy_hp_remaining' => $result['enemy_hp_remaining'],

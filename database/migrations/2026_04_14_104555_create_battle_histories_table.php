@@ -16,10 +16,7 @@ return new class extends Migration
       ->nullable()
       ->constrained('battle_user_heroes')
       ->nullOnDelete();
-      $table->foreignId('battle_enemy_id')
-      ->nullable()
-      ->constrained('battle_enemies')
-      ->nullOnDelete();
+      $table->string('enemy_id');
       $table->enum('battle_type', ['vs_computer', 'vs_player'])
       ->default('vs_computer');
         $table->enum('result', ['win', 'lose', 'draw'])
