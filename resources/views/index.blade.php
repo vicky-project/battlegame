@@ -94,7 +94,7 @@
   <button class="btn btn-outline-secondary" id="btn-select-hero">
   <i class="bi bi-person-lines-fill"></i> Pilih Hero
   </button>
-  <button class="btn btn-outline-info" ud="btn-store"><i class="bi bi-shop"></i> Toko</button>
+  <button class="btn btn-outline-info" id="btn-store"><i class="bi bi-shop"></i> Toko</button>
   </div>
   `;
   appEl.innerHTML = html;
