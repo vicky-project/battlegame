@@ -56,8 +56,9 @@ class BattleService
       throw new \Exception('Tidak ada musuh yang tersedia untuk level ini.');
     }
 
+    $playerUpgrades = $progress->upgrades ?? [];
     // 6. Jalankan simulasi pertarungan
-    $simulator = new BattleSimulator($heroClass, $enemyClass, $targetLevel);
+    $simulator = new BattleSimulator($heroClass, $enemyClass, $targetLevel, $playerUpgrades);
     $result = $simulator->runSimulation();
     $isWin = $result['winner'] === $heroClass->name;
 

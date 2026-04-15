@@ -2,6 +2,7 @@
 namespace Modules\BattleGame\Characters\Enemies;
 
 use Modules\BattleGame\Characters\Base\Enemy;
+use Modules\BattleGame\Enums\SkillType;
 
 class AncientDragon extends Enemy
 {
@@ -36,5 +37,15 @@ class AncientDragon extends Enemy
   }
   public function levelScalingFactor(): float {
     return 0.2;
+  }
+
+  public function specialAbility(): array
+  {
+    return [
+      'type' => SkillType::FIRE_BREATH,
+      'chance' => 0.2,
+      'value' => 2.0,
+      // 200% damage
+    ];
   }
 }

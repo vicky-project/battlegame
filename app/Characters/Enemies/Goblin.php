@@ -2,6 +2,7 @@
 namespace Modules\BattleGame\Characters\Enemies;
 
 use Modules\BattleGame\Characters\Base\Enemy;
+use Modules\BattleGame\Enums\SkillType;
 
 class Goblin extends Enemy
 {
@@ -36,5 +37,15 @@ class Goblin extends Enemy
   }
   public function levelScalingFactor(): float {
     return 0.1;
+  }
+
+  public function specialAbility(): array
+  {
+    return [
+      'type' => SkillType::POISON,
+      'chance' => 0.15,
+      'damage_per_tick' => 3,
+      'duration' => 3,
+    ];
   }
 }

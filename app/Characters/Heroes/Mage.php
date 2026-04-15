@@ -3,6 +3,7 @@ namespace Modules\BattleGame\Characters\Heroes;
 
 use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Enums\HeroType;
+use Modules\BattleGame\Enums\SkillType;
 
 class Mage extends Hero
 {
@@ -34,5 +35,14 @@ class Mage extends Hero
   }
   public function baseBlockReduction(): float {
     return 0.5;
+  }
+
+  public function passiveSkill(): array
+  {
+    return [
+      'type' => SkillType::CRITICAL_DAMAGE,
+      'value' => 0.5,
+      // +50% critical damage
+    ];
   }
 }

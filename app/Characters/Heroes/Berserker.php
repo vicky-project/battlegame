@@ -3,6 +3,7 @@ namespace Modules\BattleGame\Characters\Heroes;
 
 use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Enums\HeroType;
+use Modules\BattleGame\Enums\SkillType;
 
 class Berserker extends Hero
 {
@@ -11,7 +12,7 @@ class Berserker extends Hero
       id: 'berserker',
       name: 'Berserker',
       type: HeroType::BERSERKER,
-      description: 'Darah banyak, pukulan sakit.',
+      description: 'Semakin terluka semakin kuat.',
       emoji: '⚔️',
       unlockRequirements: ['required_user_level' => 8, 'unlock_cost_gold' => 2000],
     );
@@ -34,5 +35,14 @@ class Berserker extends Hero
   }
   public function baseBlockReduction(): float {
     return 0.4;
+  }
+
+  public function passiveSkill(): array
+  {
+    return [
+      'type' => SkillType::BERSERK,
+      'value' => 0.01,
+      // +1% ATK per 1% HP hilang
+    ];
   }
 }

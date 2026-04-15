@@ -3,6 +3,7 @@
 namespace Modules\BattleGame\Characters\Base;
 
 use Modules\BattleGame\Enums\HeroType;
+use Modules\BattleGame\Enums\SkillType;
 
 abstract class Hero
 {
@@ -12,10 +13,9 @@ abstract class Hero
     public readonly HeroType $type,
     public readonly string $description,
     public readonly string $emoji,
-    public readonly array $unlockRequirements, // ['required_user_level' => int, 'unlock_cost_gold' => int]
+    public readonly array $unlockRequirements,
   ) {}
 
-  // Stat dasar (akan diimplementasi oleh subclass)
   abstract public function baseHp(): int;
   abstract public function baseAtk(): int;
   abstract public function baseDef(): int;
@@ -23,13 +23,12 @@ abstract class Hero
   abstract public function baseBlockChance(): float;
   abstract public function baseBlockReduction(): float;
 
-  // Skill pasif (opsional, bisa di-override)
-  public function passiveSkill(): ?string
-  {
-    return null;
-  }
+  /**
+  * Skill pasif yang selalu aktif.
+  * @return array{type: SkillType, value: float|int, condition?: string}
+  */
+  abstract public function passiveSkill(): array;
 
-  // Method untuk mendapatkan data lengkap
   public function toArray(): array
   {
     return [
@@ -45,7 +44,11 @@ abstract class Hero
       'base_aspd' => $this->baseAspd(),
       'base_block_chance' => $this->baseBlockChance(),
       'base_block_reduction' => $this->baseBlockReduction(),
-      'passive_skill' => $this->passiveSkill(),
+      'passive_skill' => [
+        'type' => $this->passiveSkill()['type']->value,
+        'value' => $this->passiveSkill()['value'],
+        'condition' => $this->passiveSkill()['condition'] ?? null,
+      ],
     ];
   }
 }

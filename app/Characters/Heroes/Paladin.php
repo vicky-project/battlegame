@@ -3,6 +3,7 @@ namespace Modules\BattleGame\Characters\Heroes;
 
 use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Enums\HeroType;
+use Modules\BattleGame\Enums\SkillType;
 
 class Paladin extends Hero
 {
@@ -34,5 +35,14 @@ class Paladin extends Hero
   }
   public function baseBlockReduction(): float {
     return 0.6;
+  }
+
+  public function passiveSkill(): array
+  {
+    return [
+      'type' => SkillType::HOLY_SHIELD,
+      'value' => 30,
+      // Shield 30 HP setiap 10 detik
+    ];
   }
 }

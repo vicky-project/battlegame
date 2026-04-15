@@ -2,6 +2,7 @@
 namespace Modules\BattleGame\Characters\Enemies;
 
 use Modules\BattleGame\Characters\Base\Enemy;
+use Modules\BattleGame\Enums\SkillType;
 
 class DarkKnight extends Enemy
 {
@@ -36,5 +37,15 @@ class DarkKnight extends Enemy
   }
   public function levelScalingFactor(): float {
     return 0.15;
+  }
+
+  public function specialAbility(): array
+  {
+    return [
+      'type' => SkillType::LIFESTEAL,
+      'chance' => 1.0,
+      'value' => 0.2,
+      // 20% lifesteal
+    ];
   }
 }

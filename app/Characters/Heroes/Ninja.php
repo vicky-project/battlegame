@@ -3,6 +3,7 @@ namespace Modules\BattleGame\Characters\Heroes;
 
 use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Enums\HeroType;
+use Modules\BattleGame\Enums\SkillType;
 
 class Ninja extends Hero
 {
@@ -34,5 +35,14 @@ class Ninja extends Hero
   }
   public function baseBlockReduction(): float {
     return 0.5;
+  }
+
+  public function passiveSkill(): array
+  {
+    return [
+      'type' => SkillType::EVASION,
+      'value' => 0.15,
+      // +15% miss chance musuh
+    ];
   }
 }

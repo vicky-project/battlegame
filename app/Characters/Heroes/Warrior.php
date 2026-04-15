@@ -3,6 +3,7 @@ namespace Modules\BattleGame\Characters\Heroes;
 
 use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Enums\HeroType;
+use Modules\BattleGame\Enums\SkillType;
 
 class Warrior extends Hero
 {
@@ -34,5 +35,15 @@ class Warrior extends Hero
   }
   public function baseBlockReduction(): float {
     return 0.5;
+  }
+
+  public function passiveSkill(): array
+  {
+    return [
+      'type' => SkillType::DAMAGE_REDUCTION,
+      'value' => 0.2,
+      // 20% damage reduction
+      'condition' => 'hp_below_50_percent'
+    ];
   }
 }
