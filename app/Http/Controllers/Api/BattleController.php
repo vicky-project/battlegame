@@ -121,4 +121,35 @@ class BattleController extends Controller
     $history = BattleHistory::where('telegram_user_id', $request->user()->id)->findOrFail($id);
     return response()->json(['success' => true, 'data' => $history]);
   }
+
+  public function getMiningStatus(Request $request) {
+    $user = $request->user();
+    $currency = UserCurrency::forUser($user);
+    $remaining = $currency->getMiningSecondsRemaining();
+    $earned = $currency->claimMiningReward(); // otomatis klaim jika ada
+
+    return response()->json([
+      'success' => true,
+      'data' => [
+        'gold' => $currency->gold,
+        'earned' => $earned,
+        'next_claim_seconds' => $currency->getMiningSecondsRemaining(),
+      ]
+    ]);
+  }
+
+  public function claimMining(Request $request) {
+    $user = $request->user();
+    $currency = UserCurrency::forUser($user);
+    $earned = $currency->claimMiningReward();
+
+    return response()->json([
+      'success' => true,
+      'data' => [
+        'gold' => $currency->gold,
+        'earned' => $earned,
+        'next_claim_seconds' => $currency->getMiningSecondsRemaining(),
+      ]
+    ]);
+  }
 }

@@ -37,7 +37,10 @@
   battleResult: null
   };
 
-  const API_BASE = '{{ config("app.url") }}/api/battle';
+  const API_BASE = '/api/battle';
+
+  // Mining timer interval
+  let miningInterval = null;
 
   // ======================== HELPER API ========================
   async function apiFetch(endpoint, options = {}) {
@@ -60,24 +63,42 @@
   }
   }
 
-  // ======================== CURRENCY BAR ========================
+  // ======================== CURRENCY BAR (INTERAKTIF) ========================
   function renderCurrencyBar() {
-  const userLevel = state.storeData?.user_level ?? 1;
   const gold = state.storeData?.gold ?? 0;
   const diamond = state.storeData?.diamond ?? 0;
+  const userLevel = state.user?.user_level ?? 1;
   return `
-  <div class="currency-bar d-flex justify-content-end mb-2">
+  <div class="currency-bar d-flex justify-content-between align-items-center mb-2">
   <span class="badge bg-secondary">
   <i class="bi bi-star-fill"></i> Lv. ${userLevel}
   </span>
-  <span class="badge bg-warning text-dark me-2">
+  <div>
+  <span class="badge bg-warning text-dark me-2" style="cursor:pointer;" id="btn-gold-bar">
   <i class="bi bi-coin"></i> ${gold}
   </span>
-  <span class="badge bg-info text-dark">
+  <span class="badge bg-info text-dark me-2" style="cursor:pointer;" id="btn-diamond-bar">
   <i class="bi bi-gem"></i> ${diamond}
   </span>
+  <span class="badge bg-primary" style="cursor:pointer;" id="btn-store-bar">
+  <i class="bi bi-shop"></i>
+  </span>
+  </div>
   </div>
   `;
+  }
+
+  // Event delegation untuk top bar (dipasang sekali di init)
+  function setupGlobalDelegation() {
+  appEl.addEventListener('click', (e) => {
+  if (e.target.closest('#btn-store-bar')) {
+  renderStoreHome();
+  } else if (e.target.closest('#btn-gold-bar')) {
+  renderMiningScreen();
+  } else if (e.target.closest('#btn-diamond-bar')) {
+  renderStoreDiamond();
+  }
+  });
   }
 
   // ======================== RENDER HOME ========================
@@ -104,13 +125,10 @@
   </div>
   <div class="d-grid gap-2">
   <button class="btn btn-primary btn-lg" id="btn-start-battle">
-  <i class="bi bi-play-fill"></i> Mulai Bertarung
+  <i class="bi bi-play-fill"></i> Mulai Bertarung (10💰)
   </button>
   <button class="btn btn-outline-secondary" id="btn-select-hero">
   <i class="bi bi-person-lines-fill"></i> Pilih Hero
-  </button>
-  <button class="btn btn-outline-info" id="btn-store">
-  <i class="bi bi-shop"></i> Toko
   </button>
   </div>
   `;
@@ -127,7 +145,6 @@
   }
   });
   document.getElementById('btn-select-hero')?.addEventListener('click', renderSelectHeroScreen);
-  document.getElementById('btn-store')?.addEventListener('click', renderStoreHome);
   }
 
   // ======================== PILIH HERO ========================
@@ -242,7 +259,7 @@
   tg.showToast(resp.message || 'Gagal bertarung', 'danger');
   }
   } catch (error) {
-  tg.showToast('Gagal memulai pertarungan. ' + error.message, 'danger');
+  tg.showToast('Gagal memulai pertarungan', 'danger');
   } finally {
   tg.hideLoading();
   }
@@ -318,6 +335,78 @@
   const backHome = () => renderHomeScreen();
   document.getElementById('btn-back-home-from-result')?.addEventListener('click', backHome);
   document.getElementById('btn-back-home-result')?.addEventListener('click', backHome);
+  }
+
+  // ======================== MINING SCREEN ========================
+  async function renderMiningScreen() {
+  state.currentScreen = 'mining';
+  tg.showLoading();
+  try {
+  const resp = await apiFetch('/mining/status');
+  if (resp.success) {
+  const data = resp.data;
+  let html = `
+  ${renderCurrencyBar()}
+  <div class="d-flex align-items-center mb-3">
+  <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home">
+  <i class="bi bi-arrow-left fs-5"></i>
+  </button>
+  <h2 class="h4 mb-0">Tambang Gold</h2>
+  </div>
+  <div class="card text-center">
+  <div class="card-body">
+  <span style="font-size: 64px;">⛏️💰</span>
+  <h4>Gold kamu: ${data.gold}</h4>
+  <p>Gold terkumpul: +${data.earned || 0}</p>
+  <p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(data.next_claim_seconds)}</span></p>
+  <button class="btn btn-primary w-100 mt-3" id="btn-claim-mining">Klaim Sekarang</button>
+  </div>
+  </div>
+  `;
+  appEl.innerHTML = html;
+  startMiningTimer(data.next_claim_seconds);
+  }
+  } finally {
+  tg.hideLoading();
+  appEl.style.display = 'block';
+  loadingEl.style.display = 'none';
+  }
+
+  document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
+  document.getElementById('btn-claim-mining')?.addEventListener('click', async () => {
+  tg.showLoading();
+  try {
+  const resp = await apiFetch('/mining/claim', { method: 'POST' });
+  if (resp.success) {
+  tg.showToast(`+${resp.data.earned} Gold!`, 'success');
+  state.storeData.gold = resp.data.gold;
+  renderMiningScreen();
+  }
+  } finally {
+  tg.hideLoading();
+  }
+  });
+  }
+
+  function startMiningTimer(initialSeconds) {
+  if (miningInterval) clearInterval(miningInterval);
+  let seconds = initialSeconds;
+  const timerEl = document.getElementById('mining-timer');
+  if (!timerEl) return;
+  miningInterval = setInterval(() => {
+  seconds = Math.max(0, seconds - 1);
+  timerEl.textContent = formatTime(seconds);
+  if (seconds <= 0) {
+  clearInterval(miningInterval);
+  timerEl.textContent = 'Siap diklaim!';
+  }
+  }, 1000);
+  }
+
+  function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
   // ======================== TOKO UTAMA ========================
@@ -608,6 +697,7 @@
   tg.showLoading('Memuat data...');
   try {
   await loadUserData();
+  setupGlobalDelegation();
   renderHomeScreen();
   } catch (error) {
   tg.showToast('Gagal memuat data awal', 'danger');

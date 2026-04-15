@@ -25,6 +25,11 @@ class BattleService
   */
   public function startVsComputer(TelegramUser $user, int $userHeroId, ?int $enemyLevel = null): array
   {
+    $currency = UserCurrency::forUser($user);
+    $battleCost = 10;
+    if ($currency->deductGold($battleCost)) {
+      throw new \Exception("Gold tidak cukup untuk bertarung");
+    }
     // 1. Ambil hero milik user
     $userHero = BattleUserHero::where('telegram_user_id', $user->id)
     ->where('id', $userHeroId)

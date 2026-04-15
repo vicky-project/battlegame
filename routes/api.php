@@ -19,4 +19,7 @@ Route::middleware(['auth:sanctum'])
   Route::post('/store/buy-diamond', [BattleController::class, 'buyDiamond']);
   Route::get('/store/upgrades', [BattleController::class, 'getUpgrades']);
   Route::post('/store/buy-upgrade', [BattleController::class, 'buyUpgrade']);
+
+  Route::get('/mining/status', [BattleController::class, 'getMiningStatus']);
+  Route::post('/mining/claim', [BattleController::class, 'claimMining']);
 });

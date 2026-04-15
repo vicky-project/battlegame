@@ -14,6 +14,7 @@ return new class extends Migration
       ->cascadeOnDelete();
       $table->integer('gold')->default(0);
         $table->integer('diamond')->default(0);
+        $table->timestamp('last_mining_at')->nullable();
         $table->timestamps();
 
         $table->unique('telegram_user_id');
