@@ -14,17 +14,20 @@ class BattleUserProgress extends Model
     'total_battles',
     'total_wins',
     'total_losses',
-    'upgrades'
+    'upgrades',
   ];
 
   protected $casts = [
-    'upgrades' => 'array'
+    'upgrades' => 'array',
   ];
 
   public function user() {
     return $this->belongsTo(TelegramUser::class, 'telegram_user_id');
   }
 
+  /**
+  * Tambah exp dan naikkan level jika cukup.
+  */
   public function addExp(int $exp): void
   {
     $this->exp += $exp;
@@ -37,17 +40,23 @@ class BattleUserProgress extends Model
     $this->save();
   }
 
+  /**
+  * Exp yang dibutuhkan untuk naik ke level berikutnya.
+  * Formula: 100 * level^2 (semakin tinggi level semakin besar)
+  */
   public function getExpForNextLevel(): int
   {
-    return 100 * $this->level; // sederhana
+    return 100 * $this->level * $this->level;
   }
 
-  public function getUpgradeLevel(string $key): int {
+  public function getUpgradeLevel(string $key): int
+  {
     $level = $this->upgrades[$key] ?? 1;
     return max(1, $level);
   }
 
-  public function setUpgradeLevel(string $key, int $level): void {
+  public function setUpgradeLevel(string $key, int $level): void
+  {
     $upgrades = $this->upgrades ?? [];
     $upgrades[$key] = $level;
     $this->upgrades = $upgrades;

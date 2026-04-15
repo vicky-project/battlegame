@@ -158,6 +158,7 @@ class BattleService
   */
   protected function getHeroExpForNextLevel(int $currentLevel): int
   {
-    return 100 * $currentLevel;
+    // Formula progresif untuk hero: 100 * level^2
+    return 100 * $currentLevel * $currentLevel;
   }
 }
