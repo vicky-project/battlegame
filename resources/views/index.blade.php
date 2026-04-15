@@ -164,8 +164,9 @@
   loadingEl.style.display = 'none';
 
   document.getElementById('btn-start-battle')?.addEventListener('click', () => {
-  if (state.selectedHeroId) {
-  startBattleVsComputer(state.selectedHeroId);
+  const heroId = state.selectedHeroId || state.user?.selected_hero_id;
+  if (heroId) {
+  startBattleVsComputer(heroId);
   } else {
   tg.showToast('Pilih hero terlebih dahulu', 'warning');
   renderSelectHeroScreen();
@@ -253,6 +254,7 @@
   });
   if (resp.success) {
   state.selectedHeroId = parseInt(heroId);
+  await loadUserData();
   tg.showToast(resp.message, 'success');
   await renderSelectHeroScreen();
   } else {
@@ -270,6 +272,11 @@
 
   // ======================== BATTLE ========================
   async function startBattleVsComputer(heroId) {
+  if(!heroId) {
+  tg.showToast("Hero tidak valid", 'danger');
+  renderSelectHeroScreen();
+  return;
+  }
   tg.showLoading('Bertarung...');
   try {
   const resp = await apiFetch('/vs-computer', {
