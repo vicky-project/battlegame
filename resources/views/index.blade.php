@@ -58,7 +58,6 @@
   state.user = response.data;
   state.userHeroes = response.data.heroes;
   state.selectedHeroId = response.data.selected_hero_id;
-  state.gold = response.data.gold;
   if (!state.storeData) state.storeData = {};
   state.storeData.gold = response.data.gold;
   state.storeData.diamond = response.data.diamond;
@@ -84,7 +83,7 @@
   </div>
   </div>
   <p class="card-text">Total Battle: ${state.user.total_battles || 0} | Menang: ${state.user.total_wins || 0}</p>
-  <p><i class="bi bi-coin"></i> Gold: ${state.gold}</p>
+  <p><i class="bi bi-coin"></i> Gold: ${state.storeData.gold}</p>
   </div>
   </div>
   <div class="d-grid gap-2">
@@ -505,12 +504,14 @@
   if (response.success) {
   state.battleResult = response.data.result;
   state.battleResult.exp_gained = response.data.exp_gained;
+  state.battleResult.gold_gained = response.data.gold_gained;
   // Update data user setelah battle
   await loadUserData(); // refresh
   renderBattleResultScreen();
   }
   } catch (error) {
   // error handled
+  tg.showToast("Gagal bertarung. " + error.message, 'danger');
   } finally {
   tg.hideLoading();
   }

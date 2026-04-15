@@ -20,7 +20,7 @@ class BattleController extends Controller
     $user = $request->user();
     $progress = BattleUserProgress::firstOrCreate(
       ['telegram_user_id' => $user->id],
-      ['level' => 1, 'exp' => 0]
+      ['level' => 1, 'exp' => 0, "total_battles" => 0, "total_wins" => 0, "total_losses" => 0]
     );
     $currency = UserCurrency::forUser($user);
 
@@ -45,6 +45,9 @@ class BattleController extends Controller
         'user_level' => $progress->level,
         'user_exp' => $progress->exp,
         'exp_to_next_level' => $progress->getExpForNextLevel(),
+        'total_battles' => $progress->total_battles,
+        'total_wins' => $progress->total_wins,
+        'total_losses' => $progress->total_losses,
         'gold' => $currency->gold,
         'diamond' => $currency->diamond,
         'heroes' => $heroes,
@@ -63,7 +66,10 @@ class BattleController extends Controller
     ->with('hero')
     ->firstOrFail();
 
-    $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
+    $progress = BattleUserProgress::firstOrCreate(
+      ['telegram_user_id' => $user->id],
+      ["level" => 1, "exp" => 0, "total_battles" => 0, "total_wins" => 0, "total_losses" => 0]
+    );
     $targetLevel = $enemyLevel ?? $progress->level;
 
     // Cari musuh yang sesuai level
@@ -90,13 +96,14 @@ class BattleController extends Controller
       array_merge(['name' => $enemy->name], $enemyStats)
     );
     $result = $simulator->runSimulation();
+    $isWin = $result["winner"] === $userHero->hero->name;
 
     $history = BattleHistory::create([
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
       'battle_enemy_id' => $enemy->id,
       'battle_type' => 'vs_computer',
-      'result' => $result['winner'] === $userHero->hero->name ? 'win' : 'lose',
+      'result' => $isWin ? 'win' : 'lose',
       'battle_log' => $result['log'],
       'player_hp_remaining' => $result['player_hp_remaining'],
       'enemy_hp_remaining' => $result['enemy_hp_remaining'],
@@ -109,7 +116,10 @@ class BattleController extends Controller
       'gold' => 5];
     $currency = UserCurrency::forUser($user);
 
-    if ($history->result === 'win') {
+    $expGained = 0;
+    $goldGained = 0;
+
+    if ($isWin) {
       $progress->total_wins++;
       $expGained = $rewards['exp'];
       $goldGained = $rewards['gold'];
@@ -141,7 +151,7 @@ class BattleController extends Controller
       'data' => [
         'result' => $result,
         'history_id' => $history->id,
-        'exp_gained' => $history->exp_gained,
+        'exp_gained' => $expGained,
         'gold_gained' => $goldGained ?? 0,
         'user_new_level' => $progress->level,
         'user_new_exp' => $progress->exp,
