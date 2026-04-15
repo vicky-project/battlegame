@@ -26,7 +26,7 @@ class BattleService
   public function startVsComputer(TelegramUser $user, int $userHeroId, ?int $enemyLevel = null): array
   {
     $currency = UserCurrency::forUser($user);
-    $battleCost = 10;
+    $battleCost = config('battlegame.battle_cost', 10);
     if (!$currency->deductGold($battleCost)) {
       throw new \Exception("Gold tidak cukup untuk bertarung");
     }

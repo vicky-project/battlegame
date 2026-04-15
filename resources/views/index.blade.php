@@ -766,7 +766,7 @@
   tg.showToast(resp.data.message, 'success');
   state.storeData.gold = resp.data.new_gold;
   state.storeData.diamond = resp.data.new_diamond;
-  renderStoreDiamond();
+  renderStoreDiamond(); // Refresh
   } else {
   tg.showToast(resp.message, 'danger');
   }
