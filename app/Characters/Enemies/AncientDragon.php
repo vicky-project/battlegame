@@ -18,13 +18,13 @@ class AncientDragon extends Enemy
   }
 
   public function baseHp(): int {
-    return 400;
+    return 600;
   }
   public function baseAtk(): int {
-    return 45;
+    return 60;
   }
   public function baseDef(): int {
-    return 20;
+    return 30;
   }
   public function baseAspd(): float {
     return 4.0;
@@ -36,16 +36,16 @@ class AncientDragon extends Enemy
     return 0.5;
   }
   public function levelScalingFactor(): float {
-    return 0.2;
+    return 0.25;
   }
 
   public function specialAbility(): array
   {
     return [
       'type' => SkillType::FIRE_BREATH,
-      'chance' => 0.2,
-      'value' => 2.0,
-      // 200% damage
+      'chance' => 0.3,
+      'value' => 2.5,
+      // 250% damage
     ];
   }
 }

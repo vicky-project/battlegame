@@ -18,13 +18,13 @@ class DarkKnight extends Enemy
   }
 
   public function baseHp(): int {
-    return 250;
+    return 350;
   }
   public function baseAtk(): int {
-    return 30;
+    return 40;
   }
   public function baseDef(): int {
-    return 15;
+    return 20;
   }
   public function baseAspd(): float {
     return 3.0;
@@ -36,7 +36,7 @@ class DarkKnight extends Enemy
     return 0.5;
   }
   public function levelScalingFactor(): float {
-    return 0.15;
+    return 0.18;
   }
 
   public function specialAbility(): array
@@ -44,8 +44,8 @@ class DarkKnight extends Enemy
     return [
       'type' => SkillType::LIFESTEAL,
       'chance' => 1.0,
-      'value' => 0.2,
-      // 20% lifesteal
+      'value' => 0.3,
+      // 30% lifesteal
     ];
   }
 }
