@@ -106,11 +106,11 @@ class UserCurrency extends Model
 
   public static function getMiningInterval(): int
   {
-    return config('battlegame.mining.interval_seconds', self::MINING_INTERVAL_SECONDS);
+    return config('battlegame.mining.interval_seconds', static::MINING_INTERVAL_SECONDS);
   }
 
   public static function getGoldPerInterval(): int
   {
-    return config('battlegame.mining.gold_per_interval', self::GOLD_PER_INTERVAL);
+    return config('battlegame.mining.gold_per_interval', static::GOLD_PER_INTERVAL);
   }
 }
