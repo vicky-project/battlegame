@@ -13,7 +13,7 @@ class AncientDragon extends Enemy
       emoji: '🐉',
       minLevel: 10,
       maxLevel: null,
-      rewards: ['exp' => 200, 'gold' => 150],
+      rewards: ['exp' => 180, 'gold' => 140],
     );
   }
 

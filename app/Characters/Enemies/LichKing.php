@@ -13,7 +13,7 @@ class LichKing extends Enemy
       emoji: '👑❄️',
       minLevel: 10,
       maxLevel: null,
-      rewards: ['exp' => 250, 'gold' => 200],
+      rewards: ['exp' => 220, 'gold' => 180],
     );
   }
 

@@ -13,7 +13,7 @@ class DarkKnight extends Enemy
       emoji: '🦇',
       minLevel: 6,
       maxLevel: null,
-      rewards: ['exp' => 100, 'gold' => 70],
+      rewards: ['exp' => 110, 'gold' => 90],
     );
   }
 

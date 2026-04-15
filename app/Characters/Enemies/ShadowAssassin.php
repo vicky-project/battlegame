@@ -13,7 +13,7 @@ class ShadowAssassin extends Enemy
       emoji: '🥷🌑',
       minLevel: 6,
       maxLevel: 9,
-      rewards: ['exp' => 110, 'gold' => 90],
+      rewards: ['exp' => 90, 'gold' => 80],
     );
   }
 

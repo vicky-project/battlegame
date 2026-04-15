@@ -13,7 +13,7 @@ class Necromancer extends Enemy
       emoji: '🧙‍♂️💀',
       minLevel: 6,
       maxLevel: 9,
-      rewards: ['exp' => 120, 'gold' => 80],
+      rewards: ['exp' => 100, 'gold' => 70],
     );
   }
 

@@ -13,7 +13,7 @@ class DarkArcher extends Enemy
       emoji: '🏹',
       minLevel: 3,
       maxLevel: 5,
-      rewards: ['exp' => 45, 'gold' => 35],
+      rewards: ['exp' => 40, 'gold' => 35],
     );
   }
 

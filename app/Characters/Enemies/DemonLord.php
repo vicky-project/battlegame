@@ -13,7 +13,7 @@ class DemonLord extends Enemy
       emoji: '👿🔥',
       minLevel: 10,
       maxLevel: null,
-      rewards: ['exp' => 300, 'gold' => 250],
+      rewards: ['exp' => 250, 'gold' => 200],
     );
   }
 

@@ -13,7 +13,7 @@ class OrcWarrior extends Enemy
       emoji: '👹',
       minLevel: 3,
       maxLevel: 10,
-      rewards: ['exp' => 60, 'gold' => 35],
+      rewards: ['exp' => 60, 'gold' => 40],
     );
   }
 

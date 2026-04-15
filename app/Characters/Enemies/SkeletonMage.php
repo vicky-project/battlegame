@@ -13,7 +13,7 @@ class SkeletonMage extends Enemy
       emoji: '💀🔮',
       minLevel: 3,
       maxLevel: 5,
-      rewards: ['exp' => 50, 'gold' => 30],
+      rewards: ['exp' => 45, 'gold' => 30],
     );
   }
 
