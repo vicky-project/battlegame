@@ -2,45 +2,76 @@
 
 namespace Modules\BattleGame\Services;
 
+use Modules\BattleGame\Characters\Base\Hero;
+use Modules\BattleGame\Characters\Base\Enemy;
+
 class BattleSimulator
 {
-  protected array $player;
-  protected array $enemy;
   protected array $log = [];
   protected string $winner = '';
   protected float $simulationTime = 0.0;
+  protected array $playerStats;
+  protected array $enemyStats;
+  protected string $playerName;
+  protected string $enemyName;
+  protected string $playerEmoji;
+  protected string $enemyEmoji;
 
-  /**
-  * @param array $player  Statistik pemain, harus memiliki keys:
-  *                       name, hp, atk, def, aspd, block_chance, block_reduction
-  * @param array $enemy   Statistik musuh (keys sama)
-  */
-  public function __construct(array $player, array $enemy) {
-    $this->player = $player;
-    $this->enemy = $enemy;
+  public function __construct(
+    protected Hero $playerHero,
+    protected Enemy $enemy,
+    protected int $enemyLevel
+  ) {
+    $this->playerName = $playerHero->name;
+    $this->enemyName = $enemy->name;
+    $this->playerEmoji = $playerHero->emoji;
+    $this->enemyEmoji = $enemy->emoji;
+    $this->playerStats = $this->buildPlayerStats();
+    $this->enemyStats = $this->buildEnemyStats();
   }
 
-  /**
-  * Jalankan simulasi pertarungan.
-  *
-  * @return array Hasil pertarungan berisi winner, log, hp sisa, durasi, dll.
-  */
+  protected function buildPlayerStats(): array
+  {
+    return [
+      'hp' => $this->playerHero->baseHp(),
+      'atk' => $this->playerHero->baseAtk(),
+      'def' => $this->playerHero->baseDef(),
+      'aspd' => $this->playerHero->baseAspd(),
+      'block_chance' => $this->playerHero->baseBlockChance(),
+      'block_reduction' => $this->playerHero->baseBlockReduction(),
+    ];
+  }
+
+  protected function buildEnemyStats(): array
+  {
+    $factor = 1 + $this->enemy->levelScalingFactor() * ($this->enemyLevel - 1);
+    return [
+      'hp' => round($this->enemy->baseHp() * $factor),
+      'atk' => round($this->enemy->baseAtk() * $factor),
+      'def' => round($this->enemy->baseDef() * $factor),
+      'aspd' => $this->enemy->baseAspd(),
+      'block_chance' => min($this->enemy->baseBlockChance() + 0.01 * ($this->enemyLevel - 1), 0.7),
+      'block_reduction' => $this->enemy->baseBlockReduction(),
+    ];
+  }
+
   public function runSimulation(): array
   {
-    // Salin HP agar tidak mengubah data asli
-    $pHp = (float) $this->player['hp'];
-    $eHp = (float) $this->enemy['hp'];
+    $pHp = (float) $this->playerStats['hp'];
+    $eHp = (float) $this->enemyStats['hp'];
 
     $pTimer = 0.0;
     $eTimer = 0.0;
-    $delta = 0.1; // interval update 0.1 detik
+    $delta = 0.1;
 
     $this->log = [];
     $this->log[] = sprintf(
-      "Pertarungan dimulai! %s (HP: %.1f) vs %s (HP: %.1f)",
-      $this->player['name'],
+      "Pertarungan dimulai! %s %s (HP: %.1f) vs %s %s (HP: %.1f)",
+      $this->playerEmoji,
+      $this->playerName,
       $pHp,
-      $this->enemy['name'],
+      $this->enemyEmoji,
+      $this->enemyName,
       $eHp
     );
     $this->simulationTime = 0.0;
@@ -50,53 +81,46 @@ class BattleSimulator
       $pTimer += $delta;
       $eTimer += $delta;
 
-      // Giliran Player menyerang
-      if ($pTimer >= $this->player['aspd']) {
+      if ($pTimer >= $this->playerStats['aspd']) {
         $pTimer = 0.0;
-        $damageData = $this->calculateDamage($this->player, $this->enemy);
-        $eHp -= $damageData['value'];
+        $damage = $this->calculateDamage($this->playerStats, $this->enemyStats);
+        $eHp -= $damage['value'];
         $this->log[] = sprintf(
           "[%.1fs] %s menyerang! %s HP %s tersisa %.1f",
           $this->simulationTime,
-          $this->player['name'],
-          $damageData['message'],
-          $this->enemy['name'],
+          $this->playerName,
+          $damage['message'],
+          $this->enemyName,
           max(0, $eHp)
         );
-        if ($eHp <= 0) {
-          break;
-        }
+        if ($eHp <= 0) break;
       }
 
-      // Giliran Enemy menyerang
-      if ($eTimer >= $this->enemy['aspd']) {
+      if ($eTimer >= $this->enemyStats['aspd']) {
         $eTimer = 0.0;
-        $damageData = $this->calculateDamage($this->enemy, $this->player);
-        $pHp -= $damageData['value'];
+        $damage = $this->calculateDamage($this->enemyStats, $this->playerStats);
+        $pHp -= $damage['value'];
         $this->log[] = sprintf(
           "[%.1fs] %s menyerang! %s HP %s tersisa %.1f",
           $this->simulationTime,
-          $this->enemy['name'],
-          $damageData['message'],
-          $this->player['name'],
+          $this->enemyName,
+          $damage['message'],
+          $this->playerName,
           max(0, $pHp)
         );
-        if ($pHp <= 0) {
-          break;
-        }
+        if ($pHp <= 0) break;
       }
     }
 
-    $this->winner = $pHp > 0 ? $this->player['name'] : $this->enemy['name'];
-    $this->log[] = sprintf(
-      "Pertarungan selesai! Pemenang: %s",
-      $this->winner
-    );
+    $this->winner = $pHp > 0 ? $this->playerName : $this->enemyName;
+    $this->log[] = sprintf("Pertarungan selesai! Pemenang: %s", $this->winner);
 
     return [
       'winner' => $this->winner,
-      'player_name' => $this->player['name'],
-      'enemy_name' => $this->enemy['name'],
+      'player_name' => $this->playerName,
+      'enemy_name' => $this->enemyName,
+      'player_emoji' => $this->playerEmoji,
+      'enemy_emoji' => $this->enemyEmoji,
       'log' => $this->log,
       'player_hp_remaining' => max(0, $pHp),
       'enemy_hp_remaining' => max(0, $eHp),
@@ -104,20 +128,12 @@ class BattleSimulator
     ];
   }
 
-  /**
-  * Hitung damage yang diberikan penyerang ke defender.
-  *
-  * @param array $attacker
-  * @param array $defender
-  * @return array ['value' => int, 'blocked' => bool, 'message' => string]
-  */
   protected function calculateDamage(array $attacker, array $defender): array
   {
     $rawDamage = $attacker['atk'] - $defender['def'];
     $blocked = false;
     $blockMessage = '';
 
-    // Cek block chance (nilai antara 0 - 1)
     $blockChance = $defender['block_chance'] ?? 0.0;
     if (mt_rand(1, 100) <= $blockChance * 100) {
       $blocked = true;
@@ -126,7 +142,6 @@ class BattleSimulator
       $blockMessage = 'Berhasil diblok!';
     }
 
-    // Minimal damage adalah 1
     $finalDamage = (int) max(1, round($rawDamage));
 
     $message = $blocked
@@ -140,19 +155,10 @@ class BattleSimulator
     ];
   }
 
-  /**
-  * Dapatkan log pertarungan.
-  */
-  public function getLog(): array
-  {
+  public function getLog(): array {
     return $this->log;
   }
-
-  /**
-  * Dapatkan nama pemenang.
-  */
-  public function getWinner(): string
-  {
+  public function getWinner(): string {
     return $this->winner;
   }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\BattleGame\Services;
 
+use Modules\BattleGame\Characters\CharacterRegistry;
 use Modules\BattleGame\Models\BattleHero;
 use Modules\BattleGame\Models\BattleUserHero;
 use Modules\BattleGame\Models\BattleUserProgress;
@@ -54,34 +55,39 @@ class HeroService
     ]);
   }
 
+
   public function getStoreHeroes(TelegramUser $user): array
   {
     $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
     $currency = UserCurrency::forUser($user);
+    $ownedHeroIds = BattleUserHero::where('telegram_user_id', $user->id)->pluck('battle_hero_id')->toArray();
 
-    $allHeroes = BattleHero::where('is_active', true)->get();
-    $ownedHeroIds = BattleUserHero::where('telegram_user_id', $user->id)
-    ->pluck('battle_hero_id')->toArray();
-
-    return $allHeroes->map(function ($hero) use ($progress, $currency, $ownedHeroIds) {
+    $result = [];
+    foreach (CharacterRegistry::getHeroes() as $hero) {
       $owned = in_array($hero->id, $ownedHeroIds);
-      $requirements = $hero->unlock_requirements ?? [];
-      $requiredLevel = $requirements['required_user_level'] ?? 1;
-      $costGold = $requirements['unlock_cost_gold'] ?? 0;
-
+      $req = $hero->unlockRequirements;
+      $requiredLevel = $req['required_user_level'] ?? 1;
+      $costGold = $req['unlock_cost_gold'] ?? 0;
       $canBuy = !$owned && $progress->level >= $requiredLevel && $currency->gold >= $costGold;
 
-      return [
+      $result[] = [
         'id' => $hero->id,
         'name' => $hero->name,
-        'type' => $hero->type,
+        'type' => $hero->type->value,
         'description' => $hero->description,
-        'stats' => $hero->stats,
+        'emoji' => $hero->emoji,
+        'stats' => [
+          'hp' => $hero->baseHp(),
+          'atk' => $hero->baseAtk(),
+          'def' => $hero->baseDef(),
+          'aspd' => $hero->baseAspd(),
+        ],
         'required_level' => $requiredLevel,
         'cost_gold' => $costGold,
         'owned' => $owned,
         'can_buy' => $canBuy,
       ];
-    })->all();
+    }
+    return $result;
   }
 }
