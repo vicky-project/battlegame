@@ -4,6 +4,8 @@ namespace Modules\BattleGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Modules\Telegram\Models\TelegramUser;
+use Modules\BattleGame\Enums\BattleType;
+use Modules\BattleGame\Enums\BattleResult;
 
 class BattleHistory extends Model
 {
@@ -22,6 +24,8 @@ class BattleHistory extends Model
 
   protected $casts = [
     'battle_log' => 'array',
+    'battle_type' => BattleType::class,
+    'result' => BattleResult::class,
     'duration' => 'float',
   ];
 

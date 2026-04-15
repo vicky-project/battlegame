@@ -2,6 +2,8 @@
 
 namespace Modules\BattleGame\Services;
 
+use Modules\BattleGame\Enums\BattleType;
+use Modules\BattleGame\Enums\BattleResult;
 use Modules\BattleGame\Models\BattleEnemy;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
@@ -44,8 +46,8 @@ class BattleService
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
       'battle_enemy_id' => $enemy->id,
-      'battle_type' => 'vs_computer',
-      'result' => $isWin ? 'win' : 'lose',
+      'battle_type' => BattleType::VS_COMPUTER,
+      'result' => $isWin ? BattleResult::WIN : BattleResult::LOSE,
       'battle_log' => $result['log'],
       'player_hp_remaining' => $result['player_hp_remaining'],
       'enemy_hp_remaining' => $result['enemy_hp_remaining'],

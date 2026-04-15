@@ -2,6 +2,9 @@
 
 namespace Modules\BattleGame\Services;
 
+use Modules\BattleGame\Enums\StoreCategory;
+use Modules\BattleGame\Enums\UpgradeId;
+use Modules\BattleGame\Enums\CurrencyType;
 use Modules\BattleGame\Models\BattleUserProgress;
 use Modules\BattleGame\Models\UserCurrency;
 use Modules\Telegram\Models\TelegramUser;
@@ -13,20 +16,12 @@ class StoreService
     $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
     $currency = UserCurrency::forUser($user);
 
-    $categories = [
-      ['id' => 'hero',
-        'name' => 'Hero',
-        'icon' => 'person-plus',
-        'description' => 'Buka hero baru'],
-      ['id' => 'diamond',
-        'name' => 'Diamond',
-        'icon' => 'gem',
-        'description' => 'Tukar gold dengan diamond'],
-      ['id' => 'upgrade',
-        'name' => 'Upgrade',
-        'icon' => 'arrow-up-circle',
-        'description' => 'Tingkatkan kemampuan'],
-    ];
+    $categories = array_map(fn(StoreCategory $cat) => [
+      "id" => $cat->value,
+      "name" => $cat->label(),
+      "icon" => $cat->icon(),
+      "description" => $cat->description()
+    ], StoreCategory::cases());
 
     return [
       'gold' => $currency->gold,
@@ -96,95 +91,57 @@ class StoreService
   {
     $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
 
-    $upgrades = [
-      [
-        'id' => 'attack_boost',
-        'name' => 'Peningkatan Serangan',
-        'description' => 'Meningkatkan ATK sebesar 5 per level',
-        'cost_type' => 'gold',
-        'base_cost' => 200,
-        'cost_scaling' => 1.5,
-        'current_level' => $progress->getUpgradeLevel('attack_boost'),
-        'max_level' => 10,
-        'effect_per_level' => 5,
-      ],
-      [
-        'id' => 'defense_boost',
-        'name' => 'Peningkatan Pertahanan',
-        'description' => 'Meningkatkan DEF sebesar 3 per level',
-        'cost_type' => 'gold',
-        'base_cost' => 150,
-        'cost_scaling' => 1.5,
-        'current_level' => $progress->getUpgradeLevel('defense_boost'),
-        'max_level' => 10,
-        'effect_per_level' => 3,
-      ],
-      [
-        'id' => 'hp_boost',
-        'name' => 'Peningkatan HP',
-        'description' => 'Meningkatkan HP sebesar 20 per level',
-        'cost_type' => 'diamond',
-        'base_cost' => 50,
-        'cost_scaling' => 1.3,
-        'current_level' => $progress->getUpgradeLevel('hp_boost'),
-        'max_level' => 5,
-        'effect_per_level' => 20,
-      ],
-      [
-        'id' => 'critical_chance',
-        'name' => 'Critical Chance',
-        'description' => 'Kesempatan critical hit +2% per level',
-        'cost_type' => 'diamond',
-        'base_cost' => 30,
-        'cost_scaling' => 1.5,
-        'current_level' => $progress->getUpgradeLevel('critical_chance'),
-        'max_level' => 10,
-        'effect_per_level' => 2,
-      ],
-    ];
+    $upgrades = [];
+    foreach (UpgradeId::cases() as $upgradeId) {
+      $currentLevel = $progress->getUpgradeLevel($upgradeId->value);
+      $nextLevel = $currentLevel + 1;
+      $maxLevel = $upgradeId->maxLevel();
 
-    return array_map(function ($upgrade) {
-      $nextLevel = $upgrade['current_level'] + 1;
-      if ($nextLevel > $upgrade['max_level']) {
-        $upgrade['next_cost'] = null;
-        $upgrade['can_upgrade'] = false;
-      } else {
-        $cost = $upgrade['base_cost'] * pow($upgrade['cost_scaling'], $upgrade['current_level']);
-        $upgrade['next_cost'] = (int) round($cost);
-        $upgrade['can_upgrade'] = true;
+      $nextCost = null;
+      $canUpgrade = false;
+
+      if ($nextLevel <= $maxLevel) {
+        $cost = $upgradeId->baseCost() * pow($upgradeId->costScaling(), $currentLevel);
+        $nextCost = (int) round($cost);
+        $canUpgrade = true; // Nanti pengecekan kecukupan mata uang dilakukan di frontend
       }
-      return $upgrade;
-    },
-      $upgrades);
+
+      $upgrades[] = [
+        'id' => $upgradeId->value,
+        'name' => $upgradeId->label(),
+        'description' => $upgradeId->description(),
+        'cost_type' => $upgradeId->costType()->value,
+        'base_cost' => $upgradeId->baseCost(),
+        'cost_scaling' => $upgradeId->costScaling(),
+        'current_level' => $currentLevel,
+        'max_level' => $maxLevel,
+        'effect_per_level' => $upgradeId->effectPerLevel(),
+        'next_cost' => $nextCost,
+        'can_upgrade' => $canUpgrade,
+      ];
+    }
+
+    return $upgrades;
   }
 
-  public function buyUpgrade(TelegramUser $user,
-    string $upgradeId): array
+  public function buyUpgrade(TelegramUser $user, string $upgradeId): array
   {
-    $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
-    $currency = UserCurrency::forUser($user);
-
-    $upgradesDef = [
-      'attack_boost' => ['cost_type' => 'gold', 'base_cost' => 200, 'cost_scaling' => 1.5, 'max_level' => 10],
-      'defense_boost' => ['cost_type' => 'gold', 'base_cost' => 150, 'cost_scaling' => 1.5, 'max_level' => 10],
-      'hp_boost' => ['cost_type' => 'diamond', 'base_cost' => 50, 'cost_scaling' => 1.3, 'max_level' => 5],
-      'critical_chance' => ['cost_type' => 'diamond', 'base_cost' => 30, 'cost_scaling' => 1.5, 'max_level' => 10],
-    ];
-
-    if (!isset($upgradesDef[$upgradeId])) {
+    $upgrade = UpgradeId::tryFrom($upgradeId);
+    if (!$upgrade) {
       throw new \Exception('Upgrade tidak valid');
     }
 
-    $def = $upgradesDef[$upgradeId];
-    $currentLevel = $progress->getUpgradeLevel($upgradeId);
+    $progress = BattleUserProgress::firstOrCreate(['telegram_user_id' => $user->id]);
+    $currency = UserCurrency::forUser($user);
+    $currentLevel = $progress->getUpgradeLevel($upgrade->value);
 
-    if ($currentLevel >= $def['max_level']) {
+    if ($currentLevel >= $upgrade->maxLevel()) {
       throw new \Exception('Level maksimum tercapai');
     }
 
-    $cost = (int) round($def['base_cost'] * pow($def['cost_scaling'], $currentLevel));
+    $cost = (int) round($upgrade->baseCost() * pow($upgrade->costScaling(), $currentLevel));
 
-    if ($def['cost_type'] === 'gold') {
+    if ($upgrade->costType() === CurrencyType::GOLD) {
       if ($currency->gold < $cost) {
         throw new \Exception('Gold tidak cukup');
       }
@@ -197,7 +154,7 @@ class StoreService
       $currency->save();
     }
 
-    $progress->setUpgradeLevel($upgradeId, $currentLevel + 1);
+    $progress->setUpgradeLevel($upgrade->value, $currentLevel + 1);
 
     return [
       'message' => 'Upgrade berhasil!',

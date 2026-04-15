@@ -3,6 +3,7 @@
 namespace Modules\BattleGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\BattleGame\Enums\HeroType;
 
 class BattleHero extends Model
 {
@@ -21,6 +22,7 @@ class BattleHero extends Model
   ];
 
   protected $casts = [
+    'type' => HeroType::class,
     'unlock_requirements' => 'array',
     'base_aspd' => 'float',
     'base_block_chance' => 'float',
