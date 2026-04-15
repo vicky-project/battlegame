@@ -41,6 +41,69 @@
   const API_BASE = '{{ config("app.url") }}/api/battle';
   let miningInterval = null;
   let overlayTimeout = null;
+  let battleLoadingOverlay = null;
+
+  function showBattleLoading(playerName, playerEmoji, enemyName, enemyEmoji) {
+  // Hapus jika sudah ada
+  if (battleLoadingOverlay) {
+  battleLoadingOverlay.remove();
+  }
+
+  battleLoadingOverlay = document.createElement('div');
+  battleLoadingOverlay.id = 'battle-loading-overlay';
+  battleLoadingOverlay.style.cssText = `
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px; flex-direction: column;
+  `;
+
+  battleLoadingOverlay.innerHTML = `
+  <div style="display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 30px;">
+  <div class="battle-char" style="text-align: center;">
+  <div style="font-size: 64px; animation: attackLeft 1s infinite alternate;">${playerEmoji}</div>
+  <div>${playerName}</div>
+  </div>
+  <div style="font-size: 48px; animation: clash 0.5s infinite;">⚡</div>
+  <div class="battle-char" style="text-align: center;">
+  <div style="font-size: 64px; animation: attackRight 1s infinite alternate;">${enemyEmoji}</div>
+  <div>${enemyName}</div>
+  </div>
+  </div>
+  <div style="margin-top: 20px; font-size: 24px; animation: pulse 1.5s infinite;">
+  ⚔️ Bertarung... ⚔️
+  </div>
+  <style>
+  @keyframes attackLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(20px); }
+  }
+  @keyframes attackRight {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-20px); }
+  }
+  @keyframes clash {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.3; transform: scale(0.8); }
+  }
+  @keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; text-shadow: 0 0 10px gold; }
+  100% { opacity: 0.6; }
+  }
+  </style>
+  `;
+
+  document.body.appendChild(battleLoadingOverlay);
+  }
+
+  function hideBattleLoading() {
+  if (battleLoadingOverlay) {
+  battleLoadingOverlay.remove();
+  battleLoadingOverlay = null;
+  }
+  }
 
   // ======================== HELPER API ========================
   async function apiFetch(endpoint, options = {}) {
@@ -329,12 +392,27 @@
   renderSelectHeroScreen();
   return;
   }
-  tg.showLoading('Bertarung...');
+
+  const selectedHero = state.userHeroes.find(h => h.id === heroId);
+  if(!selectedHero) {
+  tg.showToast('Data hero tidak ditemukan', 'danger');
+  return;
+  }
+
+  showBattleLoading(
+  selectedHero.name,
+  selectedHero.emoji || '👤',
+  'Enemy',
+  '👾'  // bisa diganti dengan emoji default musuh
+  );
+
   try {
   const resp = await apiFetch('/vs-computer', {
   method: 'POST',
   body: JSON.stringify({ user_hero_id: heroId })
   });
+  hideBattleLoading();
+
   if (resp.success) {
   state.battleResult = resp.data.result;
   state.battleResult.exp_gained = resp.data.exp_gained;
@@ -347,9 +425,8 @@
   tg.showToast(resp.message || 'Gagal bertarung', 'danger');
   }
   } catch (error) {
+  hideBattleLoading();
   tg.showToast(error.message || 'Gagal memulai pertarungan', 'danger');
-  } finally {
-  tg.hideLoading();
   }
   }
 
