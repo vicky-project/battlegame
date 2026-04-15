@@ -8,6 +8,7 @@ class BattleEnemy extends Model
 {
   protected $fillable = [
     'name',
+    'emoji',
     'min_level',
     'max_level',
     'base_hp',

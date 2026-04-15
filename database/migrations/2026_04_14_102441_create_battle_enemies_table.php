@@ -10,6 +10,7 @@ return new class extends Migration
     Schema::create('battle_enemies', function (Blueprint $table) {
       $table->id();
       $table->string('name');
+      $table->string('emoji')->nullable();
       $table->integer('min_level')->default(1);
         $table->integer('max_level')->nullable();
         $table->integer('base_hp');

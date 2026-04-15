@@ -11,6 +11,7 @@ class BattleHero extends Model
     'name',
     'description',
     'type',
+    'emoji',
     'base_hp',
     'base_atk',
     'base_def',

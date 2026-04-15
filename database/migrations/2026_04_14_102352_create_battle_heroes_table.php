@@ -12,6 +12,7 @@ return new class extends Migration
       $table->string('name');
       $table->string('description')->nullable();
       $table->string('type')->default('warrior');
+        $table->string("emoji")->nullable();
         $table->integer('base_hp');
         $table->integer('base_atk');
         $table->integer('base_def');
