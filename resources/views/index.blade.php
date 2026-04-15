@@ -26,15 +26,15 @@
 
   // ======================== STATE ========================
   let state = {
-  user: null,               // data user dari /api/battle/user
-  userHeroes: [],           // hero yang dimiliki user
-  selectedHeroId: null,     // ID hero yang sedang dipilih
-  allHeroes: [],            // semua hero dari toko
-  storeData: null,          // data gold, diamond, kategori
-  diamondPackages: [],      // paket diamond
-  upgrades: [],             // data upgrade
-  currentScreen: 'home',    // 'home', 'select-hero', 'battle', 'result', 'store', 'store-hero', 'store-diamond', 'store-upgrade'
-  battleResult: null        // hasil pertarungan terakhir
+  user: null,
+  userHeroes: [],
+  selectedHeroId: null,
+  allHeroes: [],
+  storeData: { gold: 0, diamond: 0 },
+  diamondPackages: [],
+  upgrades: [],
+  currentScreen: 'home',
+  battleResult: null
   };
 
   const API_BASE = '{{ config("app.url") }}/api/battle';
@@ -55,18 +55,33 @@
   state.user = resp.data;
   state.userHeroes = resp.data.heroes;
   state.selectedHeroId = resp.data.selected_hero_id;
-  // Simpan gold/diamond
-  state.storeData = state.storeData || {};
   state.storeData.gold = resp.data.gold;
   state.storeData.diamond = resp.data.diamond;
   }
   }
 
-  // ======================== RENDER UTAMA ========================
+  // ======================== CURRENCY BAR ========================
+  function renderCurrencyBar() {
+  const gold = state.storeData?.gold ?? 0;
+  const diamond = state.storeData?.diamond ?? 0;
+  return `
+  <div class="currency-bar d-flex justify-content-end mb-2">
+  <span class="badge bg-warning text-dark me-2">
+  <i class="bi bi-coin"></i> ${gold}
+  </span>
+  <span class="badge bg-info text-dark">
+  <i class="bi bi-gem"></i> ${diamond}
+  </span>
+  </div>
+  `;
+  }
+
+  // ======================== RENDER HOME ========================
   function renderHomeScreen() {
   state.currentScreen = 'home';
   const user = state.user || {};
   const html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-4">
   <i class="bi bi-controller me-2 fs-3"></i>
   <h1 class="h3 mb-0">Battle Arena</h1>
@@ -80,10 +95,6 @@
   ${user.user_exp || 0}/${user.exp_to_next_level || 100} EXP
   </div>
   </div>
-  <p class="card-text">
-  <i class="bi bi-coin"></i> ${state.storeData?.gold || 0}
-  <i class="bi bi-gem ms-2"></i> ${state.storeData?.diamond || 0}
-  </p>
   <p class="card-text">Total Battle: ${user.total_battles || 0} | Menang: ${user.total_wins || 0}</p>
   </div>
   </div>
@@ -118,10 +129,11 @@
   // ======================== PILIH HERO ========================
   async function renderSelectHeroScreen() {
   state.currentScreen = 'select-hero';
-  await loadUserData(); // refresh
+  await loadUserData();
 
   if (state.userHeroes.length === 0) {
   appEl.innerHTML = `
+  ${renderCurrencyBar()}
   <div class="text-center py-5">
   <span style="font-size: 64px;">😢</span>
   <h4>Kamu belum memiliki hero</h4>
@@ -166,6 +178,7 @@
   });
 
   const html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home">
   <i class="bi bi-arrow-left fs-5"></i>
@@ -193,7 +206,7 @@
   if (resp.success) {
   state.selectedHeroId = parseInt(heroId);
   tg.showToast(resp.message, 'success');
-  await renderSelectHeroScreen(); // refresh
+  await renderSelectHeroScreen();
   } else {
   tg.showToast(resp.message, 'danger');
   }
@@ -219,7 +232,7 @@
   state.battleResult = resp.data.result;
   state.battleResult.exp_gained = resp.data.exp_gained;
   state.battleResult.gold_gained = resp.data.gold_gained;
-  await loadUserData(); // perbarui progress & currency
+  await loadUserData();
   renderBattleResultScreen();
   } else {
   tg.showToast(resp.message || 'Gagal bertarung', 'danger');
@@ -237,6 +250,7 @@
   const isWin = result.winner === result.player_name;
 
   const html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home-result">
   <i class="bi bi-arrow-left fs-5"></i>
@@ -312,19 +326,12 @@
   state.storeData = resp.data;
   const data = resp.data;
   let html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home-store">
   <i class="bi bi-arrow-left fs-5"></i>
   </button>
   <h2 class="h4 mb-0">Toko</h2>
-  </div>
-  <div class="card mb-3">
-  <div class="card-body">
-  <div class="d-flex justify-content-between">
-  <span><i class="bi bi-coin"></i> Gold: ${data.gold}</span>
-  <span><i class="bi bi-gem"></i> Diamond: ${data.diamond}</span>
-  </div>
-  </div>
   </div>
   <div class="row g-3">
   `;
@@ -370,6 +377,7 @@
   if (resp.success) {
   state.allHeroes = resp.data;
   let html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-store">
   <i class="bi bi-arrow-left fs-5"></i>
@@ -433,7 +441,7 @@
   if (resp.success) {
   tg.showToast(resp.message, 'success');
   await loadUserData();
-  renderStoreHero(); // refresh
+  renderStoreHero();
   } else {
   tg.showToast(resp.message, 'danger');
   }
@@ -446,7 +454,7 @@
   document.getElementById('btn-back-store')?.addEventListener('click', renderStoreHome);
   }
 
-  // ======================== TOKO DIAMOND & UPGRADE (ringkas) ========================
+  // ======================== TOKO DIAMOND ========================
   async function renderStoreDiamond() {
   state.currentScreen = 'store-diamond';
   tg.showLoading();
@@ -455,6 +463,7 @@
   if (resp.success) {
   state.diamondPackages = resp.data;
   let html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-store">
   <i class="bi bi-arrow-left fs-5"></i>
@@ -514,6 +523,7 @@
   document.getElementById('btn-back-store')?.addEventListener('click', renderStoreHome);
   }
 
+  // ======================== TOKO UPGRADE ========================
   async function renderStoreUpgrade() {
   state.currentScreen = 'store-upgrade';
   tg.showLoading();
@@ -522,6 +532,7 @@
   if (resp.success) {
   state.upgrades = resp.data;
   let html = `
+  ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-store">
   <i class="bi bi-arrow-left fs-5"></i>
