@@ -488,7 +488,7 @@
   </div>
   <div class="card">
   <div class="card-header"><i class="bi bi-list-ul"></i> Log Pertarungan</div>
-  <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+  <div class="card-body" style="max-height: 200px; overflow-y: auto;">
   <ul class="list-unstyled mb-0 small">
   ${result.log.map(entry => `<li class="mb-1">${entry}</li>`).join('')}
   </ul>
