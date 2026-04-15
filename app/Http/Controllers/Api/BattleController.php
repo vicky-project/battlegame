@@ -164,14 +164,22 @@ class BattleController extends Controller
     $user = $request->user();
     $heroId = $request->input('user_hero_id');
 
+    $hero = BattleUserHero::where('telegram_user_id', $user->id)
+    ->where('id', $heroId)->first();
+    if (!$hero) {
+      return response()->json([
+        "success" => false,
+        "message" => "Hero tidak ditemukan"
+      ], 404);
+    }
+
     BattleUserHero::where('telegram_user_id', $user->id)
     ->update(['is_selected' => false]);
 
-    BattleUserHero::where('telegram_user_id', $user->id)
-    ->where('id', $heroId)
-    ->update(['is_selected' => true]);
+    $hero->is_selected = true;
+    $hero->save();
 
-    return response()->json(['success' => true]);
+    return response()->json(['success' => true, "message" => "Hero dipilih"]);
   }
 
   public function unlockHero(Request $request) {

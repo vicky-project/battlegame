@@ -176,15 +176,31 @@
   `;
   // ...
   appEl.innerHTML = html;
+  appEl.style.display = "block";
+  loadingEl.style.display = "none";
 
   document.querySelectorAll('.select-hero-btn').forEach(btn => {
   btn.addEventListener('click', async (e) => {
   const heroId = e.target.dataset.heroId;
-  // Panggil API untuk set selected hero (akan kita buat endpointnya nanti)
-  // Sementara update state saja
+  tg.showLoading();
+  try {
+  const resp = await apiFetch("/select-hero", {
+  method: "POST",
+  body: JSON.stringify({ user_hero_id: heroId })
+  });
+
+  if(resp.success) {
   state.selectedHeroId = parseInt(heroId);
-  renderSelectHeroScreen(); // refresh
-  tg.showToast('Hero dipilih', 'success');
+  tg.showToast(resp.message || 'Hero dipilih', 'success');
+  await renderSelectHeroScreen(); // refresh
+  } else {
+  tg.showToast(resp.message, 'danger');
+  }
+  } catch(error) {
+  tg.showToast("Gagal memilih hero", 'danger');
+  } finally {
+  tg.hideLoading();
+  }
   });
   });
 
