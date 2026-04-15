@@ -36,6 +36,10 @@ class BattleController extends Controller
       );
       return response()->json(['success' => true, 'data' => $data]);
     } catch (\Exception $e) {
+      \Log::error("Gagal menyerang", [
+        'message' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+      ]);
       return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
     }
   }
