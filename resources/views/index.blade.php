@@ -203,7 +203,7 @@
   </div>
   <div class="d-grid gap-2">
   <button class="btn btn-primary btn-lg" id="btn-start-battle">
-  <i class="bi bi-play-fill"></i> Mulai Bertarung (10💰)
+  <i class="bi bi-play-fill"></i> Mulai Bertarung (${{ config("battlegame.battle_cost") }})
   </button>
   <button class="btn btn-outline-secondary" id="btn-select-hero">
   <i class="bi bi-person-lines-fill"></i> Pilih Hero
