@@ -570,17 +570,20 @@
   <div class="row g-3">
   `;
   state.allHeroes.forEach(hero => {
+  const cost = hero.cost_gold ?? 0;
   let btnHtml = '';
   if (hero.owned) {
-  btnHtml = `<button class="btn btn-secondary w-100" disabled>Sudah Dimiliki</button>`;
+  btnHtml = `<button class="btn btn-secondary w-100" disabled>✅ Sudah Dimiliki</button>`;
   } else if (!hero.can_buy) {
   let reason = '';
-  if (state.user.user_level < hero.required_level) reason = `Butuh Lv.${hero.required_level}`;
-  else if (state.storeData.gold < hero.cost_gold) reason = `Gold kurang`;
-  else reason = 'Tidak memenuhi syarat';
+  if (state.user.user_level < hero.required_level) reason = `🔒 Level ${hero.required_level} diperlukan`;
+  else if (state.storeData.gold < cost) reason = `💰 Gold kurang`;
+  else reason = '❌ Tidak memenuhi syarat';
   btnHtml = `<button class="btn btn-secondary w-100" disabled>${reason}</button>`;
   } else {
-  btnHtml = `<button class="btn btn-primary w-100 buy-hero-btn" data-hero-id="${hero.id}">Beli (${hero.cost_gold} <i class="bi bi-coin"></i>)</button>`;
+  btnHtml = `<button class="btn btn-primary w-100 buy-hero-btn" data-hero-id="${hero.id}">
+  🛒 Beli ${cost > 0 ? `${cost} <i class="bi bi-coin"></i>` : 'Gratis'}
+  </button>`;
   }
 
   html += `
@@ -597,7 +600,10 @@
   <div class="col-6">🛡️ DEF: ${hero.stats.def}</div>
   <div class="col-6">⏱️ Speed: ${hero.stats.aspd}s</div>
   </div>
-  <div class="mb-2 small">Syarat: Level ${hero.required_level}</div>
+  <div class="mb-2 small">
+  <span class="badge bg-info me-1">Lv. ${hero.required_level}</span>
+  <span class="badge bg-warning text-dark">💰 ${cost} Gold</span>
+  </div>
   ${btnHtml}
   </div>
   </div>
