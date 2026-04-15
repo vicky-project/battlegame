@@ -519,57 +519,95 @@
   function renderBattleResultScreen() {
   state.currentScreen = 'result';
   const result = state.battleResult;
-  const isWin = result.winner !== 'Goblin'; // sesuaikan dengan nama musuh
+  const isWin = result.winner === result.player_name; // Bandingkan dengan nama player
+
   const html = `
   <div class="d-flex align-items-center mb-3">
-  <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home-from-result">
-  <i class="bi bi-house fs-5"></i>
+  <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home-result">
+  <i class="bi bi-arrow-left fs-5"></i>
   </button>
   <h2 class="h4 mb-0">Hasil Pertarungan</h2>
   </div>
+
   <div class="card mb-3">
   <div class="card-body text-center">
-  ${isWin ? '<div class="display-1 text-success">🏆</div><h3 class="text-success">Kamu Menang!</h3>'
-  : '<div class="display-1 text-danger">💀</div><h3 class="text-danger">Kamu Kalah</h3>'}
+  ${isWin ?
+  '<div class="display-1 text-success">🏆</div><h3 class="text-success">Kamu Menang!</h3>' :
+  '<div class="display-1 text-danger">💀</div><h3 class="text-danger">Kamu Kalah</h3>'
+  }
   <p>Durasi: ${result.duration} detik</p>
-  <p>EXP diperoleh: +${state.battleResult.exp_gained}</p>
+  <p>EXP diperoleh: +${state.battleResult.exp_gained || 0}</p>
+  <p>Gold diperoleh: +${state.battleResult.gold_gained || 0}</p>
   </div>
   </div>
+
   <div class="row mb-3">
   <div class="col-6">
-  <div class="card"><div class="card-body text-center">
+  <div class="card">
+  <div class="card-body text-center">
   <h5>${result.player_name || 'Hero'}</h5>
   <div class="fs-3">❤️ ${result.player_hp_remaining}</div>
-  </div></div>
+  </div>
+  </div>
   </div>
   <div class="col-6">
-  <div class="card"><div class="card-body text-center">
+  <div class="card">
+  <div class="card-body text-center">
   <h5>${result.enemy_name || 'Musuh'}</h5>
   <div class="fs-3">❤️ ${result.enemy_hp_remaining}</div>
-  </div></div>
   </div>
   </div>
+  </div>
+  </div>
+
   <div class="card">
-  <div class="card-header">Log Pertarungan</div>
+  <div class="card-header">
+  <i class="bi bi-list-ul"></i> Log Pertarungan
+  </div>
   <div class="card-body" style="max-height: 300px; overflow-y: auto;">
   <ul class="list-unstyled mb-0 small">
   ${result.log.map(entry => `<li class="mb-1">${entry}</li>`).join('')}
   </ul>
   </div>
   </div>
+
   <div class="d-grid gap-2 mt-3">
   <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi</button>
   <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
   </div>
   `;
-  appEl.innerHTML = html;
 
-  document.getElementById('btn-battle-again')?.addEventListener('click', () => {
+  appEl.innerHTML = html;
+  appEl.style.display = 'block';
+  loadingEl.style.display = 'none';
+
+  // === EVENT LISTENERS ===
+  const btnBattleAgain = document.getElementById('btn-battle-again');
+  if (btnBattleAgain) {
+  btnBattleAgain.addEventListener('click', () => {
   if (state.selectedHeroId) {
   startBattleVsComputer(state.selectedHeroId);
+  } else {
+  tg.showToast('Tidak ada hero yang dipilih', 'warning');
+  renderSelectHeroScreen();
   }
   });
-  document.getElementById('btn-back-home-from-result')?.addEventListener('click', renderHomeScreen);
+  }
+
+  const btnBackHome = document.getElementById('btn-back-home-from-result');
+  if (btnBackHome) {
+  btnBackHome.addEventListener('click', () => {
+  renderHomeScreen();
+  });
+  }
+
+  // Tombol panah kiri atas (jika ada)
+  const btnBackHomeTop = document.getElementById('btn-back-home-result');
+  if (btnBackHomeTop) {
+  btnBackHomeTop.addEventListener('click', () => {
+  renderHomeScreen();
+  });
+  }
   }
 
   // Initialize
