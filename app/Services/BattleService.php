@@ -114,6 +114,12 @@ class BattleService
     $progress->save();
     $history->save();
 
+    // Cek apakah user naik level
+    $userLevelUp = $progress->wasChanged('level') ? $progress->level : null;
+
+    // Cek apakah hero naik level
+    $heroLevelUp = $userHero->wasChanged('level') ? $userHero->level : null;
+
     return [
       'result' => $result,
       'history_id' => $history->id,
@@ -121,6 +127,10 @@ class BattleService
       'gold_gained' => $goldGained,
       'user_new_level' => $progress->level,
       'user_new_exp' => $progress->exp,
+      'user_level_up' => $userLevelUp,
+      // null atau level baru
+      'hero_level_up' => $heroLevelUp,
+      // null atau level baru
     ];
   }
 

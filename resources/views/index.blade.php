@@ -128,8 +128,59 @@
   }, 2000);
   }
 
+  function showBattleResultOverlay(resultData) {
+  const existing = document.getElementById('battle-result-overlay');
+  if (existing) existing.remove();
+  if (overlayTimeout) clearTimeout(overlayTimeout);
+
+  const isWin = resultData.result.winner === resultData.result.player_name;
+  const overlay = document.createElement('div');
+  overlay.id = 'battle-result-overlay';
+  overlay.style.cssText = `
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px; flex-direction: column;
+  padding: 20px; text-align: center;
+  `;
+
+  let levelUpMessage = '';
+  if (resultData.user_level_up) {
+  levelUpMessage += `<p style="color: #FFD700;">⭐ User naik level ke ${resultData.user_level_up}!</p>`;
+  }
+  if (resultData.hero_level_up) {
+  levelUpMessage += `<p style="color: #FFD700;">🆙 Hero naik level ke ${resultData.hero_level_up}!</p>`;
+  }
+
+  overlay.innerHTML = `
+  <span style="font-size: 80px;">${isWin ? '🏆' : '💀'}</span>
+  <h2 style="color: ${isWin ? '#4CAF50' : '#f44336'};">${isWin ? 'KAMU MENANG!' : 'KAMU KALAH'}</h2>
+  <div style="margin: 20px 0;">
+  <p>⚔️ EXP diperoleh: +${resultData.exp_gained}</p>
+  <p>💰 Gold diperoleh: +${resultData.gold_gained}</p>
+  ${levelUpMessage}
+  </div>
+  <p style="font-size: 14px; color: #aaa;">Tap layar untuk melanjutkan...</p>
+  `;
+  document.body.appendChild(overlay);
+
+  // Tap overlay untuk close
+  overlay.addEventListener('click', () => {
+  overlay.remove();
+  renderBattleResultScreen(); // Lanjut ke layar detail
+  });
+
+  // Auto close setelah 4 detik
+  overlayTimeout = setTimeout(() => {
+  overlay.remove();
+  renderBattleResultScreen();
+  overlayTimeout = null;
+  }, 4000);
+  }
+
   // ======================== RENDER HOME ========================
   function renderHomeScreen() {
+  removeOverlays();
   state.currentScreen = 'home';
   const user = state.user || {};
   const html = `
@@ -177,6 +228,7 @@
 
   // ======================== PILIH HERO ========================
   async function renderSelectHeroScreen() {
+  removeOverlays();
   state.currentScreen = 'select-hero';
   await loadUserData();
 
@@ -287,8 +339,10 @@
   state.battleResult = resp.data.result;
   state.battleResult.exp_gained = resp.data.exp_gained;
   state.battleResult.gold_gained = resp.data.gold_gained;
+  state.battleResult.user_level_up = resp.data.user_level_up;
+  state.battleResult.hero_level_up = resp.data.hero_level_up;
   await loadUserData();
-  renderBattleResultScreen();
+  showBattleResultOverlay(state.battleResult);
   } else {
   tg.showToast(resp.message || 'Gagal bertarung', 'danger');
   }
@@ -296,6 +350,18 @@
   tg.showToast('Gagal memulai pertarungan', 'danger');
   } finally {
   tg.hideLoading();
+  }
+  }
+
+  function removeOverlays() {
+  const overlays = ['mining-claim-overlay', 'battle-result-overlay'];
+  overlays.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  });
+  if (overlayTimeout) {
+  clearTimeout(overlayTimeout);
+  overlayTimeout = null;
   }
   }
 
@@ -501,6 +567,7 @@
 
   // ======================== TOKO UTAMA ========================
   async function renderStoreHome() {
+  removeOverlays();
   state.currentScreen = 'store';
   tg.showLoading();
   try {
