@@ -51,7 +51,7 @@ return [
     |--------------------------------------------------------------------------
     */
   'mining' => [
-    'interval_seconds' => env('MINING_INTERVAL_SECONDS', 3600), // 1 jam
+    'interval_seconds' => env('MINING_INTERVAL_SECONDS'), // 1 jam
     'gold_per_interval' => env('MINING_GOLD', 100),
   ],
 ];

@@ -62,20 +62,22 @@ class UserCurrency extends Model
     $now = now();
     $last = $this->last_mining_at ?? $now;
     $elapsed = $last->diffInSeconds($now);
+    $intervalSeconds = $this->getMiningInterval();
+    $goldPerInterval = $this->getGoldPerInterval();
 
-    if ($elapsed < self::MINING_INTERVAL_SECONDS) {
+    if ($elapsed < $intervalSeconds) {
       return 0; // belum waktunya klaim
     }
 
     // Hitung berapa kali interval penuh terlewati (maksimal 1x untuk mencegah akumulasi berlebihan)
-    $intervals = floor($elapsed / self::MINING_INTERVAL_SECONDS);
+    $intervals = floor($elapsed / $intervalSeconds);
     $intervals = min($intervals, 1); // hanya ambil 1 interval meskipun lama tidak klaim (opsional)
-    $earned = (int)($intervals * self::GOLD_PER_INTERVAL);
+    $earned = (int)($intervals * $goldPerInterval);
 
     if ($earned > 0) {
       $this->gold += $earned;
       // Set last_mining_at ke waktu terakhir yang sesuai dengan interval
-      $this->last_mining_at = $last->addSeconds($intervals * self::MINING_INTERVAL_SECONDS);
+      $this->last_mining_at = $last->addSeconds($intervals * $intervalSeconds);
       $this->save();
     }
 
@@ -90,7 +92,7 @@ class UserCurrency extends Model
     $now = now();
     $last = $this->last_mining_at ?? $now;
     $elapsed = $last->diffInSeconds($now);
-    $remaining = max(0, self::MINING_INTERVAL_SECONDS - $elapsed);
+    $remaining = max(0, $this->getMiningInterval() - $elapsed);
     return (int) $remaining;
   }
 
@@ -100,5 +102,15 @@ class UserCurrency extends Model
   public function canClaimMining(): bool
   {
     return $this->getMiningSecondsRemaining() === 0;
+  }
+
+  public function getMiningInterval(): int
+  {
+    return config('battlegame.mining.interval_seconds', self::MINING_INTERVAL_SECONDS);
+  }
+
+  public function getGoldPerInterval(): int
+  {
+    return config('battlegame.mining.gold_per_interval', self::GOLD_PER_INTERVAL);
   }
 }
