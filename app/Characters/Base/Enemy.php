@@ -29,6 +29,19 @@ abstract class Enemy
   */
   abstract public function specialAbility(): array;
 
+  public function getStatsForLevel(int $level): array
+  {
+    $factor = 1 + $this->levelScalingFactor() * ($level - 1);
+    return [
+      'hp' => round($this->baseHp() * $factor),
+      'atk' => round($this->baseAtk() * $factor),
+      'def' => round($this->baseDef() * $factor),
+      'aspd' => $this->baseAspd(),
+      'block_chance' => min($this->baseBlockChance() + 0.01 * ($level - 1), 0.7),
+      'block_reduction' => $this->baseBlockReduction(),
+    ];
+  }
+
   public function toArray(): array
   {
     return [

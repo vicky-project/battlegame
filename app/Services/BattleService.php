@@ -51,7 +51,7 @@ class BattleService
     }
 
     // 5. Pilih musuh yang sesuai dengan level
-    $enemyClass = $this->pickEnemyForLevel($targetLevel);
+    $enemyClass = $this->pickEnemyForLevelWithHero($targetLevel, $heroClass);
     if (!$enemyClass) {
       throw new \Exception('Tidak ada musuh yang tersedia untuk level ini.');
     }
@@ -158,6 +158,59 @@ class BattleService
 
     // Pilih secara acak
     return $available[array_rand($available)];
+  }
+
+  protected function pickEnemyForLevelWithHero(int $level, Hero $hero): ?Enemy
+  {
+    $allEnemies = CharacterRegistry::getEnemies();
+    $available = [];
+
+    foreach ($allEnemies as $enemy) {
+      if ($enemy->minLevel <= $level && ($enemy->maxLevel === null || $enemy->maxLevel >= $level)) {
+        $available[] = $enemy;
+      }
+    }
+
+    if (empty($available)) {
+      return $allEnemies[array_key_first($allEnemies)] ?? null;
+    }
+
+    // Jika hanya satu, langsung kembalikan
+    if (count($available) === 1) {
+      return $available[0];
+    }
+
+    // Hitung stat hero (bisa ditambah upgrade jika perlu, tapi kita ambil base dulu)
+    $heroAtk = $hero->baseAtk();
+    $heroDef = $hero->baseDef();
+
+    // Hitung skor keseimbangan untuk setiap musuh
+    $scoredEnemies = [];
+    foreach ($available as $enemy) {
+      $enemyStats = $enemy->getStatsForLevel($level); // perlu method getStatsForLevel di Enemy class
+      $enemyAtk = $enemyStats['atk'];
+      $enemyDef = $enemyStats['def'];
+
+      // Skor: semakin kecil selisih (ATK hero vs DEF musuh) dan (DEF hero vs ATK musuh) semakin baik
+      // Kita ingin musuh yang ATK-nya sebanding dengan DEF hero, dan DEF-nya sebanding dengan ATK hero
+      $atkDiff = abs($heroDef - $enemyAtk);
+      $defDiff = abs($heroAtk - $enemyDef);
+      $score = $atkDiff + $defDiff;
+
+      $scoredEnemies[] = [
+        'enemy' => $enemy,
+        'score' => $score,
+      ];
+    }
+
+    // Urutkan berdasarkan skor terendah (paling seimbang)
+    usort($scoredEnemies, fn($a, $b) => $a['score'] <=> $b['score']);
+
+    // Ambil 3 teratas, lalu pilih acak di antaranya agar tidak selalu sama
+    $top = array_slice($scoredEnemies, 0, min(3, count($scoredEnemies)));
+    $selected = $top[array_rand($top)];
+
+    return $selected['enemy'];
   }
 
   /**
