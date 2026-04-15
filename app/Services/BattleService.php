@@ -3,6 +3,7 @@
 namespace Modules\BattleGame\Services;
 
 use Modules\BattleGame\Characters\Base\Enemy;
+use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Characters\CharacterRegistry;
 use Modules\BattleGame\Enums\BattleType;
 use Modules\BattleGame\Enums\BattleResult;;
