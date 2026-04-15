@@ -809,14 +809,13 @@
   const canBuy = state.storeData.gold >= pkg.gold_cost;
   html += `
   <div class="col-6">
-  <div class="card">
-  <div class="card-body text-center">
+  <div class="card h-100">
+  <div class="card-body text-center d-flex flex-column">
   <h5 class="card-title">${pkg.name}</h5>
-  <p><i class="bi bi-gem"></i> ${pkg.diamond}</p>
-  <p>${pkg.gold_cost} <i class="bi bi-coin"></i></p>
-  <button class="btn ${canBuy ? 'btn-primary' : 'btn-secondary'} w-100 buy-diamond-btn"
+  <p class="display-6 my-2"><i class="bi bi-gem"></i> ${pkg.diamond}</p>
+  <button class="btn ${canBuy ? 'btn-primary' : 'btn-secondary'} mt-auto w-100 buy-diamond-btn"
   data-package-id="${pkg.id}" ${!canBuy ? 'disabled' : ''}>
-  Beli
+  Beli ${pkg.gold_cost} <i class="bi bi-coin"></i>
   </button>
   </div>
   </div>
@@ -843,7 +842,7 @@
   tg.showToast(resp.data.message, 'success');
   state.storeData.gold = resp.data.new_gold;
   state.storeData.diamond = resp.data.new_diamond;
-  renderStoreDiamond(); // Refresh
+  renderStoreDiamond();
   } else {
   tg.showToast(resp.message, 'danger');
   }
