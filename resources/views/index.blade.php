@@ -133,7 +133,7 @@
   if (existing) existing.remove();
   if (overlayTimeout) clearTimeout(overlayTimeout);
 
-  const isWin = resultData.result.winner === resultData.result.player_name;
+  const isWin = resultData.winner === resultData.player_name;
   const overlay = document.createElement('div');
   overlay.id = 'battle-result-overlay';
   overlay.style.cssText = `
