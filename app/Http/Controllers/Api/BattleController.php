@@ -5,6 +5,7 @@ namespace Modules\BattleGame\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\BattleGame\Models\BattleHistory;
+use Modules\BattleGame\Models\UserCurrency;
 use Modules\BattleGame\Services\BattleService;
 use Modules\BattleGame\Services\HeroService;
 use Modules\BattleGame\Services\StoreService;
