@@ -143,7 +143,7 @@
   <span class="badge bg-info text-dark me-2" style="cursor:pointer;" id="btn-diamond-bar">
   <i class="bi bi-gem"></i> ${diamond}
   </span>
-  <span class="badge bg-primary" style="cursor:pointer;" id="btn-store-bar">
+  <span class="badge bg-primary me-2" style="cursor:pointer;" id="btn-store-bar">
   <i class="bi bi-shop"></i>
   </span>
   <span class="badge bg-secondary" style="cursor: pointer;" id="btn-help-bar">
