@@ -418,7 +418,7 @@
   </div>
   </div>
   <div class="d-grid gap-2 mt-3">
-  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi</button>
+  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (${{ config("battlegame.battle_cost") }})</button>
   <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
   </div>
   `;
