@@ -62,8 +62,8 @@ class UserCurrency extends Model
     $now = now();
     $last = $this->last_mining_at ?? $now;
     $elapsed = $last->diffInSeconds($now);
-    $intervalSeconds = $this->getMiningInterval();
-    $goldPerInterval = $this->getGoldPerInterval();
+    $intervalSeconds = self::getMiningInterval();
+    $goldPerInterval = self::getGoldPerInterval();
 
     if ($elapsed < $intervalSeconds) {
       return 0; // belum waktunya klaim
@@ -104,12 +104,12 @@ class UserCurrency extends Model
     return $this->getMiningSecondsRemaining() === 0;
   }
 
-  public function getMiningInterval(): int
+  public static function getMiningInterval(): int
   {
     return config('battlegame.mining.interval_seconds', self::MINING_INTERVAL_SECONDS);
   }
 
-  public function getGoldPerInterval(): int
+  public static function getGoldPerInterval(): int
   {
     return config('battlegame.mining.gold_per_interval', self::GOLD_PER_INTERVAL);
   }

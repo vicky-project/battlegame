@@ -135,7 +135,7 @@ class BattleController extends Controller
         'earned' => $earned,
         'next_claim_seconds' => $currency->getMiningSecondsRemaining(),
         'can_claim' => $currency->canClaimMining(),
-        'gold_per_interval' => UserCurrency::GOLD_PER_INTERVAL,
+        'gold_per_interval' => UserCurrency::getGoldPerInterval(),
       ]
     ]);
   }
