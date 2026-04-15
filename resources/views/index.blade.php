@@ -146,6 +146,9 @@
   <span class="badge bg-primary" style="cursor:pointer;" id="btn-store-bar">
   <i class="bi bi-shop"></i>
   </span>
+  <span class="badge bg-secondary" style="cursor: pointer;" id="btn-help-bar">
+  <i class="bi bi-question-circle"></i>
+  </span>
   </div>
   </div>
   `;
@@ -159,6 +162,8 @@
   renderMiningScreen();
   } else if (e.target.closest('#btn-diamond-bar')) {
   renderStoreDiamond();
+  } else if (e.target.closest('#btn-help-bar')) {
+  renderHelpScreen();
   }
   });
   }
@@ -929,6 +934,75 @@
   });
 
   document.getElementById('btn-back-store')?.addEventListener('click', renderStoreHome);
+  }
+
+  function renderHelpScreen() {
+  state.currentScreen = 'help';
+  const html = `
+  ${renderCurrencyBar()}
+  <div class="d-flex align-items-center mb-3">
+  <button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home">
+  <i class="bi bi-arrow-left fs-5"></i>
+  </button>
+  <h2 class="h4 mb-0">Pusat Bantuan</h2>
+  </div>
+  <div class="card">
+  <div class="card-body">
+  <h5>🎮 Cara Bermain</h5>
+  <p>Battle Arena adalah game pertarungan otomatis di mana kamu mengendalikan hero melawan musuh komputer.</p>
+  <ol class="small">
+  <li><strong>Pilih Hero</strong> - Pilih hero yang sudah kamu miliki dari menu "Pilih Hero".</li>
+  <li><strong>Mulai Bertarung</strong> - Klik "Mulai Bertarung" untuk melawan musuh secara otomatis. Biaya: 10 gold.</li>
+  <li><strong>Hasil Pertarungan</strong> - Dapatkan EXP dan gold jika menang. Jika kalah, tetap dapat sedikit hadiah.</li>
+  <li><strong>Tingkatkan Hero</strong> - EXP akan menaikkan level hero, meningkatkan HP, ATK, DEF.</li>
+  </ol>
+
+  <h5>💰 Mata Uang</h5>
+  <ul class="small">
+  <li><strong>Gold</strong> - Diperoleh dari battle, mining, atau kemenangan. Digunakan untuk unlock hero, upgrade, dan beli diamond.</li>
+  <li><strong>Diamond</strong> - Mata uang premium, dibeli dengan gold atau didapat dari event. Untuk upgrade spesial.</li>
+  </ul>
+
+  <h5>⛏️ Mining Gold</h5>
+  <p class="small">Gold dapat ditambang otomatis setiap jam. Klik ikon 💰 di atas untuk klaim.</p>
+
+  <h5>🛒 Toko</h5>
+  <ul class="small">
+  <li><strong>Beli Hero</strong> - Hero baru memiliki skill pasif unik. Syarat level & gold.</li>
+  <li><strong>Beli Diamond</strong> - Tukar gold dengan diamond.</li>
+  <li><strong>Upgrade</strong> - Tingkatkan ATK, DEF, HP, Critical Chance menggunakan gold atau diamond.</li>
+  </ul>
+
+  <h5>⚔️ Pertarungan</h5>
+  <ul class="small">
+  <li>Setiap serangan memiliki peluang critical (damage 1.5x), block (mengurangi damage), dan miss.</li>
+  <li>Hero memiliki skill pasif (misal Warrior: damage reduction saat HP rendah).</li>
+  <li>Musuh memiliki skill spesial (poison, lifesteal, stun, dll).</li>
+  <li>Pilih hero yang sesuai dengan gaya bermainmu!</li>
+  </ul>
+
+  <h5>📈 Level & EXP</h5>
+  <p class="small">User level meningkat seiring EXP. EXP didapat dari battle. Level user mempengaruhi unlock hero dan level musuh.</p>
+  <p class="small">Hero level naik dengan EXP terpisah, meningkatkan statistiknya.</p>
+
+  <h5>❓ Tips</h5>
+  <ul class="small">
+  <li>Kumpulkan gold dengan mining dan battle rutin.</li>
+  <li>Fokus upgrade ATK/DEF terlebih dahulu.</li>
+  <li>Jangan lupa klaim mining setiap jam!</li>
+  <li>Jika kesulitan, coba lawan musuh level lebih rendah dengan memilih level secara manual (fitur mendatang).</li>
+  </ul>
+  </div>
+  </div>
+  <div class="d-grid mt-3">
+  <button class="btn btn-primary" id="btn-back-home-from-help">Kembali ke Beranda</button>
+  </div>
+  `;
+  appEl.innerHTML = html;
+  appEl.style.display = 'block';
+  loadingEl.style.display = 'none';
+  document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
+  document.getElementById('btn-back-home-from-help')?.addEventListener('click', renderHomeScreen);
   }
 
   // ======================== INISIALISASI ========================
