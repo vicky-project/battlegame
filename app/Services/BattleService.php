@@ -27,7 +27,7 @@ class BattleService
   {
     $currency = UserCurrency::forUser($user);
     $battleCost = 10;
-    if ($currency->deductGold($battleCost)) {
+    if (!$currency->deductGold($battleCost)) {
       throw new \Exception("Gold tidak cukup untuk bertarung");
     }
     // 1. Ambil hero milik user
