@@ -21,6 +21,7 @@ return new class extends Migration
         $table->float('base_block_reduction')->default(0.5);
         $table->json('unlock_requirements')->nullable(); // misal: {"level":5, "achievement":"..."}
         $table->boolean('is_active')->default(true);
+        $table->string('passive_skill')->nullable();
         $table->timestamps();
       });
     }
