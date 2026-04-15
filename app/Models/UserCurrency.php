@@ -19,12 +19,6 @@ class UserCurrency extends Model
     'last_mining_at' => 'datetime',
   ];
 
-  // Interval mining dalam detik (1 jam)
-  public const MINING_INTERVAL_SECONDS = 3600;
-
-  // Gold yang dihasilkan per interval
-  public const GOLD_PER_INTERVAL = 60;
-
   public function telegramUser() {
     return $this->belongsTo(TelegramUser::class);
   }
@@ -106,11 +100,11 @@ class UserCurrency extends Model
 
   public function getMiningInterval(): int
   {
-    return config('battlegame.mining.interval_seconds', self::MINING_INTERVAL_SECONDS);
+    return config('battlegame.mining.interval_seconds');
   }
 
   public function getGoldPerInterval(): int
   {
-    return config('battlegame.mining.gold_per_interval', self::GOLD_PER_INTERVAL);
+    return config('battlegame.mining.gold_per_interval');
   }
 }
