@@ -274,8 +274,7 @@
   if (!resp.success) return;
   state.storeData = resp.data;
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Toko</h2></div>
+  ${renderHeader('btn-back-home', 'Toko')}
   <div class="row g-3">${resp.data.categories.map(c=>`<div class="col-6"><div class="card h-100 store-category-card" data-category="${c.id}"><div class="card-body text-center"><i class="bi bi-${c.icon} fs-1"></i><h5 class="card-title">${c.name}</h5><p class="card-text small">${c.description}</p></div></div></div>`).join('')}</div>
   `);
   document.querySelectorAll('.store-category-card').forEach(c=>c.addEventListener('click', ()=> ({hero:renderStoreHero, diamond:renderStoreDiamond, upgrade:renderStoreUpgrade})[c.dataset.category]()));
@@ -290,8 +289,7 @@
   if (!resp.success) return;
   state.allHeroes = resp.data;
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-store"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Beli Hero</h2></div>
+  ${renderHeader('btn-back-store', 'Beli Hero')}
   <div class="row g-3">${state.allHeroes.map(h=>{const cost=h.cost_gold;let btn='';if(h.owned)btn='<button class="btn btn-secondary w-100" disabled>✅ Sudah Dimiliki</button>';else if(!h.can_buy){let r='';if(state.user.user_level<h.required_level)r=`🔒 Level ${h.required_level}`;else if(state.storeData.gold<cost)r='💰 Gold kurang';else r='❌ Tidak memenuhi syarat';btn=`<button class="btn btn-secondary w-100" disabled>${r}</button>`;}else btn=`<button class="btn btn-primary w-100 buy-hero-btn" data-hero-id="${h.id}">🛒 Beli ${cost?cost+' <i class="bi bi-coin"></i>':'Gratis'}</button>`;return`<div class="col-12"><div class="card"><div class="card-body d-flex"><span style="font-size:48px;margin-right:16px;">${h.emoji}</span><div class="flex-grow-1"><h5>${h.name} (${h.type})</h5><p>${h.description}</p><div class="row small"><div class="col-6">❤️ ${h.stats.hp}</div><div class="col-6">⚔️ ${h.stats.atk}</div><div class="col-6">🛡️ ${h.stats.def}</div><div class="col-6">⏱️ ${h.stats.aspd}s</div></div><div class="mb-2 small"><span class="badge bg-info">Lv.${h.required_level}</span><span class="badge bg-warning text-dark">💰 ${cost} Gold</span></div>${btn}</div></div></div></div>`}).join('')}</div>
   `);
   document.querySelectorAll('.buy-hero-btn').forEach(b=>b.addEventListener('click',async(e)=>{const hid=b.dataset.heroId;tg.showLoading();try{const r=await apiFetch('/store/buy-hero',{method:'POST',body:JSON.stringify({hero_id:hid})});r.success?(tg.showToast(r.message,'success'),await loadUserData(),renderStoreHero()):tg.showToast(r.message,'danger');}finally{tg.hideLoading();}}));
@@ -322,8 +320,7 @@
   if (!resp.success) return;
   state.upgrades = resp.data;
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-store"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Upgrade</h2></div>
+  ${renderHeader('btn-back-store', 'Upgrade')}
   <div class="row g-3">${state.upgrades.map(u=>{const cost=u.next_cost,canBuy=u.can_upgrade&&((u.cost_type==='gold'&&state.storeData.gold>=cost)||(u.cost_type==='diamond'&&state.storeData.diamond>=cost));return`<div class="col-12"><div class="card"><div class="card-body"><h5>${u.name}</h5><p>${u.description}</p><p>Level: ${u.current_level}/${u.max_level}</p><button class="btn ${canBuy?'btn-primary':'btn-secondary'} w-100 buy-upgrade-btn" data-upgrade-id="${u.id}" ${!canBuy?'disabled':''}>${u.current_level>=u.max_level?'Maksimal':`Level ${u.current_level+1} (${cost} ${u.cost_type==='gold'?'💰':'💎'})`}</button></div></div></div>`}).join('')}</div>
   `);
   document.querySelectorAll('.buy-upgrade-btn').forEach(b=>b.addEventListener('click',async(e)=>{const uid=b.dataset.upgradeId;tg.showLoading();try{const r=await apiFetch('/store/buy-upgrade',{method:'POST',body:JSON.stringify({upgrade_id:uid})});r.success?(tg.showToast(r.data.message,'success'),state.storeData.gold=r.data.new_gold,state.storeData.diamond=r.data.new_diamond,renderStoreUpgrade()):tg.showToast(r.message,'danger');}finally{tg.hideLoading();}}));
@@ -335,8 +332,7 @@
   function renderHelpScreen() {
   stopMiningPreviewTimer();
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Pusat Bantuan</h2></div>
+  ${renderHeader('btn-back-home', 'Pusat Bantuan')}
   <div class="card"><div class="card-body">
   <h5>🎮 Cara Bermain</h5><p>Battle Arena adalah game pertarungan otomatis di mana kamu mengendalikan hero melawan musuh komputer.</p><ol class="small"><li><strong>Pilih Hero</strong> - Pilih hero yang sudah kamu miliki dari menu "Pilih Hero".</li><li><strong>Mulai Bertarung</strong> - Klik "Mulai Bertarung" untuk melawan musuh secara otomatis. Biaya: ${BATTLE_COST} gold.</li><li><strong>Hasil Pertarungan</strong> - Dapatkan EXP dan gold jika menang. Jika kalah, tetap dapat sedikit hadiah.</li><li><strong>Tingkatkan Hero</strong> - EXP akan menaikkan level hero, meningkatkan HP, ATK, DEF.</li></ol>
   <h5>💰 Mata Uang</h5><ul class="small"><li><strong>Gold</strong> - Diperoleh dari battle, mining, atau kemenangan.</li><li><strong>Diamond</strong> - Mata uang premium, untuk upgrade spesial.</li></ul>
