@@ -60,7 +60,7 @@ class BattleController extends Controller
         'enemy_emoji' => $enemyClass?->emoji ?? '👾',
         'result' => $history->result->value,
         'exp_gained' => $history->exp_gained,
-        'gold_gained' => $history->rewards_gold ?? 0, // pastikan kolom ada atau dari battle_log
+        'gold_gained' => $history->gold_gained ?? 0, // pastikan kolom ada atau dari battle_log
         'player_hp_remaining' => $history->player_hp_remaining,
         'enemy_hp_remaining' => $history->enemy_hp_remaining,
         'created_at' => $history->created_at->toISOString(),

@@ -91,7 +91,6 @@ class BattleService
       $progress->total_wins++;
       $expGained = $rewards['exp'];
       $goldGained = $rewards['gold'];
-      $history->gold_gained = $goldGained;
       $progress->addExp($expGained);
       $history->exp_gained = $expGained;
       $currency->addGold($goldGained);
@@ -108,13 +107,13 @@ class BattleService
       $progress->total_losses++;
       $expGained = max(5, (int)($rewards['exp'] * 0.2));
       $goldGained = max(1, (int)($rewards['gold'] * 0.2));
-      $history->gold_gained = $goldGained;
       $progress->addExp($expGained);
       $history->exp_gained = $expGained;
       $currency->addGold($goldGained);
     }
 
     $progress->save();
+    $history->gold_gained = $goldGained;
     $history->save();
 
     // Cek apakah user naik level
