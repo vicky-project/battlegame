@@ -199,13 +199,14 @@
   showBattleLoading(hero.name, hero.emoji||'👤', 'Musuh', '👾');
   try {
   const resp = await apiFetch('/vs-computer', {method:'POST', body:JSON.stringify({user_hero_id:heroId})});
-  hideBattleLoading();
   if(resp.success) {
   state.battleResult = {...resp.data.result, exp_gained: resp.data.exp_gained, gold_gained: resp.data.gold_gained, user_level_up: resp.data.user_level_up, hero_level_up: resp.data.hero_level_up};
   await loadUserData();
-  showBattleResultOverlay();
   } else tg.showToast(resp.message||'Gagal bertarung','danger');
   } catch(e) { hideBattleLoading(); tg.showToast(e.message||'Gagal','danger'); }
+  } finally {
+  hideBattleLoading();
+  showBattleResultOverlay();
   }
 
   function showBattleResultOverlay() {
