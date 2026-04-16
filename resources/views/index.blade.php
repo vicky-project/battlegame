@@ -389,19 +389,21 @@
   return `
   <div class="card mb-2">
   <div class="card-body p-3">
-  <!-- Baris 1: Hero, VS, Musuh, Badge -->
-  <div class="d-flex align-items-start justify-content-between">
-  <div class="d-flex align-items-end">
+  <!-- Baris 1: Hero, VS + Badge, Musuh -->
+  <div class="d-flex align-items-start">
   <!-- Hero Column -->
   <div class="text-center" style="min-width: 70px;">
   <div style="font-size: 32px;">${h.hero_emoji}</div>
   <div class="fw-bold">${h.hero_name}</div>
   <div class="small">❤️ ${h.player_hp_remaining}</div>
   </div>
-  <!-- VS -->
-  <div class="mx-2 pb-2">
+
+  <!-- VS + Badge Column -->
+  <div class="d-flex flex-column align-items-center mx-2" style="min-width: 60px;">
   <span style="font-size: 20px;">⚔️</span>
+  <span class="badge ${isWin ? 'bg-success' : 'bg-danger'} mt-1">${isWin ? 'MENANG' : 'KALAH'}</span>
   </div>
+
   <!-- Enemy Column -->
   <div class="text-center" style="min-width: 70px;">
   <div style="font-size: 32px;">${h.enemy_emoji || '👾'}</div>
@@ -409,11 +411,9 @@
   <div class="small">❤️ ${h.enemy_hp_remaining}</div>
   </div>
   </div>
-  <!-- Badge -->
-  <span class="badge ${isWin ? 'bg-success' : 'bg-danger'}">${isWin ? 'MENANG' : 'KALAH'}</span>
-  </div>
+
   <!-- Baris 2: Waktu, EXP, Gold -->
-  <div class="d-flex justify-content-between align-items-center mt-2">
+  <div class="d-flex justify-content-between align-items-center mt-3">
   <div class="small text-muted">${dateStr}, ${timeStr}</div>
   <div class="small">
   <span class="me-3">⚔️ +${h.exp_gained} EXP</span>
