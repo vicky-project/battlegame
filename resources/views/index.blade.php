@@ -391,12 +391,14 @@
   <div class="card-body p-3">
   <div class="d-flex justify-content-between align-items-start">
   <div class="d-flex align-items-center">
-  <span style="font-size:32px;margin-right:8px;">${h.hero_emoji}</span>
-  <span style="font-size:24px;margin-right:8px;">⚔️</span>
-  <span style="font-size:32px;margin-right:12px;">${h.enemy_emoji || '👾'}</span>
-  <div>
-  <div class="fw-bold">${h.hero_name} vs ${h.enemy_name}</div>
-  <div class="small text-muted">${dateStr}, ${timeStr}</div>
+  <div class="text-center me-3">
+  <span style="font-size:32px;">${h.hero_emoji}</span>
+  <div class="small fw-bold">${h.hero_name}</div>
+  </div>
+  <span style="font-size:20px;margin:0 4px;">⚔️</span>
+  <div class="text-center ms-2">
+  <span style="font-size:32px;">${h.enemy_emoji || '👾'}</span>
+  <div class="small fw-bold">${h.enemy_name}</div>
   </div>
   </div>
   <div class="text-end">
@@ -405,9 +407,12 @@
   <div class="small">💰 +${h.gold_gained} Gold</div>
   </div>
   </div>
-  <div class="row mt-2 small">
-  <div class="col-6">❤️ Sisa HP: ${h.player_hp_remaining}</div>
-  <div class="col-6">👾 Sisa HP: ${h.enemy_hp_remaining}</div>
+  <div class="d-flex justify-content-between align-items-center mt-2">
+  <div class="small text-muted">${dateStr}, ${timeStr}</div>
+  <div class="small">
+  <span class="me-3">❤️ ${h.player_hp_remaining}</span>
+  <span>👾 ${h.enemy_hp_remaining}</span>
+  </div>
   </div>
   </div>
   </div>
