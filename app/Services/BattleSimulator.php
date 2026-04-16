@@ -251,7 +251,7 @@ class BattleSimulator
     // 7. Counterattack
     $counterMessage = '';
     if ($blocked && $defenderHp > 0) {
-      $counterChance = self::COUNTER_CHANCE + ($defender["counter_chance_bonus"] ??0)
+      $counterChance = self::COUNTER_CHANCE + ($defender["counter_chance_bonus"] ??0);
       if (mt_rand(1, 100) <= $counterChance * 100) {
         $counterDamage = (int) max(1, round(($defender['atk'] * self::COUNTER_DAMAGE_RATIO) - $attacker['def']));
         $attackerHp -= $counterDamage;
