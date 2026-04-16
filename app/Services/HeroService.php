@@ -103,8 +103,12 @@ class HeroService
           'atk' => $hero->baseAtk(),
           'def' => $hero->baseDef(),
           'aspd' => $hero->baseAspd(),
+          'accuracy' => $hero->baseAccuracy(),
+          'evasion' => $hero->baseEvasion(),
           'block_chance' => $hero->baseBlockChance(),
-          'block_reduction' => $hero->baseBlockReduction(),
+          'crit_chance_bonus' => 0,
+          // base 0, nanti ditambah upgrade
+          'counter_chance_bonus' => 0,
         ],
         'required_level' => $requiredLevel,
         'cost_gold' => $costGold,
