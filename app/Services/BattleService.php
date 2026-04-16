@@ -3,10 +3,7 @@
 namespace Modules\BattleGame\Services;
 
 use Modules\BattleGame\Characters\Base\Enemy;
-use Modules\BattleGame\Characters\Base\Hero;
 use Modules\BattleGame\Characters\CharacterRegistry;
-use Modules\BattleGame\Enums\BattleType;
-use Modules\BattleGame\Enums\BattleResult;;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
 use Modules\BattleGame\Models\BattleUserProgress;
@@ -15,15 +12,6 @@ use Modules\Telegram\Models\TelegramUser;
 
 class BattleService
 {
-  /**
-  * Memulai pertarungan melawan komputer.
-  *
-  * @param TelegramUser $user
-  * @param int $userHeroId
-  * @param int|null $enemyLevel
-  * @return array
-  * @throws \Exception
-  */
   public function startVsComputer(TelegramUser $user, int $userHeroId, ?int $enemyLevel = null): array
   {
     // 1. Biaya battle
@@ -65,17 +53,11 @@ class BattleService
     $result = $simulator->runSimulation();
     $isWin = $result['winner'] === $playerStats['name'];
 
-    // 8. Simpan musuh ke database (untuk relasi history)
-    $enemyDb = BattleEnemy::firstOrCreate(
-      ['name' => $enemyClass->name],
-      $enemyClass->toArray()
-    );
-
-    // 9. Simpan riwayat
+    // 8. Simpan riwayat (gunakan enemy_id string, BUKAN model)
     $history = BattleHistory::create([
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
-      'enemy_id' => $enemyClass->id,
+      'enemy_id' => $enemyClass->id, // ⬅️ string ID, bukan foreign key
       'battle_type' => 'vs_computer',
       'result' => $isWin ? 'win' : 'lose',
       'battle_log' => $result['log'],
@@ -84,7 +66,7 @@ class BattleService
       'duration' => $result['duration'],
     ]);
 
-    // 10. Update progress & reward
+    // 9. Update progress & reward
     $progress->total_battles++;
     $rewards = $enemyClass->rewards;
     $expGained = 0;
@@ -135,33 +117,7 @@ class BattleService
     ];
   }
 
-  /**
-  * Memilih musuh dari registry berdasarkan level user.
-  *
-  * @param int $level
-  * @return Enemy|null
-  */
-  protected function pickEnemyForLevel(int $level): ?Enemy
-  {
-    $enemies = CharacterRegistry::getEnemies();
-    $available = [];
-
-    foreach ($enemies as $enemy) {
-      if ($enemy->minLevel <= $level && ($enemy->maxLevel === null || $enemy->maxLevel >= $level)) {
-        $available[] = $enemy;
-      }
-    }
-
-    if (empty($available)) {
-      // Fallback: kembalikan musuh pertama yang ada
-      return $enemies[array_key_first($enemies)] ?? null;
-    }
-
-    // Pilih secara acak
-    return $available[array_rand($available)];
-  }
-
-  protected function pickEnemyForLevelWithHero(int $level, Hero $hero): ?Enemy
+  protected function pickEnemyForLevelWithHero(int $level, $heroClass): ?Enemy
   {
     $allEnemies = CharacterRegistry::getEnemies();
     $available = [];
@@ -176,53 +132,33 @@ class BattleService
       return $allEnemies[array_key_first($allEnemies)] ?? null;
     }
 
-    // Jika hanya satu, langsung kembalikan
     if (count($available) === 1) {
       return $available[0];
     }
 
-    // Hitung stat hero (bisa ditambah upgrade jika perlu, tapi kita ambil base dulu)
-    $heroAtk = $hero->baseAtk();
-    $heroDef = $hero->baseDef();
+    // Hitung skor keseimbangan (seperti yang sudah dijelaskan sebelumnya)
+    $heroAtk = $heroClass->baseAtk();
+    $heroDef = $heroClass->baseDef();
 
-    // Hitung skor keseimbangan untuk setiap musuh
     $scoredEnemies = [];
     foreach ($available as $enemy) {
-      $enemyStats = $enemy->getStatsForLevel($level); // perlu method getStatsForLevel di Enemy class
-      $enemyAtk = $enemyStats['atk'];
-      $enemyDef = $enemyStats['def'];
-
-      // Skor: semakin kecil selisih (ATK hero vs DEF musuh) dan (DEF hero vs ATK musuh) semakin baik
-      // Kita ingin musuh yang ATK-nya sebanding dengan DEF hero, dan DEF-nya sebanding dengan ATK hero
-      $atkDiff = abs($heroDef - $enemyAtk);
-      $defDiff = abs($heroAtk - $enemyDef);
+      $enemyStats = $enemy->getStatsForLevel($level);
+      $atkDiff = abs($heroDef - $enemyStats['atk']);
+      $defDiff = abs($heroAtk - $enemyStats['def']);
       $score = $atkDiff + $defDiff;
-
-      $scoredEnemies[] = [
-        'enemy' => $enemy,
-        'score' => $score,
-      ];
+      $scoredEnemies[] = ['enemy' => $enemy,
+        'score' => $score];
     }
 
-    // Urutkan berdasarkan skor terendah (paling seimbang)
     usort($scoredEnemies, fn($a, $b) => $a['score'] <=> $b['score']);
-
-    // Ambil 3 teratas, lalu pilih acak di antaranya agar tidak selalu sama
     $top = array_slice($scoredEnemies, 0, min(3, count($scoredEnemies)));
     $selected = $top[array_rand($top)];
 
     return $selected['enemy'];
   }
 
-  /**
-  * Hitung exp yang dibutuhkan hero untuk naik level.
-  *
-  * @param int $currentLevel
-  * @return int
-  */
   protected function getHeroExpForNextLevel(int $currentLevel): int
   {
-    // Formula progresif untuk hero: 100 * level^2
     return 100 * $currentLevel * $currentLevel;
   }
 }
