@@ -203,10 +203,11 @@
   state.battleResult = {...resp.data.result, exp_gained: resp.data.exp_gained, gold_gained: resp.data.gold_gained, user_level_up: resp.data.user_level_up, hero_level_up: resp.data.hero_level_up};
   await loadUserData();
   } else tg.showToast(resp.message||'Gagal bertarung','danger');
-  } catch(e) { hideBattleLoading(); tg.showToast(e.message||'Gagal','danger'); }
+  } catch(e) { hideBattleLoading(); tg.showToast(e.message||'Gagal','danger');
   } finally {
   hideBattleLoading();
   showBattleResultOverlay();
+  }
   }
 
   function showBattleResultOverlay() {
