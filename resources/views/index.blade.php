@@ -449,7 +449,7 @@
   document.getElementById('history-list-container')?.addEventListener('click', e => {
   const btn = e.target.closest('.view-log-btn');
   if(!btn) return;
-  const index = parseInt(btn.dataset.index):
+  const index = parseInt(btn.dataset.index);
   const logData = state.historyList[index]?.log || [];
   showLogViewer(logData);
   });
