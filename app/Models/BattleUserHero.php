@@ -49,10 +49,13 @@ class BattleUserHero extends Model
     // Scaling per level: +10% per level di atas 1
     $levelMultiplier = 1 + 0.1 * ($level - 1);
 
+    $finalHp = round($hero->baseHp() * $levelMultiplier) + $hpBonus;
+
     return [
       'name' => $hero->name,
       'emoji' => $hero->emoji,
-      'hp' => round($hero->baseHp() * $levelMultiplier) + $hpBonus,
+      'hp' => $finalHp,
+      'max_hp' => $finalHp,
       'atk' => round($hero->baseAtk() * $levelMultiplier) + $atkBonus,
       'def' => round($hero->baseDef() * $levelMultiplier) + $defBonus,
       'aspd' => $hero->baseAspd(),
