@@ -4,6 +4,8 @@ namespace Modules\BattleGame\Services;
 
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Characters\CharacterRegistry;
+use Modules\BattleGame\Enums\BattleResult;
+use Modules\BattleGame\Enums\BattleType;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
 use Modules\BattleGame\Models\BattleUserProgress;
@@ -31,7 +33,7 @@ class BattleService
       ['telegram_user_id' => $user->id],
       ['level' => 1, 'exp' => 0, 'total_battles' => 0, 'total_wins' => 0, 'total_losses' => 0]
     );
-    $targetLevel = $enemyLevel ?? $progress->level;
+    $targetLevel = $enemyLevel ?? $userHero->level;
 
     // 4. Hero class dari registry
     $heroClass = CharacterRegistry::getHero($userHero->hero_id);
@@ -57,9 +59,9 @@ class BattleService
     $history = BattleHistory::create([
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
-      'enemy_id' => $enemyClass->id, // ⬅️ string ID, bukan foreign key
-      'battle_type' => 'vs_computer',
-      'result' => $isWin ? 'win' : 'lose',
+      'enemy_id' => $enemyClass->id,
+      'battle_type' => BattleType::VS_COMPUTER,
+      'result' => $isWin ? BattleResult::WIN : BattleResult::LOSE,
       'battle_log' => $result['log'],
       'player_hp_remaining' => $result['player_hp_remaining'],
       'enemy_hp_remaining' => $result['enemy_hp_remaining'],
