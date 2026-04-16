@@ -115,7 +115,7 @@
   const expPercent = (user.user_exp / user.exp_to_next_level * 100) || 0;
 
   setAppContent(`
-  ${renderCurrencyBar()}
+  ${renderHeader(null)}
   <div class="d-flex align-items-center mb-3"><div style="font-size:48px;margin-right:12px;">😊</div><div><h2 class="h5 mb-0">Selamat datang, ${state.user?.first_name || 'Petarung'}!</h2><span class="badge bg-secondary">Lv. ${user.user_level||1}</span></div></div>
   ${selectedHero ? `<div class="card mb-3"><div class="card-body d-flex align-items-center"><span style="font-size:40px;margin-right:16px;">${selectedHero.emoji||'👤'}</span><div class="flex-grow-1"><h5 class="card-title mb-1">${selectedHero.name} Lv.${selectedHero.level}</h5><div class="row small"><div class="col-4">❤️ ${selectedHero.stats.hp}</div><div class="col-4">⚔️ ${selectedHero.stats.atk}</div><div class="col-4">🛡️ ${selectedHero.stats.def}</div></div></div><button class="btn btn-sm btn-outline-secondary" id="btn-change-hero"><i class="bi bi-arrow-repeat"></i></button></div></div>`
   : `<div class="card mb-3"><div class="card-body text-center py-3"><p class="mb-2">Belum ada hero dipilih</p><button class="btn btn-primary btn-sm" id="btn-select-hero-empty">Pilih Hero</button></div></div>`}
@@ -161,8 +161,7 @@
   return;
   }
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link text-decoration-none p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Pilih Hero</h2></div>
+  ${renderHeader('btn-back-home', 'Pilih Hero')}
   <div class="row">${state.userHeroes.map(h=>`<div class="col-12 mb-3"><div class="card ${h.id===state.selectedHeroId?'border-primary':''}"><div class="card-body d-flex align-items-center"><span style="font-size:48px;margin-right:16px;">${h.emoji||'👤'}</span><div class="flex-grow-1"><div class="d-flex justify-content-between"><h5 class="card-title">${h.name} Lv.${h.level}</h5>${h.id===state.selectedHeroId?'<span class="badge bg-primary">Dipilih</span>':''}</div><div class="row small"><div class="col-6">❤️ HP: ${h.stats.hp}</div><div class="col-6">⚔️ ATK: ${h.stats.atk}</div><div class="col-6">🛡️ DEF: ${h.stats.def}</div><div class="col-6">⏱️ Speed: ${h.stats.aspd}s</div></div><button class="btn btn-sm ${h.id===state.selectedHeroId?'btn-success':'btn-outline-primary'} w-100 mt-2 select-hero-btn" data-hero-id="${h.id}">${h.id===state.selectedHeroId?'Terpilih':'Pilih Hero Ini'}</button></div></div></div></div>`).join('')}</div>
   <div class="d-grid mt-3"><button class="btn btn-primary" id="btn-done-select">Selesai</button></div>
   `);
@@ -204,8 +203,7 @@
   stopMiningPreviewTimer();
   const r=state.battleResult, isWin=r.winner===r.player_name;
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Hasil Pertarungan</h2></div>
+  ${renderHeader('btn-back-home', 'Hasil Pertarungan')}
   <div class="card mb-3"><div class="card-body text-center"><span style="font-size:64px;">${isWin?'🏆':'💀'}</span><h3 class="${isWin?'text-success':'text-danger'}">${isWin?'Kamu Menang!':'Kamu Kalah'}</h3><p>Durasi: ${r.duration} detik</p><p>⚔️ EXP: +${r.exp_gained}</p><p>💰 Gold: +${r.gold_gained}</p></div></div>
   <div class="row mb-3">
   <div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.player_emoji}</span><h5>${r.player_name}</h5><div class="fs-3">❤️ ${r.player_hp_remaining}</div></div></div></div>
@@ -470,6 +468,20 @@
   }
   }
   }
+
+  const renderHeader = (backId, title = '') => `
+  <div class="sticky-top" style="background-color: var(--tg-theme-bg-color); z-index: 100; padding-top: 8px;">
+  ${backId ? `
+  <div class="d-flex align-items-center mb-2">
+  <button class="btn btn-link text-decoration-none p-0 me-2" id="${backId}">
+  <i class="bi bi-arrow-left fs-5"></i>
+  </button>
+  ${title ? `<h2 class="h4 mb-0">${title}</h2>` : ''}
+  </div>
+  ` : ''}
+  ${renderCurrencyBar()}
+  </div>
+  `;
 
   // ======================== INIT ========================
   async function init() {
