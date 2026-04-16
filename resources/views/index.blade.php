@@ -391,7 +391,9 @@
   <div class="card-body p-3">
   <div class="d-flex justify-content-between align-items-start">
   <div class="d-flex align-items-center">
-  <span style="font-size:32px;margin-right:12px;">${h.hero_emoji}</span>
+  <span style="font-size:32px;margin-right:8px;">${h.hero_emoji}</span>
+  <span style="font-size:24px;margin-right:8px;">⚔️</span>
+  <span style="font-size:32px;margin-right:12px;">${h.enemy_emoji || '👾'}</span>
   <div>
   <div class="fw-bold">${h.hero_name} vs ${h.enemy_name}</div>
   <div class="small text-muted">${dateStr}, ${timeStr}</div>
