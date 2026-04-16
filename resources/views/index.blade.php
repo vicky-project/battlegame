@@ -359,11 +359,7 @@
   try {
   await loadHistoryData();
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3">
-  <button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button>
-  <h2 class="h4 mb-0">Riwayat Pertarungan</h2>
-  </div>
+  ${renderHeader('btn-back-home', 'Riwayat Pertarungan')}
   <div id="history-list-container">
   ${renderHistoryList()}
   </div>
