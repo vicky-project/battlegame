@@ -22,7 +22,7 @@ class Berserker extends Hero
     return 200;
   }
   public function baseAtk(): int {
-    return 30;
+    return 28;
   }
   public function baseDef(): int {
     return 8;
@@ -35,11 +35,6 @@ class Berserker extends Hero
   }
   public function baseBlockReduction(): float {
     return 0.4;
-  }
-
-  public function baseAtk(): int
-  {
-    return 28;
   }
 
   public function passiveSkill(): array
