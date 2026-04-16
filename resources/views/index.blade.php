@@ -254,8 +254,11 @@
   <div class="card">
   <div class="card-body text-center">
   <span style="font-size:48px;">${r.player_emoji}</span>
-  <h5>${r.player_name} Lv.${state.battleResult.player_level || '?'}</h5>
-  <div class="fs-3">❤️ ${r.player_hp_remaining}/${playerMaxHp}</div>
+  <h5>${r.player_name}</h5>
+  <div class="d-flex justify-content-center align-items-center gap-2 small">
+  <span class="badge bg-secondary">Lv.${state.battleResult.player_level || '?'}</span>
+  <span><span style="font-size: 14px;">❤️ </span>${r.player_hp_remaining}/${playerMaxHp}</span>
+  </div>
   </div>
   </div>
   </div>
@@ -263,8 +266,11 @@
   <div class="card">
   <div class="card-body text-center">
   <span style="font-size:48px;">${r.enemy_emoji}</span>
-  <h5>${r.enemy_name} Lv.${state.battleResult.enemy_level || '?'}</h5>
-  <div class="fs-3">❤️ ${r.enemy_hp_remaining}/${enemyMaxHp}</div>
+  <h5>${r.enemy_name}</h5>
+  <div class="d-flex justify-content-center align-items-center gap-2 small">
+  <span class="badge bg-secondary">Lv.${state.battleResult.enemy_level || '?'}</span>
+  <span><span style="font-size: 14px;">❤️ </span>${r.enemy_hp_remaining}/${enemyMaxHp}</span>
+  </div>
   </div>
   </div>
   </div>
