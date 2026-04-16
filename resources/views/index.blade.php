@@ -390,7 +390,7 @@
   <div class="card mb-2">
   <div class="card-body p-3">
   <!-- Baris 1: Hero, VS + Badge, Musuh -->
-  <div class="d-flex align-items-start">
+  <div class="d-flex align-items-center justify-content-between">
   <!-- Hero Column -->
   <div class="text-center" style="min-width: 70px;">
   <div style="font-size: 32px;">${h.hero_emoji}</div>
