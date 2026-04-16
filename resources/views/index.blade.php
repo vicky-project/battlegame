@@ -110,7 +110,6 @@
 
   // ======================== HOME SCREEN ========================
   async function renderHomeScreen() {
-  stopMiningPreviewTimer();
   const user = state.user || {};
   const selectedHero = state.userHeroes.find(h => h.id === state.selectedHeroId);
   const expPercent = (user.user_exp / user.exp_to_next_level * 100) || 0;
