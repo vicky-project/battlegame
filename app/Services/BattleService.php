@@ -113,6 +113,7 @@ class BattleService
     }
 
     $progress->save();
+    $history->gold_gained = $goldGained;
     $history->save();
 
     // Cek apakah user naik level

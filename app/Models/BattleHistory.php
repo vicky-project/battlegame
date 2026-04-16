@@ -20,6 +20,7 @@ class BattleHistory extends Model
     'player_hp_remaining',
     'enemy_hp_remaining',
     'exp_gained',
+    'gold_gained',
     'duration',
   ];
 

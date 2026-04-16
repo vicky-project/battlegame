@@ -25,6 +25,7 @@ return new class extends Migration
         $table->integer('player_hp_remaining')->nullable();
         $table->integer('enemy_hp_remaining')->nullable();
         $table->integer('exp_gained')->default(0);
+        $table->integer('gold_gained')->default(0);
         $table->float('duration')->nullable();
         $table->timestamps();
       });
