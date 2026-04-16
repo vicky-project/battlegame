@@ -462,7 +462,7 @@
   }
 
   const renderHeader = (backId, title = '') => `
-  <div class="sticky-top" style="background-color: var(--tg-theme-bg-color); z-index: 100; padding-top: 8px; padding-bottom: 8px;">
+  <div class="sticky-top" style="background-color: var(--tg-theme-bg-color); z-index: 100; padding-top: 8px; padding-bottom: 6px;">
   ${backId ? `
   <div class="d-flex align-items-center mb-2">
   <button class="btn btn-link text-decoration-none p-0 me-2" id="${backId}">
