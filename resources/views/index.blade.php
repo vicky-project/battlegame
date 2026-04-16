@@ -151,7 +151,10 @@
   stopMiningPreviewTimer(); removeOverlays();
   await loadUserData();
   if (!state.userHeroes.length) {
-  return setAppContent(`${renderCurrencyBar()}<div class="text-center py-5"><span style="font-size:64px;">😢</span><h4>Kamu belum memiliki hero</h4><p>Kunjungi Toko untuk membeli hero pertama mu!</p><button class="btn btn-primary" id="btn-goto-store">Ke Toko Hero</button><button class="btn btn-link" id="btn-back-home">Kembali</button></div>`);
+  setAppContent(`${renderCurrencyBar()}<div class="text-center py-5"><span style="font-size:64px;">😢</span><h4>Kamu belum memiliki hero</h4><p>Kunjungi Toko untuk membeli hero pertama mu!</p><button class="btn btn-primary" id="btn-goto-store">Ke Toko Hero</button><button class="btn btn-link" id="btn-back-home">Kembali</button></div>`);
+  document.getElementById('btn-goto-store')?.addEventListener('click', renderStoreHero);
+  document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
+  return;
   }
   setAppContent(`
   ${renderCurrencyBar()}
@@ -165,7 +168,6 @@
   }));
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-done-select')?.addEventListener('click', renderHomeScreen);
-  document.getElementById('btn-goto-store')?.addEventListener('click', renderStoreHero);
   }
 
   // ======================== BATTLE ========================
@@ -201,11 +203,18 @@
   ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Hasil Pertarungan</h2></div>
   <div class="card mb-3"><div class="card-body text-center"><span style="font-size:64px;">${isWin?'🏆':'💀'}</span><h3 class="${isWin?'text-success':'text-danger'}">${isWin?'Kamu Menang!':'Kamu Kalah'}</h3><p>Durasi: ${r.duration} detik</p><p>⚔️ EXP: +${r.exp_gained}</p><p>💰 Gold: +${r.gold_gained}</p></div></div>
-  <div class="row mb-3"><div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.player_emoji}</span><h5>${r.player_name}</h5><div class="fs-3">❤️ ${r.player_hp_remaining}</div></div></div></div><div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.enemy_emoji}</span><h5>${r.enemy_name}</h5><div class="fs-3">❤️ ${r.enemy_hp_remaining}</div></div></div></div></div>
+  <div class="row mb-3">
+  <div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.player_emoji}</span><h5>${r.player_name}</h5><div class="fs-3">❤️ ${r.player_hp_remaining}</div></div></div></div>
+  <div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.enemy_emoji}</span><h5>${r.enemy_name}</h5><div class="fs-3">❤️ ${r.enemy_hp_remaining}</div></div></div></div>
+  </div>
+  <div class="d-grid gap-2 mb-3">
+  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (${BATTLE_COST}💰)</button>
+  <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
+  </div>
   <div class="card"><div class="card-header"><i class="bi bi-list-ul"></i> Log Pertarungan</div><div class="card-body" style="max-height:200px;overflow-y:auto;"><ul class="list-unstyled small">${r.log.map(e=>`<li class="mb-1">${e}</li>`).join('')}</ul></div></div>
-  <div class="d-grid gap-2 mt-3"><button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (${BATTLE_COST}💰)</button><button class="btn btn-outline-secondary" id="btn-back-home">Beranda</button></div>
   `);
   document.getElementById('btn-battle-again')?.addEventListener('click', ()=> state.selectedHeroId ? startBattleVsComputer(state.selectedHeroId) : (tg.showToast('Pilih hero','warning'), renderSelectHeroScreen()));
+  document.getElementById('btn-back-home-from-result')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   }
 
