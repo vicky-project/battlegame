@@ -78,14 +78,33 @@
   `;
 
   const showOverlay = (id, content, autoClose = 2000, onClose) => {
-  removeOverlays();
+  removeOverlays(); // bersihkan overlay dan timeout sebelumnya
   const overlay = document.createElement('div');
   overlay.id = id;
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;flex-direction:column;';
   overlay.innerHTML = content;
-  overlay.addEventListener('click', () => { overlay.remove(); if (onClose) onClose(); });
+
+  // Event listener untuk tap
+  overlay.addEventListener('click', () => {
+  // Batalkan timeout jika ada
+  if (timers.overlay) {
+  clearTimeout(timers.overlay);
+  timers.overlay = null;
+  }
+  overlay.remove();
+  if (onClose) onClose();
+  });
+
   document.body.appendChild(overlay);
-  if (autoClose) timers.overlay = setTimeout(() => { overlay.remove(); if (onClose) onClose(); }, autoClose);
+
+  if (autoClose) {
+  timers.overlay = setTimeout(() => {
+  overlay.remove();
+  timers.overlay = null;
+  if (onClose) onClose();
+  }, autoClose);
+  }
+
   return overlay;
   };
 
