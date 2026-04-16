@@ -248,50 +248,157 @@
 
   // ======================== RENDER HOME ========================
   function renderHomeScreen() {
-  removeOverlays();
   state.currentScreen = 'home';
   const user = state.user || {};
+  const selectedHero = state.userHeroes.find(h => h.id === state.selectedHeroId);
+  const expPercent = (user.user_exp / user.exp_to_next_level * 100) || 0;
+
   const html = `
   ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-4">
-  <i class="bi bi-controller me-2 fs-3"></i>
-  <h1 class="h3 mb-0">Battle Arena</h1>
+
+  <!-- Profil Singkat -->
+  <div class="d-flex align-items-center mb-3">
+  <div style="font-size: 48px; margin-right: 12px;">😊</div>
+  <div>
+  <h2 class="h5 mb-0">Selamat datang, ${state.user?.first_name || 'Petarung'}!</h2>
+  <span class="badge bg-secondary">Lv. ${user.user_level || 1}</span>
   </div>
+  </div>
+
+  <!-- Hero Aktif -->
+  ${selectedHero ? `
+  <div class="card mb-3">
+  <div class="card-body d-flex align-items-center">
+  <span style="font-size: 40px; margin-right: 16px;">${selectedHero.emoji || '👤'}</span>
+  <div class="flex-grow-1">
+  <h5 class="card-title mb-1">${selectedHero.name} Lv.${selectedHero.level}</h5>
+  <div class="row small">
+  <div class="col-4">❤️ ${selectedHero.stats.hp}</div>
+  <div class="col-4">⚔️ ${selectedHero.stats.atk}</div>
+  <div class="col-4">🛡️ ${selectedHero.stats.def}</div>
+  </div>
+  </div>
+  <button class="btn btn-sm btn-outline-secondary" id="btn-change-hero">
+  <i class="bi bi-arrow-repeat"></i>
+  </button>
+  </div>
+  </div>
+  ` : `
+  <div class="card mb-3">
+  <div class="card-body text-center py-3">
+  <p class="mb-2">Belum ada hero dipilih</p>
+  <button class="btn btn-primary btn-sm" id="btn-select-hero-empty">Pilih Hero</button>
+  </div>
+  </div>
+  `}
+
+  <!-- Progres Level -->
   <div class="card mb-3">
   <div class="card-body">
-  <h5 class="card-title">Level ${user.user_level || 1}</h5>
-  <div class="progress mb-2" style="height: 20px;">
-  <div class="progress-bar" role="progressbar"
-  style="width: ${(user.user_exp / user.exp_to_next_level * 100) || 0}%">
-  ${user.user_exp || 0}/${user.exp_to_next_level || 100} EXP
+  <div class="d-flex justify-content-between mb-1">
+  <span>Level ${user.user_level || 1}</span>
+  <span>${user.user_exp || 0} / ${user.exp_to_next_level || 100}</span>
+  </div>
+  <div class="progress" style="height: 20px;">
+  <div class="progress-bar progress-bar-striped progress-bar-animated"
+  role="progressbar" style="width: ${expPercent}%">
+  ${Math.floor(expPercent)}%
   </div>
   </div>
-  <p class="card-text">Total Battle: ${user.total_battles || 0} | Menang: ${user.total_wins || 0}</p>
   </div>
   </div>
+
+  <!-- Statistik Pertarungan -->
+  <div class="row g-2 mb-3">
+  <div class="col-4">
+  <div class="card text-center">
+  <div class="card-body py-2">
+  <div class="fs-4">⚔️</div>
+  <div class="fw-bold">${user.total_battles || 0}</div>
+  <small>Total</small>
+  </div>
+  </div>
+  </div>
+  <div class="col-4">
+  <div class="card text-center">
+  <div class="card-body py-2">
+  <div class="fs-4">🏆</div>
+  <div class="fw-bold text-success">${user.total_wins || 0}</div>
+  <small>Menang</small>
+  </div>
+  </div>
+  </div>
+  <div class="col-4">
+  <div class="card text-center">
+  <div class="card-body py-2">
+  <div class="fs-4">💀</div>
+  <div class="fw-bold text-danger">${user.total_losses || 0}</div>
+  <small>Kalah</small>
+  </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- Status Mining Singkat -->
+  <div class="card mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center">
+  <div>
+  <i class="bi bi-minecart-loaded"></i> Tambang Gold
+  <span class="badge bg-warning text-dark ms-2" id="mining-preview-timer">--:--</span>
+  </div>
+  <button class="btn btn-sm btn-outline-warning" id="btn-mining-preview">
+  Klaim <i class="bi bi-arrow-right"></i>
+  </button>
+  </div>
+  </div>
+
+  <!-- Tombol Aksi Utama -->
   <div class="d-grid gap-2">
   <button class="btn btn-primary btn-lg" id="btn-start-battle">
-  <i class="bi bi-play-fill"></i> Mulai Bertarung (${{ config("battlegame.battle_cost") }})
-  </button>
-  <button class="btn btn-outline-secondary" id="btn-select-hero">
-  <i class="bi bi-person-lines-fill"></i> Pilih Hero
+  <i class="bi bi-play-fill"></i> Mulai Bertarung (10💰)
   </button>
   </div>
   `;
+
   appEl.innerHTML = html;
   appEl.style.display = 'block';
   loadingEl.style.display = 'none';
 
+  // Update timer mining jika ada
+  updateMiningPreviewTimer();
+
+  // Event Listeners
   document.getElementById('btn-start-battle')?.addEventListener('click', () => {
-  const heroId = state.selectedHeroId || state.user?.selected_hero_id;
-  if (heroId) {
-  startBattleVsComputer(heroId);
+  if (state.selectedHeroId) {
+  startBattleVsComputer(state.selectedHeroId);
   } else {
   tg.showToast('Pilih hero terlebih dahulu', 'warning');
   renderSelectHeroScreen();
   }
   });
-  document.getElementById('btn-select-hero')?.addEventListener('click', renderSelectHeroScreen);
+
+  document.getElementById('btn-change-hero')?.addEventListener('click', renderSelectHeroScreen);
+  document.getElementById('btn-select-hero-empty')?.addEventListener('click', renderSelectHeroScreen);
+  document.getElementById('btn-mining-preview')?.addEventListener('click', renderMiningScreen);
+  }
+
+  async function updateMiningPreviewTimer() {
+  try {
+  const resp = await apiFetch('/mining/status');
+  if (resp.success) {
+  const data = resp.data;
+  const timerEl = document.getElementById('mining-preview-timer');
+  if (timerEl) {
+  timerEl.textContent = formatTime(data.next_claim_seconds);
+  if (data.can_claim) {
+  timerEl.textContent = 'Siap!';
+  timerEl.classList.add('bg-success');
+  }
+  }
+  }
+  } catch (e) {
+  // abaikan error, timer tidak kritis
+  }
   }
 
   // ======================== PILIH HERO ========================
