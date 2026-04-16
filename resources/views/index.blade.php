@@ -204,11 +204,11 @@
   if(resp.success) {
   state.battleResult = {...resp.data.result, exp_gained: resp.data.exp_gained, gold_gained: resp.data.gold_gained, user_level_up: resp.data.user_level_up, hero_level_up: resp.data.hero_level_up, player_level: resp.data.player_level, enemy_level: resp.data.enemy_level, skill_improvement: resp.data.skill_improvement };
   await loadUserData();
+  showBattleResultOverlay();
   } else tg.showToast(resp.message||'Gagal bertarung','danger');
   } catch(e) { hideBattleLoading(); tg.showToast(e.message||'Gagal','danger');
   } finally {
   hideBattleLoading();
-  showBattleResultOverlay();
   }
   }
 
@@ -446,7 +446,7 @@
 
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-load-more')?.addEventListener('click', loadMoreHistory);
-  document.getElementById('history-list-container')?.addEventListener('click'? e => {
+  document.getElementById('history-list-container')?.addEventListener('click', e => {
   const btn = e.target.closest('.view-log-btn');
   if(!btn) return;
   const index = parseInt(btn.dataset.index):
@@ -498,6 +498,8 @@
   <div class="small">
   <span class="me-3">⚔️ +${h.exp_gained} EXP</span>
   <span>💰 +${h.gold_gained} Gold</span>
+  </div>
+  <div class="small">
   <button class="btn btn-sm btn-outline-info view-log-btn" data-index='${index}'>
   📋 Log
   </button>
@@ -531,6 +533,11 @@
   }
 
   function showLogViewer(logArray) {
+  if (!Array.isArray(logArray) || logArray.length === 0) {
+  tg.showToast('Tidak ada log pertarungan', 'warning');
+  return;
+  }
+
   // Hapus viewer lama jika ada
   const existing = document.getElementById('log-viewer-overlay');
   if (existing) existing.remove();
@@ -618,6 +625,15 @@
   const container = document.getElementById('history-list-container');
   if (container) {
   container.innerHTML = renderHistoryList();
+
+  container.querySelectorAll('.view-log-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const index = parseInt(btn.dataset.index);
+  const logData = state.historyList[index]?.log || [];
+  showLogViewer(logData);
+  });
+  });
   }
 
   // Update tombol load more
