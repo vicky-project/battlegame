@@ -7,16 +7,8 @@ use Modules\BattleGame\Enums\SkillType;
 class DarkArcher extends Enemy
 {
   public function __construct() {
-    parent::__construct(
-      id: 'dark_archer',
-      name: 'Dark Archer',
-      emoji: '🏹',
-      minLevel: 3,
-      maxLevel: 5,
-      rewards: ['exp' => 40, 'gold' => 35],
-    );
+    parent::__construct(id: 'dark_archer', name: 'Dark Archer', emoji: '🏹', minLevel: 3, maxLevel: 5, rewards: ['exp' => 40, 'gold' => 35]);
   }
-
   public function baseHp(): int {
     return 160;
   }
@@ -38,14 +30,12 @@ class DarkArcher extends Enemy
   public function levelScalingFactor(): float {
     return 0.13;
   }
-
-  public function specialAbility(): array
-  {
-    return [
-      'type' => SkillType::STUN,
+  public function baseAccuracy(): float {
+    return 0.98;
+  }
+  public function specialAbility(): array {
+    return ['type' => SkillType::STUN,
       'chance' => 0.15,
-      'duration' => 2,
-      // stun 2 detik
-    ];
+      'duration' => 2];
   }
 }

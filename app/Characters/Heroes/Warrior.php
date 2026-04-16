@@ -36,13 +36,18 @@ class Warrior extends Hero
   public function baseBlockReduction(): float {
     return 0.5;
   }
+  public function baseAccuracy(): float {
+    return 0.95;
+  }
+  public function baseEvasion(): float {
+    return 0.03;
+  }
 
   public function passiveSkill(): array
   {
     return [
       'type' => SkillType::DAMAGE_REDUCTION,
       'value' => 0.2,
-      // 20% damage reduction
       'condition' => 'hp_below_50_percent'
     ];
   }

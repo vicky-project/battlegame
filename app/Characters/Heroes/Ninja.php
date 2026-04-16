@@ -36,13 +36,15 @@ class Ninja extends Hero
   public function baseBlockReduction(): float {
     return 0.5;
   }
+  public function baseEvasion(): float {
+    return 0.20;
+  }
 
   public function passiveSkill(): array
   {
     return [
       'type' => SkillType::EVASION,
       'value' => 0.15,
-      // +15% miss chance musuh
     ];
   }
 }

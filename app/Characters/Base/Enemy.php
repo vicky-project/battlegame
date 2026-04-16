@@ -23,10 +23,14 @@ abstract class Enemy
   abstract public function baseBlockReduction(): float;
   abstract public function levelScalingFactor(): float;
 
-  /**
-  * Kemampuan spesial musuh.
-  * @return array{type: SkillType, chance: float, value?: float, duration?: int, damage_per_tick?: int}
-  */
+  // Akurasi dan Evasi (default)
+  public function baseAccuracy(): float {
+    return 0.95;
+  }
+  public function baseEvasion(): float {
+    return 0.05;
+  }
+
   abstract public function specialAbility(): array;
 
   public function getStatsForLevel(int $level): array
@@ -39,6 +43,8 @@ abstract class Enemy
       'aspd' => $this->baseAspd(),
       'block_chance' => min($this->baseBlockChance() + 0.01 * ($level - 1), 0.7),
       'block_reduction' => $this->baseBlockReduction(),
+      'accuracy' => $this->baseAccuracy(),
+      'evasion' => $this->baseEvasion(),
     ];
   }
 
@@ -58,6 +64,8 @@ abstract class Enemy
       'base_block_chance' => $this->baseBlockChance(),
       'base_block_reduction' => $this->baseBlockReduction(),
       'level_scaling_factor' => $this->levelScalingFactor(),
+      'base_accuracy' => $this->baseAccuracy(),
+      'base_evasion' => $this->baseEvasion(),
       'special_ability' => [
         'type' => $this->specialAbility()['type']->value,
         'chance' => $this->specialAbility()['chance'],

@@ -42,7 +42,6 @@ class Berserker extends Hero
     return [
       'type' => SkillType::BERSERK,
       'value' => 0.01,
-      // +1% ATK per 1% HP hilang
     ];
   }
 }

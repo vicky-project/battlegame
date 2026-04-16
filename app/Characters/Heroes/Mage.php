@@ -36,13 +36,15 @@ class Mage extends Hero
   public function baseBlockReduction(): float {
     return 0.5;
   }
+  public function baseAccuracy(): float {
+    return 0.85;
+  }
 
   public function passiveSkill(): array
   {
     return [
       'type' => SkillType::CRITICAL_DAMAGE,
       'value' => 0.5,
-      // +50% critical damage
     ];
   }
 }

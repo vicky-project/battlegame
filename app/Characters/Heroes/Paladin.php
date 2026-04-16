@@ -42,7 +42,6 @@ class Paladin extends Hero
     return [
       'type' => SkillType::HOLY_SHIELD,
       'value' => 30,
-      // Shield 30 HP setiap 10 detik
     ];
   }
 }

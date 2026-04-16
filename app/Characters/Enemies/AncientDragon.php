@@ -7,16 +7,8 @@ use Modules\BattleGame\Enums\SkillType;
 class AncientDragon extends Enemy
 {
   public function __construct() {
-    parent::__construct(
-      id: 'ancient_dragon',
-      name: 'Ancient Dragon',
-      emoji: '🐉',
-      minLevel: 10,
-      maxLevel: null,
-      rewards: ['exp' => 180, 'gold' => 140],
-    );
+    parent::__construct(id: 'ancient_dragon', name: 'Ancient Dragon', emoji: '🐉', minLevel: 10, maxLevel: null, rewards: ['exp' => 180, 'gold' => 140]);
   }
-
   public function baseHp(): int {
     return 600;
   }
@@ -38,14 +30,9 @@ class AncientDragon extends Enemy
   public function levelScalingFactor(): float {
     return 0.25;
   }
-
-  public function specialAbility(): array
-  {
-    return [
-      'type' => SkillType::FIRE_BREATH,
+  public function specialAbility(): array {
+    return ['type' => SkillType::FIRE_BREATH,
       'chance' => 0.3,
-      'value' => 2.5,
-      // 250% damage
-    ];
+      'value' => 2.5];
   }
 }

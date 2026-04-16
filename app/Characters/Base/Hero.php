@@ -23,10 +23,14 @@ abstract class Hero
   abstract public function baseBlockChance(): float;
   abstract public function baseBlockReduction(): float;
 
-  /**
-  * Skill pasif yang selalu aktif.
-  * @return array{type: SkillType, value: float|int, condition?: string}
-  */
+  // Akurasi dan Evasi (default, bisa di-override)
+  public function baseAccuracy(): float {
+    return 0.95;
+  }
+  public function baseEvasion(): float {
+    return 0.05;
+  }
+
   abstract public function passiveSkill(): array;
 
   public function toArray(): array
@@ -44,6 +48,8 @@ abstract class Hero
       'base_aspd' => $this->baseAspd(),
       'base_block_chance' => $this->baseBlockChance(),
       'base_block_reduction' => $this->baseBlockReduction(),
+      'base_accuracy' => $this->baseAccuracy(),
+      'base_evasion' => $this->baseEvasion(),
       'passive_skill' => [
         'type' => $this->passiveSkill()['type']->value,
         'value' => $this->passiveSkill()['value'],

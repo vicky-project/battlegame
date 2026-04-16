@@ -7,16 +7,8 @@ use Modules\BattleGame\Enums\SkillType;
 class ShadowAssassin extends Enemy
 {
   public function __construct() {
-    parent::__construct(
-      id: 'shadow_assassin',
-      name: 'Shadow Assassin',
-      emoji: '🥷🌑',
-      minLevel: 6,
-      maxLevel: 9,
-      rewards: ['exp' => 90, 'gold' => 80],
-    );
+    parent::__construct(id: 'shadow_assassin', name: 'Shadow Assassin', emoji: '🥷🌑', minLevel: 6, maxLevel: 9, rewards: ['exp' => 90, 'gold' => 80]);
   }
-
   public function baseHp(): int {
     return 200;
   }
@@ -38,14 +30,15 @@ class ShadowAssassin extends Enemy
   public function levelScalingFactor(): float {
     return 0.18;
   }
-
-  public function specialAbility(): array
-  {
-    return [
-      'type' => SkillType::CRITICAL_DAMAGE,
+  public function baseAccuracy(): float {
+    return 1.0;
+  }
+  public function baseEvasion(): float {
+    return 0.15;
+  }
+  public function specialAbility(): array {
+    return ['type' => SkillType::CRITICAL_DAMAGE,
       'chance' => 0.25,
-      'value' => 0.8,
-      // +80% crit damage
-    ];
+      'value' => 0.8];
   }
 }

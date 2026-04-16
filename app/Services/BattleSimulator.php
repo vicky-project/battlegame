@@ -27,7 +27,8 @@ class BattleSimulator
   protected const DAMAGE_VARIANCE = 0.15;
   protected const BASE_CRIT_CHANCE = 0.05;
   protected const BASE_CRIT_MULTIPLIER = 1.5;
-  protected const BASE_MISS_CHANCE = 0.05;
+  protected const COUNTER_CHANCE = 0.3;
+  protected const COUNTER_DAMAGE_RATIO = 0.5;
 
   public function __construct(
     protected Hero $playerHero,
@@ -49,12 +50,18 @@ class BattleSimulator
     $baseHp = $this->playerHero->baseHp();
     $baseAtk = $this->playerHero->baseAtk();
     $baseDef = $this->playerHero->baseDef();
-    // Terapkan upgrade dari user
-    if (!empty($this->playerUpgrades)) {
-      $baseHp += ($this->playerUpgrades['hp_boost'] ?? 0) * 20;
-      $baseAtk += ($this->playerUpgrades['attack_boost'] ?? 0) * 5;
-      $baseDef += ($this->playerUpgrades['defense_boost'] ?? 0) * 3;
-    }
+
+    // Upgrade bonuses
+    $hpBonus = ($this->playerUpgrades['hp_boost'] ?? 0) * 20;
+    $atkBonus = ($this->playerUpgrades['attack_boost'] ?? 0) * 5;
+    $defBonus = ($this->playerUpgrades['defense_boost'] ?? 0) * 3;
+    $critChanceBonus = ($this->playerUpgrades['critical_chance'] ?? 0) * 0.02;
+    $accuracyBonus = ($this->playerUpgrades['accuracy_boost'] ?? 0) * 0.02;
+    $counterChanceBonus = ($this->playerUpgrades['counter_attack_boost'] ?? 0) * 0.02;
+
+    $baseHp += $hpBonus;
+    $baseAtk += $atkBonus;
+    $baseDef += $defBonus;
 
     return [
       'hp' => $baseHp,
@@ -64,8 +71,12 @@ class BattleSimulator
       'aspd' => $this->playerHero->baseAspd(),
       'block_chance' => $this->playerHero->baseBlockChance(),
       'block_reduction' => $this->playerHero->baseBlockReduction(),
+      'accuracy' => $this->playerHero->baseAccuracy() + $accuracyBonus,
+      'evasion' => $this->playerHero->baseEvasion(),
       'miss_chance_bonus' => 0,
       'crit_multiplier_bonus' => 0,
+      'crit_chance_bonus' => $critChanceBonus,
+      'counter_chance_bonus' => $counterChanceBonus,
       'damage_reduction' => 0,
     ];
   }
@@ -82,6 +93,8 @@ class BattleSimulator
       'aspd' => $this->enemy->baseAspd(),
       'block_chance' => min($this->enemy->baseBlockChance() + 0.01 * ($this->enemyLevel - 1), 0.7),
       'block_reduction' => $this->enemy->baseBlockReduction(),
+      'accuracy' => $this->enemy->baseAccuracy(),
+      'evasion' => $this->enemy->baseEvasion(),
       'enrage_active' => false,
     ];
   }
@@ -91,16 +104,13 @@ class BattleSimulator
     $passive = $this->playerHero->passiveSkill();
     switch ($passive['type']) {
       case SkillType::EVASION:
-        $this->playerStats['miss_chance_bonus'] = $passive['value'];
+        $this->playerStats['evasion'] += $passive['value'];
         break;
       case SkillType::CRITICAL_DAMAGE:
         $this->playerStats['crit_multiplier_bonus'] = $passive['value'];
         break;
       case SkillType::DAMAGE_REDUCTION:
         $this->playerStats['damage_reduction'] = $passive['value'];
-        break;
-      case SkillType::BERSERK:
-        // Efek dihitung dinamis saat hitung damage
         break;
       case SkillType::HOLY_SHIELD:
         $this->playerSkillCooldown['holy_shield'] = 0;
@@ -130,16 +140,16 @@ class BattleSimulator
       $pTimer += $delta;
       $eTimer += $delta;
 
-      // Proses efek status setiap detik
       if (floor($this->simulationTime) > floor($this->simulationTime - $delta)) {
         $this->processStatusEffects($pHp, $eHp);
-        $this->processSkillCooldowns();
+        $this->processSkillCooldowns($pHp);
       }
 
-      // Player attack
       if ($pTimer >= $this->playerStats['aspd'] && !$this->isStunned('player')) {
         $pTimer = 0.0;
-        $damage = $this->calculateDamage('player', $pHp, $eHp);
+        $damage = $this->calculateDamage(
+          'player', $this->playerStats, $this->enemyStats, $pHp, $eHp, 'enemy'
+        );
         $eHp -= $damage['value'];
         $this->log[] = sprintf(
           "[%.1fs] %s menyerang! %s HP %s tersisa %.1f",
@@ -148,10 +158,11 @@ class BattleSimulator
         if ($eHp <= 0) break;
       }
 
-      // Enemy attack
       if ($eTimer >= $this->enemyStats['aspd'] && !$this->isStunned('enemy')) {
         $eTimer = 0.0;
-        $damage = $this->calculateDamage('enemy', $pHp, $eHp);
+        $damage = $this->calculateDamage(
+          'enemy', $this->enemyStats, $this->playerStats, $eHp, $pHp, 'player'
+        );
         $pHp -= $damage['value'];
         $this->applyOnHitEffects('enemy', $damage, $eHp);
         $this->log[] = sprintf(
@@ -178,42 +189,29 @@ class BattleSimulator
     ];
   }
 
-  protected function calculateDamage(string $attackerSide, float &$attackerHp, float &$defenderHp): array
-  {
-    $attacker = $attackerSide === 'player' ? $this->playerStats : $this->enemyStats;
-    $defender = $attackerSide === 'player' ? $this->enemyStats : $this->playerStats;
-
-    // Miss chance
-    $missChance = self::BASE_MISS_CHANCE;
-    if ($attackerSide === 'player') {
-      $missChance += $this->enemyStats['miss_chance_bonus'] ?? 0;
-    } else {
-      $missChance += $this->playerStats['miss_chance_bonus'] ?? 0;
-    }
-    if (mt_rand(1, 100) <= $missChance * 100) {
+  protected function calculateDamage(
+    string $attackerSide,
+    array $attacker,
+    array $defender,
+    float &$attackerHp,
+    float &$defenderHp,
+    string $defenderSide
+  ): array {
+    // 1. Hit chance (accuracy - evasion)
+    $hitChance = $attacker['accuracy'] - $defender['evasion'];
+    $hitChance = max(0.1, min(1.0, $hitChance));
+    if (mt_rand(1, 100) / 100 > $hitChance) {
       return ['value' => 0,
         'critical' => false,
-        'message' => 'Meleset! 0 damage'];
+        'blocked' => false,
+        'message' => 'Meleset!'];
     }
 
-    // Berserk effect
-    $currentAtk = $attacker['atk'];
-    if ($attackerSide === 'player' && $this->playerHero->passiveSkill()['type'] === SkillType::BERSERK) {
-      $missingHpPercent = 1 - ($attackerHp / $this->playerStats['max_hp']);
-      $currentAtk *= (1 + $missingHpPercent * $this->playerHero->passiveSkill()['value']);
-    }
-    // Enemy enrage
-    if ($attackerSide === 'enemy' && $this->enemy->specialAbility()['type'] === SkillType::ENRAGE) {
-      if ($attackerHp / $this->enemyStats['max_hp'] < 0.3) {
-        $currentAtk *= (1 + $this->enemy->specialAbility()['value']);
-        $this->enemyStats['enrage_active'] = true;
-      }
-    }
+    // 2. Raw damage
+    $rawDamage = $attacker['atk'] - $defender['def'];
 
-    $rawDamage = $currentAtk - $defender['def'];
-
-    // Critical
-    $critChance = self::BASE_CRIT_CHANCE;
+    // 3. Critical
+    $critChance = self::BASE_CRIT_CHANCE + ($attacker['crit_chance_bonus'] ?? 0);
     $critMultiplier = self::BASE_CRIT_MULTIPLIER;
     if ($attackerSide === 'player') {
       $critMultiplier += $this->playerStats['crit_multiplier_bonus'];
@@ -227,22 +225,21 @@ class BattleSimulator
     if ($attackerSide === 'enemy' && $this->enemy->specialAbility()['type'] === SkillType::FIRE_BREATH) {
       if (mt_rand(1, 100) <= $this->enemy->specialAbility()['chance'] * 100) {
         $rawDamage *= $this->enemy->specialAbility()['value'];
-        $isCritical = true; // visual saja
       }
     }
 
-    // Variance
+    // 4. Variance
     $variance = 1 + (mt_rand(-100, 100) / 100) * self::DAMAGE_VARIANCE;
     $rawDamage *= $variance;
 
-    // Block
+    // 5. Block
     $blocked = false;
     if (mt_rand(1, 100) <= $defender['block_chance'] * 100) {
       $blocked = true;
       $rawDamage *= (1 - $defender['block_reduction']);
     }
 
-    // Damage reduction pasif Warrior
+    // 6. Warrior damage reduction
     if ($attackerSide === 'enemy' && $this->playerHero->passiveSkill()['type'] === SkillType::DAMAGE_REDUCTION) {
       if ($defenderHp / $this->playerStats['max_hp'] < 0.5) {
         $rawDamage *= (1 - $this->playerHero->passiveSkill()['value']);
@@ -251,22 +248,34 @@ class BattleSimulator
 
     $finalDamage = (int) max(1, round($rawDamage));
 
+    // 7. Counterattack
+    $counterMessage = '';
+    if ($blocked && $defenderHp > 0) {
+      $counterChance = self::COUNTER_CHANCE + ($defender["counter_chance_bonus"] ??0)
+      if (mt_rand(1, 100) <= $counterChance * 100) {
+        $counterDamage = (int) max(1, round(($defender['atk'] * self::COUNTER_DAMAGE_RATIO) - $attacker['def']));
+        $attackerHp -= $counterDamage;
+        $counterMessage = sprintf(" %s membalas! Damage %d.", $defenderSide === 'player' ? $this->playerName : $this->enemyName, $counterDamage);
+      }
+    }
+
+    // 8. Build message
     $parts = [];
     if ($isCritical) $parts[] = '💥 Critical!';
     if ($blocked) $parts[] = '🛡️ Diblok!';
-    if ($this->enemyStats['enrage_active'] ?? false) $parts[] = '😡 Mengamuk!';
     $parts[] = "Damage {$finalDamage}";
+    $message = implode(' ', $parts) . $counterMessage;
 
     return [
       'value' => $finalDamage,
       'critical' => $isCritical,
-      'message' => implode(' ', $parts)
+      'blocked' => $blocked,
+      'message' => $message,
     ];
   }
 
   protected function processStatusEffects(&$pHp, &$eHp): void
   {
-    // Player poison
     if (isset($this->playerStatus[StatusEffect::POISON->value])) {
       $dmg = $this->playerStatus[StatusEffect::POISON->value]['damage'];
       $pHp -= $dmg;
@@ -276,19 +285,17 @@ class BattleSimulator
         unset($this->playerStatus[StatusEffect::POISON->value]);
       }
     }
-    // Enemy poison (bisa ditambahkan nanti)
   }
 
-  protected function processSkillCooldowns(): void
+  protected function processSkillCooldowns(&$pHp): void
   {
-    // Holy Shield
     if (isset($this->playerSkillCooldown['holy_shield'])) {
       $this->playerSkillCooldown['holy_shield']--;
       if ($this->playerSkillCooldown['holy_shield'] <= 0) {
         $shield = $this->playerHero->passiveSkill()['value'];
-        $this->playerStats['hp'] += $shield;
+        $pHp += $shield;
         $this->log[] = sprintf("[%.1fs] %s mendapatkan Perisai Suci +%d HP!", $this->simulationTime, $this->playerName, $shield);
-        $this->playerSkillCooldown['holy_shield'] = 10; // reset 10 detik
+        $this->playerSkillCooldown['holy_shield'] = 10;
       }
     } else {
       if ($this->playerHero->passiveSkill()['type'] === SkillType::HOLY_SHIELD) {
@@ -314,6 +321,12 @@ class BattleSimulator
         $heal = (int)($damageData['value'] * $ability['value']);
         $attackerHp += $heal;
         $this->log[] = sprintf("[%.1fs] %s mencuri nyawa +%d HP!", $this->simulationTime, $this->enemyName, $heal);
+      }
+      if ($ability['type'] === SkillType::STUN) {
+        if (mt_rand(1, 100) <= $ability['chance'] * 100) {
+          $this->playerStatus[StatusEffect::STUN->value] = ['duration' => $ability['duration']];
+          $this->log[] = sprintf("[%.1fs] %s terkena stun!", $this->simulationTime, $this->playerName);
+        }
       }
     }
   }

@@ -7,16 +7,8 @@ use Modules\BattleGame\Enums\SkillType;
 class Necromancer extends Enemy
 {
   public function __construct() {
-    parent::__construct(
-      id: 'necromancer',
-      name: 'Necromancer',
-      emoji: '🧙‍♂️💀',
-      minLevel: 6,
-      maxLevel: 9,
-      rewards: ['exp' => 100, 'gold' => 70],
-    );
+    parent::__construct(id: 'necromancer', name: 'Necromancer', emoji: '🧙‍♂️💀', minLevel: 6, maxLevel: 9, rewards: ['exp' => 100, 'gold' => 70]);
   }
-
   public function baseHp(): int {
     return 280;
   }
@@ -38,13 +30,9 @@ class Necromancer extends Enemy
   public function levelScalingFactor(): float {
     return 0.16;
   }
-
-  public function specialAbility(): array
-  {
-    return [
-      'type' => SkillType::LIFESTEAL,
+  public function specialAbility(): array {
+    return ['type' => SkillType::LIFESTEAL,
       'chance' => 1.0,
-      'value' => 0.15,
-    ];
+      'value' => 0.15];
   }
 }
