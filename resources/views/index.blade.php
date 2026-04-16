@@ -446,12 +446,12 @@
 
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-load-more')?.addEventListener('click', loadMoreHistory);
-  document.querySelectorAll('.view-log-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const logData = JSON.parse(btn.dataset.log);
+  document.getElementById('history-list-container')?.addEventListener('click'? e => {
+  const btn = e.target.closest('.view-log-btn');
+  if(!btn) return;
+  const index = parseInt(btn.dataset.index):
+  const logData = state.historyList[index]?.log || [];
   showLogViewer(logData);
-  });
   });
   }
 
@@ -460,7 +460,7 @@
   return `<div class="text-center py-5 text-muted">Belum ada riwayat pertarungan.</div>`;
   }
 
-  return state.historyList.map(h => {
+  return state.historyList.map((h, index) => {
   const date = new Date(h.created_at);
   const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
@@ -498,7 +498,7 @@
   <div class="small">
   <span class="me-3">⚔️ +${h.exp_gained} EXP</span>
   <span>💰 +${h.gold_gained} Gold</span>
-  <button class="btn btn-sm btn-outline-info view-log-btn" data-log='${JSON.stringify(h.log || [])}'>
+  <button class="btn btn-sm btn-outline-info view-log-btn" data-index='${index}'>
   📋 Log
   </button>
   </div>
