@@ -40,6 +40,7 @@
 
   const API_BASE = '{{ config("app.url") }}/api/battle';
   let miningInterval = null;
+  let miningPreviewInterval = null;
   let overlayTimeout = null;
   let battleLoadingOverlay = null;
 
@@ -365,7 +366,7 @@
   loadingEl.style.display = 'none';
 
   // Update timer mining jika ada
-  updateMiningPreviewTimer();
+  startMiningPreviewTimer();
 
   // Event Listeners
   document.getElementById('btn-start-battle')?.addEventListener('click', () => {
@@ -382,27 +383,53 @@
   document.getElementById('btn-mining-preview')?.addEventListener('click', renderMiningScreen);
   }
 
-  async function updateMiningPreviewTimer() {
+  async function startMiningPreviewTimer() {
+  // Hentikan interval sebelumnya jika ada
+  if (miningPreviewInterval) {
+  clearInterval(miningPreviewInterval);
+  miningPreviewInterval = null;
+  }
+
+  // Fungsi untuk update tampilan
+  const updateTimer = async () => {
+  const timerEl = document.getElementById('mining-preview-timer');
+  if (!timerEl) return; // Elemen tidak ada (mungkin sudah pindah halaman)
+
   try {
   const resp = await apiFetch('/mining/status');
   if (resp.success) {
   const data = resp.data;
-  const timerEl = document.getElementById('mining-preview-timer');
-  if (timerEl) {
-  timerEl.textContent = formatTime(data.next_claim_seconds);
   if (data.can_claim) {
   timerEl.textContent = 'Siap!';
-  timerEl.classList.add('bg-success');
+  timerEl.classList.add('bg-success', 'text-white');
+  timerEl.classList.remove('bg-warning', 'text-dark');
+  } else {
+  timerEl.textContent = formatTime(data.next_claim_seconds);
+  timerEl.classList.add('bg-warning', 'text-dark');
+  timerEl.classList.remove('bg-success', 'text-white');
   }
   }
+  } catch (error) {
+  timerEl.textContent = '--:--';
   }
-  } catch (e) {
-  // abaikan error, timer tidak kritis
-  }
+  };
+
+  // Panggil segera
+  await updateTimer();
+
+  // Set interval setiap detik
+  miningPreviewInterval = setInterval(updateTimer, 1000);
   }
 
+  function stopMiningPreviewTimer() {
+  if (miningPreviewInterval) {
+  clearInterval(miningPreviewInterval);
+  miningPreviewInterval = null;
+  }
+  }
   // ======================== PILIH HERO ========================
   async function renderSelectHeroScreen() {
+  stopMiningPreviewTimer();
   removeOverlays();
   state.currentScreen = 'select-hero';
   await loadUserData();
@@ -555,6 +582,7 @@
   }
 
   function renderBattleResultScreen() {
+  stopMiningPreviewTimer();
   state.currentScreen = 'result';
   const result = state.battleResult;
   const isWin = result.winner === result.player_name;
@@ -628,6 +656,7 @@
 
   // ======================== MINING SCREEN (AUTO-CLAIM) ========================
   async function renderMiningScreen() {
+  stopMiningPreviewTimer();
   state.currentScreen = 'mining';
   tg.showLoading();
   try {
@@ -756,6 +785,7 @@
 
   // ======================== TOKO UTAMA ========================
   async function renderStoreHome() {
+  stopMiningPreviewTimer();
   removeOverlays();
   state.currentScreen = 'store';
   tg.showLoading();
@@ -809,6 +839,7 @@
 
   // ======================== TOKO HERO ========================
   async function renderStoreHero() {
+  stopMiningPreviewTimer();
   state.currentScreen = 'store-hero';
   tg.showLoading();
   try {
@@ -901,6 +932,7 @@
 
   // ======================== TOKO DIAMOND ========================
   async function renderStoreDiamond() {
+  stopMiningPreviewTimer();
   state.currentScreen = 'store-diamond';
   tg.showLoading();
   try {
@@ -969,6 +1001,7 @@
 
   // ======================== TOKO UPGRADE ========================
   async function renderStoreUpgrade() {
+  stopMiningPreviewTimer();
   state.currentScreen = 'store-upgrade';
   tg.showLoading();
   try {
@@ -1044,6 +1077,7 @@
   }
 
   function renderHelpScreen() {
+  stopMiningPreviewTimer();
   state.currentScreen = 'help';
   const html = `
   ${renderCurrencyBar()}
