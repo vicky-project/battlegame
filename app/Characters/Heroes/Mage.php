@@ -37,7 +37,7 @@ class Mage extends Hero
     return 0.5;
   }
   public function baseAccuracy(): float {
-    return 0.85;
+    return 0.90;
   }
 
   public function passiveSkill(): array

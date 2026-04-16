@@ -37,6 +37,11 @@ class Berserker extends Hero
     return 0.4;
   }
 
+  public function baseAtk(): int
+  {
+    return 28;
+  }
+
   public function passiveSkill(): array
   {
     return [

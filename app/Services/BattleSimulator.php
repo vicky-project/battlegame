@@ -113,7 +113,7 @@ class BattleSimulator
         $this->playerStats['damage_reduction'] = $passive['value'];
         break;
       case SkillType::HOLY_SHIELD:
-        $this->playerSkillCooldown['holy_shield'] = 0;
+        $this->playerSkillCooldown['holy_shield'] = 7;
         break;
       default: break;
     }
