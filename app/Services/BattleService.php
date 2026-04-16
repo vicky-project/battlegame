@@ -26,76 +26,80 @@ class BattleService
   */
   public function startVsComputer(TelegramUser $user, int $userHeroId, ?int $enemyLevel = null): array
   {
+    // 1. Biaya battle
     $currency = UserCurrency::forUser($user);
     $battleCost = config('battlegame.battle_cost', 10);
     if (!$currency->deductGold($battleCost)) {
-      throw new \Exception("Gold tidak cukup untuk bertarung");
+      throw new \Exception('Gold tidak cukup untuk bertarung (butuh ' . $battleCost . ')');
     }
-    // 1. Ambil hero milik user
+
+    // 2. Ambil hero user
     $userHero = BattleUserHero::where('telegram_user_id', $user->id)
     ->where('id', $userHeroId)
     ->firstOrFail();
 
-    // 2. Ambil atau buat progress user
+    // 3. Progress user
     $progress = BattleUserProgress::firstOrCreate(
       ['telegram_user_id' => $user->id],
       ['level' => 1, 'exp' => 0, 'total_battles' => 0, 'total_wins' => 0, 'total_losses' => 0]
     );
-
-    // 3. Tentukan level musuh (default: level user)
     $targetLevel = $enemyLevel ?? $progress->level;
 
-    // 4. Ambil class hero dari registry
-    $heroClass = CharacterRegistry::getHero($userHero->hero_id ?? 'warrior');
+    // 4. Hero class dari registry
+    $heroClass = CharacterRegistry::getHero($userHero->hero_id);
     if (!$heroClass) {
-      throw new \Exception('Hero tidak ditemukan dalam registry.');
+      throw new \Exception('Hero tidak valid');
     }
 
-    // 5. Pilih musuh yang sesuai dengan level
+    // 5. Statistik final hero (sudah termasuk level & upgrade)
+    $playerStats = $userHero->calculated_stats;
+
+    // 6. Pilih musuh adaptif
     $enemyClass = $this->pickEnemyForLevelWithHero($targetLevel, $heroClass);
     if (!$enemyClass) {
-      throw new \Exception('Tidak ada musuh yang tersedia untuk level ini.');
+      throw new \Exception('Tidak ada musuh yang tersedia');
     }
 
-    $playerUpgrades = $progress->upgrades ?? [];
-    // 6. Jalankan simulasi pertarungan
-    $simulator = new BattleSimulator($heroClass, $enemyClass, $targetLevel, $playerUpgrades);
+    // 7. Simulasi pertarungan
+    $simulator = new BattleSimulator($playerStats, $enemyClass, $targetLevel);
     $result = $simulator->runSimulation();
-    $isWin = $result['winner'] === $heroClass->name;
+    $isWin = $result['winner'] === $playerStats['name'];
 
-    // 8. Simpan riwayat pertarungan
+    // 8. Simpan musuh ke database (untuk relasi history)
+    $enemyDb = BattleEnemy::firstOrCreate(
+      ['name' => $enemyClass->name],
+      $enemyClass->toArray()
+    );
+
+    // 9. Simpan riwayat
     $history = BattleHistory::create([
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
       'enemy_id' => $enemyClass->id,
-      'battle_type' => BattleType::VS_COMPUTER,
-      'result' => $isWin ? BattleResult::WIN : BattleResult::LOSE,
+      'battle_type' => 'vs_computer',
+      'result' => $isWin ? 'win' : 'lose',
       'battle_log' => $result['log'],
       'player_hp_remaining' => $result['player_hp_remaining'],
       'enemy_hp_remaining' => $result['enemy_hp_remaining'],
       'duration' => $result['duration'],
     ]);
 
-    // 9. Update statistik progress user
+    // 10. Update progress & reward
     $progress->total_battles++;
-
-    // 10. Ambil rewards dan currency user
     $rewards = $enemyClass->rewards;
-    $currency = UserCurrency::forUser($user);
-
     $expGained = 0;
     $goldGained = 0;
 
     if ($isWin) {
-      // User menang
       $progress->total_wins++;
       $expGained = $rewards['exp'];
       $goldGained = $rewards['gold'];
       $progress->addExp($expGained);
       $history->exp_gained = $expGained;
+      $history->gold_gained = $goldGained;
       $currency->addGold($goldGained);
 
-      // Hero dapat exp dan naik level jika cukup
+      // Hero dapat exp dan level up
       $userHero->exp += $expGained;
       while ($userHero->exp >= $this->getHeroExpForNextLevel($userHero->level)) {
         $userHero->exp -= $this->getHeroExpForNextLevel($userHero->level);
@@ -103,23 +107,20 @@ class BattleService
       }
       $userHero->save();
     } else {
-      // User kalah
       $progress->total_losses++;
       $expGained = max(5, (int)($rewards['exp'] * 0.2));
       $goldGained = max(1, (int)($rewards['gold'] * 0.2));
       $progress->addExp($expGained);
       $history->exp_gained = $expGained;
+      $history->gold_gained = $goldGained;
       $currency->addGold($goldGained);
     }
 
     $progress->save();
-    $history->gold_gained = $goldGained;
     $history->save();
 
-    // Cek apakah user naik level
+    // Cek level up user dan hero
     $userLevelUp = $progress->wasChanged('level') ? $progress->level : null;
-
-    // Cek apakah hero naik level
     $heroLevelUp = $userHero->wasChanged('level') ? $userHero->level : null;
 
     return [
@@ -130,9 +131,7 @@ class BattleService
       'user_new_level' => $progress->level,
       'user_new_exp' => $progress->exp,
       'user_level_up' => $userLevelUp,
-      // null atau level baru
       'hero_level_up' => $heroLevelUp,
-      // null atau level baru
     ];
   }
 
