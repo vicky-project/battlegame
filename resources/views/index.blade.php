@@ -35,7 +35,9 @@
   historyList: [],
   historyPage: 1,
   historyHasMore: true,
-  historyLoading: false
+  historyLoading: false,
+  viewingLog: null,
+  logViewerInterval: null
   };
   let timers = { mining: null, preview: null, overlay: null };
   let battleLoadingOverlay = null;
@@ -444,6 +446,13 @@
 
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-load-more')?.addEventListener('click', loadMoreHistory);
+  document.querySelectorAll('.view-log-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const logData = JSON.parse(btn.dataset.log);
+  showLogViewer(logData);
+  });
+  });
   }
 
   function renderHistoryList() {
@@ -489,6 +498,9 @@
   <div class="small">
   <span class="me-3">⚔️ +${h.exp_gained} EXP</span>
   <span>💰 +${h.gold_gained} Gold</span>
+  <button class="btn btn-sm btn-outline-info view-log-btn" data-log='${JSON.stringify(h.log || [])}'>
+  📋 Log
+  </button>
   </div>
   </div>
   </div>
@@ -516,6 +528,81 @@
   } finally {
   state.historyLoading = false;
   }
+  }
+
+  function showLogViewer(logArray) {
+  // Hapus viewer lama jika ada
+  const existing = document.getElementById('log-viewer-overlay');
+  if (existing) existing.remove();
+  if (state.logViewerInterval) {
+  clearInterval(state.logViewerInterval);
+  state.logViewerInterval = null;
+  }
+
+  // Buat overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'log-viewer-overlay';
+  overlay.style.cssText = `
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9); z-index: 10000;
+  display: flex; flex-direction: column; padding: 16px;
+  `;
+
+  overlay.innerHTML = `
+  <div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="text-white mb-0"><i class="bi bi-list-ul"></i> Log Pertarungan</h5>
+  <button class="btn btn-sm btn-outline-light" id="close-log-viewer">
+  <i class="bi bi-x-lg"></i>
+  </button>
+  </div>
+  <div style="flex:1; overflow-y:auto; font-family: monospace; font-size: 13px; color: #aaa;" id="log-viewer-content">
+  <!-- Log akan muncul di sini -->
+  </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const contentEl = document.getElementById('log-viewer-content');
+  let lineIndex = 0;
+  let charIndex = 0;
+  let currentLine = '';
+
+  const typeNext = () => {
+  if (lineIndex >= logArray.length) {
+  clearInterval(state.logViewerInterval);
+  state.logViewerInterval = null;
+  return;
+  }
+
+  const fullLine = logArray[lineIndex];
+  if (charIndex < fullLine.length) {
+  currentLine += fullLine[charIndex];
+  // Render semua baris yang sudah selesai + baris yang sedang diketik
+  const linesHtml = logArray.slice(0, lineIndex)
+  .map(l => `<div style="color:#ccc;">${escapeHtml(l)}</div>`)
+  .join('');
+  contentEl.innerHTML = linesHtml + `<div style="color:#fff;">${escapeHtml(currentLine)}</div>`;
+  charIndex++;
+  } else {
+  // Pindah ke baris berikutnya
+  lineIndex++;
+  charIndex = 0;
+  currentLine = '';
+  }
+  };
+
+  state.logViewerInterval = setInterval(typeNext, 20); // kecepatan ketik
+
+  // Tombol close
+  document.getElementById('close-log-viewer')?.addEventListener('click', () => {
+  clearInterval(state.logViewerInterval);
+  state.logViewerInterval = null;
+  overlay.remove();
+  });
+  }
+
+  // Helper escape HTML sederhana
+  function escapeHtml(text) {
+  return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   async function loadMoreHistory() {
