@@ -496,12 +496,12 @@
   <div class="d-flex justify-content-between align-items-center mt-3">
   <div class="small text-muted">${dateStr}, ${timeStr}</div>
   <div class="small">
-  <span class="me-3">⚔️ +${h.exp_gained} EXP</span>
-  <span>💰 +${h.gold_gained} Gold</span>
+  <span class="me-3">⚔️ +${h.exp_gained}</span>
+  <span>💰 +${h.gold_gained}</span>
   </div>
   <div class="small">
   <button class="btn btn-sm btn-outline-info view-log-btn" data-index='${index}'>
-  📋 Log
+  📋
   </button>
   </div>
   </div>
