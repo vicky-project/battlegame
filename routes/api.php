@@ -16,6 +16,7 @@ Route::middleware(['auth:sanctum'])
 
   // Battle
   Route::post('/vs-computer', [BattleController::class, 'startBattleVsComputer']);
+  Route::get('/history', [BattleController::class, 'getBattleHistoryList']);
   Route::get('/history/{id}', [BattleController::class, 'getBattleHistory']);
 
   Route::prefix('store')

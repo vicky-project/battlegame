@@ -31,7 +31,11 @@
   user: null, userHeroes: [], selectedHeroId: null, allHeroes: [],
   storeData: { gold: 0, diamond: 0 }, diamondPackages: [], upgrades: [],
   currentScreen: 'home', battleResult: null,
-  miningData: { gold_per_interval: 60, next_claim_seconds: 0, can_claim: false }
+  miningData: { gold_per_interval: 60, next_claim_seconds: 0, can_claim: false },
+  historyList: [],
+  historyPage: 1,
+  historyHasMore: true,
+  historyLoading: false
   };
   let timers = { mining: null, preview: null, overlay: null };
   let battleLoadingOverlay = null;
@@ -67,6 +71,7 @@
   <span class="badge bg-warning text-dark me-2" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${state.storeData.gold}</span>
   <span class="badge bg-info text-dark me-2" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${state.storeData.diamond}</span>
   <span class="badge bg-primary me-2" style="cursor:pointer;" id="btn-store-bar"><i class="bi bi-shop"></i></span>
+  <span class="badge bg-success me-2" style="cursor:pointer;" id="btn-history-bar"><i class="bi bi-clock-history"></i></span>
   <span class="badge bg-secondary" style="cursor:pointer;" id="btn-help-bar"><i class="bi bi-question-circle"></i></span>
   </div>
   </div>
@@ -350,13 +355,136 @@
   document.getElementById('btn-back-home-help')?.addEventListener('click', renderHomeScreen);
   }
 
+  async function renderHistoryScreen() {
+  stopMiningPreviewTimer();
+  state.currentScreen = 'history';
+  state.historyPage = 1;
+  state.historyList = [];
+  state.historyHasMore = true;
+
+  tg.showLoading();
+  try {
+  await loadHistoryData();
+  setAppContent(`
+  ${renderCurrencyBar()}
+  <div class="d-flex align-items-center mb-3">
+  <button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button>
+  <h2 class="h4 mb-0">Riwayat Pertarungan</h2>
+  </div>
+  <div id="history-list-container">
+  ${renderHistoryList()}
+  </div>
+  ${state.historyHasMore ? `
+  <div class="text-center mt-3" id="load-more-container">
+  <button class="btn btn-outline-primary btn-sm" id="btn-load-more">Muat Lebih Banyak</button>
+  </div>
+  ` : ''}
+  `);
+  } finally { tg.hideLoading(); }
+
+  document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
+  document.getElementById('btn-load-more')?.addEventListener('click', loadMoreHistory);
+  }
+
+  function renderHistoryList() {
+  if (state.historyList.length === 0) {
+  return `<div class="text-center py-5 text-muted">Belum ada riwayat pertarungan.</div>`;
+  }
+
+  return state.historyList.map(h => {
+  const date = new Date(h.created_at);
+  const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  const isWin = h.result === 'win';
+
+  return `
+  <div class="card mb-2">
+  <div class="card-body p-3">
+  <div class="d-flex justify-content-between align-items-start">
+  <div class="d-flex align-items-center">
+  <span style="font-size:32px;margin-right:12px;">${h.hero_emoji}</span>
+  <div>
+  <div class="fw-bold">${h.hero_name} vs ${h.enemy_name}</div>
+  <div class="small text-muted">${dateStr}, ${timeStr}</div>
+  </div>
+  </div>
+  <div class="text-end">
+  <span class="badge ${isWin ? 'bg-success' : 'bg-danger'}">${isWin ? 'MENANG' : 'KALAH'}</span>
+  <div class="small mt-1">⚔️ +${h.exp_gained} EXP</div>
+  <div class="small">💰 +${h.gold_gained} Gold</div>
+  </div>
+  </div>
+  <div class="row mt-2 small">
+  <div class="col-6">❤️ Sisa HP: ${h.player_hp_remaining}</div>
+  <div class="col-6">👾 Sisa HP: ${h.enemy_hp_remaining}</div>
+  </div>
+  </div>
+  </div>
+  `}).join('');
+  }
+
+  async function loadHistoryData(page = 1) {
+  if (state.historyLoading) return;
+  state.historyLoading = true;
+
+  try {
+  const resp = await apiFetch(`/history?page=${page}&per_page=10`);
+  if (resp.success) {
+  if (page === 1) {
+  state.historyList = resp.data;
+  } else {
+  state.historyList = [...state.historyList, ...resp.data];
+  }
+  state.historyPage = resp.meta.current_page;
+  state.historyHasMore = resp.meta.current_page < resp.meta.last_page;
+  }
+  } catch (e) {
+  tg.showToast('Gagal memuat history', 'danger');
+  } finally {
+  state.historyLoading = false;
+  }
+  }
+
+  async function loadMoreHistory() {
+  const btn = document.getElementById('btn-load-more');
+  if (btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memuat...';
+  }
+
+  await loadHistoryData(state.historyPage + 1);
+
+  // Update tampilan list
+  const container = document.getElementById('history-list-container');
+  if (container) {
+  container.innerHTML = renderHistoryList();
+  }
+
+  // Update tombol load more
+  const loadMoreContainer = document.getElementById('load-more-container');
+  if (loadMoreContainer) {
+  if (state.historyHasMore) {
+  loadMoreContainer.innerHTML = `<button class="btn btn-outline-primary btn-sm" id="btn-load-more">Muat Lebih Banyak</button>`;
+  document.getElementById('btn-load-more')?.addEventListener('click', loadMoreHistory);
+  } else {
+  loadMoreContainer.innerHTML = '';
+  }
+  }
+  }
+
   // ======================== INIT ========================
   async function init() {
   tg.showLoading('Memuat...');
   try {
   await loadUserData();
   appEl.addEventListener('click', e => {
-  const map = { 'store-bar': renderStoreHome, 'gold-bar': renderMiningScreen, 'diamond-bar': renderStoreDiamond, 'help-bar': renderHelpScreen };
+  const map = {
+  'store-bar': renderStoreHome,
+  'gold-bar': renderMiningScreen,
+  'diamond-bar': renderStoreDiamond,
+  'help-bar': renderHelpScreen,
+  'history-bar': renderHistoryScreen  // tambahkan ini
+  };
   for (const [id, fn] of Object.entries(map)) if (e.target.closest(`#btn-${id}`)) return fn();
   });
   renderHomeScreen();
