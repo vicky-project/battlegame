@@ -389,29 +389,37 @@
   return `
   <div class="card mb-2">
   <div class="card-body p-3">
-  <div class="d-flex justify-content-between align-items-start">
+  <!-- Baris 1: Hero & Musuh dengan HP di samping nama -->
+  <div class="d-flex align-items-center justify-content-between">
   <div class="d-flex align-items-center">
-  <div class="text-center me-3">
-  <span style="font-size:32px;">${h.hero_emoji}</span>
-  <div class="small fw-bold">${h.hero_name}</div>
+  <!-- Hero -->
+  <div class="text-center me-2">
+  <div style="font-size:32px;">${h.hero_emoji}</div>
   </div>
-  <span style="font-size:20px;margin:0 4px;">⚔️</span>
-  <div class="text-center ms-2">
-  <span style="font-size:32px;">${h.enemy_emoji || '👾'}</span>
-  <div class="small fw-bold">${h.enemy_name}</div>
+  <div class="me-3">
+  <div class="fw-bold">${h.hero_name}</div>
+  <div class="small">❤️ ${h.player_hp_remaining}</div>
+  </div>
+  <!-- VS -->
+  <span class="mx-2">⚔️</span>
+  <!-- Musuh -->
+  <div class="text-center me-2">
+  <div style="font-size:32px;">${h.enemy_emoji || '👾'}</div>
+  </div>
+  <div>
+  <div class="fw-bold">${h.enemy_name}</div>
+  <div class="small">❤️ ${h.enemy_hp_remaining}</div>
   </div>
   </div>
-  <div class="text-end">
+  <!-- Badge Hasil -->
   <span class="badge ${isWin ? 'bg-success' : 'bg-danger'}">${isWin ? 'MENANG' : 'KALAH'}</span>
-  <div class="small mt-1">⚔️ +${h.exp_gained} EXP</div>
-  <div class="small">💰 +${h.gold_gained} Gold</div>
   </div>
-  </div>
+  <!-- Baris 2: Waktu, EXP, dan Gold -->
   <div class="d-flex justify-content-between align-items-center mt-2">
   <div class="small text-muted">${dateStr}, ${timeStr}</div>
   <div class="small">
-  <span class="me-3">❤️ ${h.player_hp_remaining}</span>
-  <span>👾 ${h.enemy_hp_remaining}</span>
+  <span class="me-3">⚔️ +${h.exp_gained} EXP</span>
+  <span>💰 +${h.gold_gained} Gold</span>
   </div>
   </div>
   </div>
