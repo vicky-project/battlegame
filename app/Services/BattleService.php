@@ -105,7 +105,35 @@ class BattleService
 
     // Cek level up user dan hero
     $userLevelUp = $progress->wasChanged('level') ? $progress->level : null;
+    // ... setelah simulasi dan update level hero
+
     $heroLevelUp = $userHero->wasChanged('level') ? $userHero->level : null;
+    $skillImprovement = null;
+
+    if ($heroLevelUp) {
+      $oldLevel = $userHero->getOriginal('level');
+      $newLevel = $heroLevelUp;
+      $basePassive = $heroClass->passiveSkill();
+      $oldValue = $basePassive['value'] * (1 + 0.05 * ($oldLevel - 1));
+      $newValue = $basePassive['value'] * (1 + 0.05 * ($newLevel - 1));
+
+      // Format sesuai tipe skill
+      $label = $basePassive['type']->label();
+      if (in_array($basePassive['type'], [SkillType::EVASION, SkillType::DAMAGE_REDUCTION])) {
+        $oldStr = round($oldValue * 100) . '%';
+        $newStr = round($newValue * 100) . '%';
+      } elseif ($basePassive['type'] === SkillType::CRITICAL_DAMAGE) {
+        $oldStr = '+' . round(($oldValue - 1) * 100) . '%';
+        $newStr = '+' . round(($newValue - 1) * 100) . '%';
+      } elseif ($basePassive['type'] === SkillType::HOLY_SHIELD) {
+        $oldStr = round($oldValue) . ' HP';
+        $newStr = round($newValue) . ' HP';
+      } else {
+        $oldStr = round($oldValue, 2);
+        $newStr = round($newValue, 2);
+      }
+      $skillImprovement = "{$label}: {$oldStr} → {$newStr}";
+    }
 
     return [
       'result' => $result,
@@ -116,6 +144,9 @@ class BattleService
       'user_new_exp' => $progress->exp,
       'user_level_up' => $userLevelUp,
       'hero_level_up' => $heroLevelUp,
+      'player_level' => $userHero->level,
+      'enemy_level' => $targetLevel,
+      'skill_improvement' => $skillImprovement,
     ];
   }
 

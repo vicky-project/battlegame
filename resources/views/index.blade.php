@@ -200,7 +200,7 @@
   try {
   const resp = await apiFetch('/vs-computer', {method:'POST', body:JSON.stringify({user_hero_id:heroId})});
   if(resp.success) {
-  state.battleResult = {...resp.data.result, exp_gained: resp.data.exp_gained, gold_gained: resp.data.gold_gained, user_level_up: resp.data.user_level_up, hero_level_up: resp.data.hero_level_up};
+  state.battleResult = {...resp.data.result, exp_gained: resp.data.exp_gained, gold_gained: resp.data.gold_gained, user_level_up: resp.data.user_level_up, hero_level_up: resp.data.hero_level_up, player_level: resp.data.player_level, enemy_level: resp.data.enemy_level, skill_improvement: resp.data.skill_improvement };
   await loadUserData();
   } else tg.showToast(resp.message||'Gagal bertarung','danger');
   } catch(e) { hideBattleLoading(); tg.showToast(e.message||'Gagal','danger');
@@ -211,30 +211,74 @@
   }
 
   function showBattleResultOverlay() {
-  const r=state.battleResult, isWin=r.winner===r.player_name;
+  const r = state.battleResult, isWin = r.winner === r.player_name;
+  let levelUpMessage = '';
+  if (r.user_level_up) {
+  levelUpMessage += `<p style="color:#FFD700;">⭐ User naik level ke ${r.user_level_up}!</p>`;
+  }
+  if (r.hero_level_up) {
+  levelUpMessage += `<p style="color:#FFD700;">🆙 Hero naik level ke ${r.hero_level_up}!</p>`;
+  if (r.skill_improvement) {
+  levelUpMessage += `<p style="color:#a0d6ff; font-size:16px;">✨ ${r.skill_improvement}</p>`;
+  }
+  }
+
   showOverlay('battle-result-overlay', `
-  <span style="font-size:80px;">${isWin?'🏆':'💀'}</span>
-  <h2 style="color:${isWin?'#4CAF50':'#f44336'};">${isWin?'KAMU MENANG!':'KAMU KALAH'}</h2>
-  <div style="margin:20px 0;"><p>⚔️ EXP diperoleh: +${r.exp_gained}</p><p>💰 Gold diperoleh: +${r.gold_gained}</p>${r.user_level_up?`<p style="color:#FFD700;">⭐ User naik level ke ${r.user_level_up}!</p>`:''}${r.hero_level_up?`<p style="color:#FFD700;">🆙 Hero naik level ke ${r.hero_level_up}!</p>`:''}</div>
+  <span style="font-size:80px;">${isWin ? '🏆' : '💀'}</span>
+  <h2 style="color:${isWin ? '#4CAF50' : '#f44336'};">${isWin ? 'KAMU MENANG!' : 'KAMU KALAH'}</h2>
+  <div style="margin:20px 0;">
+  <p>⚔️ EXP diperoleh: +${r.exp_gained}</p>
+  <p>💰 Gold diperoleh: +${r.gold_gained}</p>
+  ${levelUpMessage}
+  </div>
   <p style="font-size:14px;color:#aaa;">Tap layar untuk melanjutkan...</p>
   `, 4000, renderBattleResultScreen);
   }
 
   function renderBattleResultScreen() {
   stopMiningPreviewTimer();
-  const r=state.battleResult, isWin=r.winner===r.player_name;
+  const r=state.battleResult, isWin=r.winner===r.player_name, playerMaxHp = r.player_max_hp || r.player_hp_remaining, enemyMaxHp = r.enemy_max_hp || r.enemy_hp_remaining;
   setAppContent(`
   ${renderHeader('btn-back-home', 'Hasil Pertarungan')}
-  <div class="card mb-3"><div class="card-body text-center"><span style="font-size:64px;">${isWin?'🏆':'💀'}</span><h3 class="${isWin?'text-success':'text-danger'}">${isWin?'Kamu Menang!':'Kamu Kalah'}</h3><p>Durasi: ${r.duration} detik</p><p>⚔️ EXP: +${r.exp_gained}</p><p>💰 Gold: +${r.gold_gained}</p></div></div>
+  <div class="card mb-3">
+  <div class="card-body text-center">
+  <span style="font-size:64px;">${isWin ? '🏆' : '💀'}</span>
+  <h3 class="${isWin ? 'text-success' : 'text-danger'}">${isWin ? 'Kamu Menang!' : 'Kamu Kalah'}</h3>
+  <p>Durasi: ${r.duration} detik</p>
+  <p>⚔️ EXP: +${r.exp_gained}</p>
+  <p>💰 Gold: +${r.gold_gained}</p>
+  </div>
+  </div>
   <div class="row mb-3">
-  <div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.player_emoji}</span><h5>${r.player_name}</h5><div class="fs-3">❤️ ${r.player_hp_remaining}</div></div></div></div>
-  <div class="col-6"><div class="card"><div class="card-body text-center"><span style="font-size:48px;">${r.enemy_emoji}</span><h5>${r.enemy_name}</h5><div class="fs-3">❤️ ${r.enemy_hp_remaining}</div></div></div></div>
+  <div class="col-6">
+  <div class="card">
+  <div class="card-body text-center">
+  <span style="font-size:48px;">${r.player_emoji}</span>
+  <h5>${r.player_name} Lv.${state.battleResult.player_level || '?'}</h5>
+  <div class="fs-3">❤️ ${r.player_hp_remaining}/${playerMaxHp}</div>
+  </div>
+  </div>
+  </div>
+  <div class="col-6">
+  <div class="card">
+  <div class="card-body text-center">
+  <span style="font-size:48px;">${r.enemy_emoji}</span>
+  <h5>${r.enemy_name} Lv.${state.battleResult.enemy_level || '?'}</h5>
+  <div class="fs-3">❤️ ${r.enemy_hp_remaining}/${enemyMaxHp}</div>
+  </div>
+  </div>
+  </div>
   </div>
   <div class="d-grid gap-2 mb-3">
   <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (${BATTLE_COST}💰)</button>
   <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
   </div>
-  <div class="card"><div class="card-header"><i class="bi bi-list-ul"></i> Log Pertarungan</div><div class="card-body" style="max-height:200px;overflow-y:auto;"><ul class="list-unstyled small">${r.log.map(e=>`<li class="mb-1">${e}</li>`).join('')}</ul></div></div>
+  <div class="card">
+  <div class="card-header"><i class="bi bi-list-ul"></i> Log Pertarungan</div>
+  <div class="card-body" style="max-height:200px;overflow-y:auto;">
+  <ul class="list-unstyled small">${r.log.map(e => `<li class="mb-1">${e}</li>`).join('')}</ul>
+  </div>
+  </div>
   `);
   document.getElementById('btn-battle-again')?.addEventListener('click', ()=> state.selectedHeroId ? startBattleVsComputer(state.selectedHeroId) : (tg.showToast('Pilih hero','warning'), renderSelectHeroScreen()));
   document.getElementById('btn-back-home-from-result')?.addEventListener('click', renderHomeScreen);

@@ -165,6 +165,8 @@ class BattleSimulator
       'log' => $this->log,
       'player_hp_remaining' => max(0, $pHp),
       'enemy_hp_remaining' => max(0, $eHp),
+      'player_max_hp' => $this->playerStats['max_hp'],
+      'enemy_max_hp' => $this->enemyStats['max_hp'],
       'duration' => round($this->simulationTime, 1),
     ];
   }
