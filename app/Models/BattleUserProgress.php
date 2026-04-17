@@ -26,27 +26,33 @@ class BattleUserProgress extends Model
   }
 
   /**
-  * Tambah exp dan naikkan level jika cukup.
+  * Tambah exp dan naikkan level jika cukup (tanpa batas maksimal).
   */
   public function addExp(int $exp): void
   {
     $this->exp += $exp;
     $nextLevelExp = $this->getExpForNextLevel();
+
     while ($this->exp >= $nextLevelExp) {
       $this->exp -= $nextLevelExp;
       $this->level++;
       $nextLevelExp = $this->getExpForNextLevel();
     }
+
     $this->save();
   }
 
   /**
   * Exp yang dibutuhkan untuk naik ke level berikutnya.
-  * Formula: 100 * level^2 (semakin tinggi level semakin besar)
+  * - Level 1-50  : 100 * 1.5^(level-1)
+  * - Level 51+   : 100 * 1.5^49 * 2.0^(level-50)
   */
   public function getExpForNextLevel(): int
   {
-    return 100 * $this->level * $this->level;
+    if ($this->level <= 50) {
+      return (int) (100 * pow(1.5, $this->level - 1));
+    }
+    return (int) (100 * pow(1.5, 49) * pow(2.0, $this->level - 50));
   }
 
   public function getUpgradeLevel(string $key): int

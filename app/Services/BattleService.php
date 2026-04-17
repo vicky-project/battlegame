@@ -4,8 +4,6 @@ namespace Modules\BattleGame\Services;
 
 use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Characters\CharacterRegistry;
-use Modules\BattleGame\Enums\BattleResult;
-use Modules\BattleGame\Enums\BattleType;
 use Modules\BattleGame\Enums\SkillType;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
@@ -34,42 +32,44 @@ class BattleService
       ['telegram_user_id' => $user->id],
       ['level' => 1, 'exp' => 0, 'total_battles' => 0, 'total_wins' => 0, 'total_losses' => 0]
     );
+
+    // 4. Tentukan level musuh berdasarkan LEVEL HERO
     $targetLevel = $enemyLevel ?? $userHero->level;
 
-    // 4. Hero class dari registry
+    // 5. Hero class dari registry
     $heroClass = CharacterRegistry::getHero($userHero->hero_id);
     if (!$heroClass) {
       throw new \Exception('Hero tidak valid');
     }
 
-    // 5. Statistik final hero (sudah termasuk level & upgrade)
+    // 6. Statistik final hero (sudah termasuk level & upgrade)
     $playerStats = $userHero->calculated_stats;
 
-    // 6. Pilih musuh adaptif
+    // 7. Pilih musuh adaptif berdasarkan LEVEL HERO
     $enemyClass = $this->pickEnemyForLevelWithHero($targetLevel, $heroClass);
     if (!$enemyClass) {
       throw new \Exception('Tidak ada musuh yang tersedia');
     }
 
-    // 7. Simulasi pertarungan
+    // 8. Simulasi pertarungan
     $simulator = new BattleSimulator($playerStats, $enemyClass, $targetLevel);
     $result = $simulator->runSimulation();
     $isWin = $result['winner'] === $playerStats['name'];
 
-    // 8. Simpan riwayat (gunakan enemy_id string, BUKAN model)
+    // 9. Simpan riwayat
     $history = BattleHistory::create([
       'telegram_user_id' => $user->id,
       'battle_user_hero_id' => $userHero->id,
       'enemy_id' => $enemyClass->id,
-      'battle_type' => BattleType::VS_COMPUTER,
-      'result' => $isWin ? BattleResult::WIN : BattleResult::LOSE,
+      'battle_type' => 'vs_computer',
+      'result' => $isWin ? 'win' : 'lose',
       'battle_log' => $result['log'],
       'player_hp_remaining' => $result['player_hp_remaining'],
       'enemy_hp_remaining' => $result['enemy_hp_remaining'],
       'duration' => $result['duration'],
     ]);
 
-    // 9. Update progress & reward
+    // 10. Update progress user & reward
     $progress->total_battles++;
     $rewards = $enemyClass->rewards;
     $expGained = 0;
@@ -84,7 +84,7 @@ class BattleService
       $history->gold_gained = $goldGained;
       $currency->addGold($goldGained);
 
-      // Hero dapat exp dan level up
+      // Hero dapat exp dan level up (tanpa batas)
       $userHero->exp += $expGained;
       while ($userHero->exp >= $this->getHeroExpForNextLevel($userHero->level)) {
         $userHero->exp -= $this->getHeroExpForNextLevel($userHero->level);
@@ -106,20 +106,29 @@ class BattleService
 
     // Cek level up user dan hero
     $userLevelUp = $progress->wasChanged('level') ? $progress->level : null;
-    // ... setelah simulasi dan update level hero
-
     $heroLevelUp = $userHero->wasChanged('level') ? $userHero->level : null;
-    $skillImprovement = null;
 
+    // Hitung skill improvement
+    $skillImprovement = null;
     if ($heroLevelUp) {
       $oldLevel = $userHero->getOriginal('level');
       $newLevel = $heroLevelUp;
       $basePassive = $heroClass->passiveSkill();
-      $oldValue = $basePassive['value'] * (1 + 0.05 * ($oldLevel - 1));
-      $newValue = $basePassive['value'] * (1 + 0.05 * ($newLevel - 1));
 
-      // Format sesuai tipe skill
+      // Fungsi untuk menghitung scaled value
+      $calcValue = function($lvl) use ($basePassive) {
+        if ($lvl <= 30) {
+          $mult = 1 + 0.05 * ($lvl - 1);
+        } else {
+          $mult = 1 + 0.05 * 29 + 0.01 * ($lvl - 30);
+        }
+        return $basePassive['value'] * $mult;
+      };
+
+      $oldValue = $calcValue($oldLevel);
+      $newValue = $calcValue($newLevel);
       $label = $basePassive['type']->label();
+
       if (in_array($basePassive['type'], [SkillType::EVASION, SkillType::DAMAGE_REDUCTION])) {
         $oldStr = round($oldValue * 100) . '%';
         $newStr = round($newValue * 100) . '%';
@@ -170,7 +179,6 @@ class BattleService
       return $available[0];
     }
 
-    // Hitung skor keseimbangan (seperti yang sudah dijelaskan sebelumnya)
     $heroAtk = $heroClass->baseAtk();
     $heroDef = $heroClass->baseDef();
 
@@ -193,6 +201,9 @@ class BattleService
 
   protected function getHeroExpForNextLevel(int $currentLevel): int
   {
-    return 100 * $currentLevel * $currentLevel;
+    if ($currentLevel <= 30) {
+      return (int) (150 * pow(1.5, $currentLevel - 1));
+    }
+    return (int) (150 * pow(1.5, 29) * pow(2.2, $currentLevel - 30));
   }
 }

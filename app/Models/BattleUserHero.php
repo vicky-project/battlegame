@@ -46,8 +46,12 @@ class BattleUserHero extends Model
     $counterBonus = ($upgrades['counter_attack_boost'] ?? 0) * 0.02;
     $critChanceBonus = ($upgrades['critical_chance'] ?? 0) * 0.02;
 
-    // Scaling per level: +10% stat dasar per level di atas 1
-    $levelMultiplier = 1 + 0.1 * ($level - 1);
+    // Scaling level: +10% per level sampai level 30, lalu +2% per level setelahnya
+    if ($level <= 30) {
+      $levelMultiplier = 1 + 0.1 * ($level - 1);
+    } else {
+      $levelMultiplier = 1 + 0.1 * 29 + 0.02 * ($level - 30);
+    }
 
     // Hitung final HP
     $finalHp = round($hero->baseHp() * $levelMultiplier) + $hpBonus;
@@ -57,26 +61,21 @@ class BattleUserHero extends Model
     $passiveType = $basePassive['type']->value;
     $passiveValue = $basePassive['value'];
 
-    // Scaling skill pasif: +5% per level di atas 1
-    $skillLevelMultiplier = 1 + 0.05 * ($level - 1);
+    // Scaling skill pasif: +5% per level sampai level 30, lalu +1% per level setelahnya
+    if ($level <= 30) {
+      $skillLevelMultiplier = 1 + 0.05 * ($level - 1);
+    } else {
+      $skillLevelMultiplier = 1 + 0.05 * 29 + 0.01 * ($level - 30);
+    }
     $scaledPassiveValue = $passiveValue * $skillLevelMultiplier;
 
-    // Batasan tertentu (misal evasion maks 50%, damage reduction maks 50%)
+    // Batasan tertentu
     switch ($passiveType) {
       case 'evasion':
-        $scaledPassiveValue = min(0.5, $scaledPassiveValue);
+        $scaledPassiveValue = min(0.6, $scaledPassiveValue);
         break;
       case 'damage_reduction':
-        $scaledPassiveValue = min(0.5, $scaledPassiveValue);
-        break;
-      case 'berserk':
-        // Berserk tidak dibatasi
-        break;
-      case 'holy_shield':
-        // Shield tidak dibatasi
-        break;
-      case 'critical_damage':
-        // Critical damage tidak dibatasi
+        $scaledPassiveValue = min(0.6, $scaledPassiveValue);
         break;
     }
 
