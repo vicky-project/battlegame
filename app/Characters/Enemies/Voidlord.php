@@ -51,7 +51,6 @@ class VoidLord extends Enemy
     // Void Lord memiliki kombinasi skill mematikan
     return [
       'type' => SkillType::LIFESTEAL,
-      // Bisa juga kita buat multi-skill, tapi untuk simplicity pilih satu
       'chance' => 1.0,
       'value' => 0.5,
       // 50% lifesteal
