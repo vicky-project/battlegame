@@ -145,7 +145,7 @@
   ${[['⚔️','Total',user.total_battles],['🏆','Menang',user.total_wins],['💀','Kalah',user.total_losses]].map(([icon,label,val])=>`<div class="col-4"><div class="card text-center"><div class="card-body py-2"><div class="fs-4">${icon}</div><div class="fw-bold ${label==='Menang'?'text-success':label==='Kalah'?'text-danger':''}">${val||0}</div><small>${label}</small></div></div></div>`).join('')}
   </div>
   <div class="card mb-3"><div class="card-body d-flex justify-content-between align-items-center"><div><i class="bi bi-minecart-loaded"></i> Tambang Gold <span class="badge bg-warning text-dark ms-2" id="mining-preview-timer">--:--</span></div><button class="btn btn-sm btn-outline-warning" id="btn-mining-preview">Klaim <i class="bi bi-arrow-right"></i></button></div></div>
-  <div class="d-grid gap-2"><button class="btn btn-primary btn-lg" id="btn-start-battle"><i class="bi bi-play-fill"></i> Mulai Bertarung (<i class="bi bi-gem me-1"></i>${BATTLE_COST})</button></div>
+  <div class="d-grid gap-2"><button class="btn btn-primary btn-lg" id="btn-start-battle"><i class="bi bi-play-fill"></i> Mulai Bertarung (<i class="bi bi-coin me-1"></i>${BATTLE_COST})</button></div>
   `);
   startMiningPreviewTimer();
   document.getElementById('btn-start-battle')?.addEventListener('click', ()=> state.selectedHeroId ? startBattleVsComputer(state.selectedHeroId) : (tg.showToast('Pilih hero', 'warning'), renderSelectHeroScreen()));
@@ -230,7 +230,7 @@
   <h2 style="color:${isWin ? '#4CAF50' : '#f44336'};">${isWin ? 'KAMU MENANG!' : 'KAMU KALAH'}</h2>
   <div style="margin:20px 0;">
   <p>⚔️ EXP diperoleh: +${r.exp_gained}</p>
-  <p><i class="bi bi-gem"></i> Gold diperoleh: +${r.gold_gained}</p>
+  <p><i class="bi bi-coin"></i> Gold diperoleh: +${r.gold_gained}</p>
   ${levelUpMessage}
   </div>
   <p style="font-size:14px;color:#aaa;">Tap layar untuk melanjutkan...</p>
@@ -248,7 +248,7 @@
   <h3 class="${isWin ? 'text-success' : 'text-danger'}">${isWin ? 'Kamu Menang!' : 'Kamu Kalah'}</h3>
   <p>Durasi: ${r.duration} detik</p>
   <p>⚔️ EXP: +${r.exp_gained}</p>
-  <p>💰 Gold: <i class="bi bi-gem me-2"></i>+${r.gold_gained}</p>
+  <p>💰 Gold: <i class="bi bi-coin me-2"></i>+${r.gold_gained}</p>
   </div>
   </div>
   <div class="row mb-3">
@@ -278,7 +278,7 @@
   </div>
   </div>
   <div class="d-grid gap-2 mb-3">
-  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (<i class="bi bi-gem me-1"></i>${BATTLE_COST})</button>
+  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (<i class="bi bi-coin me-1"></i>${BATTLE_COST})</button>
   <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
   </div>
   <div class="card">
@@ -306,7 +306,7 @@
   setAppContent(`
   ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Tambang Gold</h2></div>
-  <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <i class="bi bi-gem me-1"></i>${d.gold}</h4><p>Gold per jam: <i class="bi bi-gem me-1"></i>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
+  <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <i class="bi bi-coin me-1"></i>${d.gold}</h4><p>Gold per jam: <i class="bi bi-coin me-1"></i>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
   `);
   startMiningTimer(d.next_claim_seconds, d.can_claim);
   } finally { tg.hideLoading(); }
@@ -363,7 +363,7 @@
   state.allHeroes = resp.data;
   setAppContent(`
   ${renderHeader('btn-back-store', 'Beli Hero')}
-  <div class="row g-3">${state.allHeroes.map(h=>{const cost=h.cost_gold, stats=h.stats;let btn='';if(h.owned)btn='<button class="btn btn-secondary w-100" disabled>✅ Sudah Dimiliki</button>';else if(!h.can_buy){let r='';if(state.user.user_level<h.required_level)r=`🔒 Level ${h.required_level}`;else if(state.storeData.gold<cost)r='💰 Gold kurang';else r='❌ Tidak memenuhi syarat';btn=`<button class="btn btn-secondary w-100" disabled>${r}</button>`;}else btn=`<button class="btn btn-primary w-100 buy-hero-btn" data-hero-id="${h.id}">🛒 Beli ${cost?cost+' <i class="bi bi-coin"></i>':'Gratis'}</button>`;return`<div class="col-12"><div class="card"><div class="card-body d-flex"><span style="font-size:48px;margin-right:16px;">${h.emoji}</span><div class="flex-grow-1"><h5>${h.name} (${h.type})</h5><p>${h.description}</p><div class="row small mb-1"><div class="col-6">❤️ ${h.stats.hp}</div><div class="col-6">⚔️ ${h.stats.atk}</div><div class="col-6">🛡️ ${h.stats.def}</div><div class="col-6">⏱️ ${h.stats.aspd}s</div></div><div class="row small text-muted mb-2"><div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}%</div><div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div><div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div><div class="col-6">⚡ Crit: +${Math.round((stats.crit_chance_bonus || 0) * 100)}%</div><div class="col-6">🔄 Counter: +${Math.round((stats.counter_chance_bonus || 0) * 100)}%</div></div><div class="mb-2 small"><span class="badge bg-info me-2">Lv.${h.required_level}</span><span class="badge bg-secondary text-warning"><i class="bi bi-gem"></i> ${cost} Gold</span></div>${btn}</div></div></div></div>`}).join('')}</div>
+  <div class="row g-3">${state.allHeroes.map(h=>{const cost=h.cost_gold, stats=h.stats;let btn='';if(h.owned)btn='<button class="btn btn-secondary w-100" disabled>✅ Sudah Dimiliki</button>';else if(!h.can_buy){let r='';if(state.user.user_level<h.required_level)r=`🔒 Level ${h.required_level}`;else if(state.storeData.gold<cost)r='💰 Gold kurang';else r='❌ Tidak memenuhi syarat';btn=`<button class="btn btn-secondary w-100" disabled>${r}</button>`;}else btn=`<button class="btn btn-primary w-100 buy-hero-btn" data-hero-id="${h.id}">🛒 Beli ${cost?cost+' <i class="bi bi-coin"></i>':'Gratis'}</button>`;return`<div class="col-12"><div class="card"><div class="card-body d-flex"><span style="font-size:48px;margin-right:16px;">${h.emoji}</span><div class="flex-grow-1"><h5>${h.name} (${h.type})</h5><p>${h.description}</p><div class="row small mb-1"><div class="col-6">❤️ ${h.stats.hp}</div><div class="col-6">⚔️ ${h.stats.atk}</div><div class="col-6">🛡️ ${h.stats.def}</div><div class="col-6">⏱️ ${h.stats.aspd}s</div></div><div class="row small text-muted mb-2"><div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}%</div><div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div><div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div><div class="col-6">⚡ Crit: +${Math.round((stats.crit_chance_bonus || 0) * 100)}%</div><div class="col-6">🔄 Counter: +${Math.round((stats.counter_chance_bonus || 0) * 100)}%</div></div><div class="mb-2 small"><span class="badge bg-info me-2">Lv.${h.required_level}</span><span class="badge bg-secondary text-warning"><i class="bi bi-coin"></i> ${cost} Gold</span></div>${btn}</div></div></div></div>`}).join('')}</div>
   `);
   document.querySelectorAll('.buy-hero-btn').forEach(b=>b.addEventListener('click',async(e)=>{const hid=b.dataset.heroId;tg.showLoading();try{const r=await apiFetch('/store/buy-hero',{method:'POST',body:JSON.stringify({hero_id:hid})});r.success?(tg.showToast(r.message,'success'),await loadUserData(),renderStoreHero()):tg.showToast(r.message,'danger');}finally{tg.hideLoading();}}));
   document.getElementById('btn-back-store')?.addEventListener('click', renderStoreHome);
@@ -409,7 +409,7 @@
   <div class="card"><div class="card-body">
   <h5>🎮 Cara Bermain</h5><p>Battle Arena adalah game pertarungan otomatis di mana kamu mengendalikan hero melawan musuh komputer.</p><ol class="small"><li><strong>Pilih Hero</strong> - Pilih hero yang sudah kamu miliki dari menu "Pilih Hero".</li><li><strong>Mulai Bertarung</strong> - Klik "Mulai Bertarung" untuk melawan musuh secara otomatis. Biaya: ${BATTLE_COST} gold.</li><li><strong>Hasil Pertarungan</strong> - Dapatkan EXP dan gold jika menang. Jika kalah, tetap dapat sedikit hadiah.</li><li><strong>Tingkatkan Hero</strong> - EXP akan menaikkan level hero, meningkatkan HP, ATK, DEF.</li></ol>
   <h5>💰 Mata Uang</h5><ul class="small"><li><strong>Gold</strong> - Diperoleh dari battle, mining, atau kemenangan.</li><li><strong>Diamond</strong> - Mata uang premium, untuk upgrade spesial.</li></ul>
-  <h5>⛏️ Mining Gold</h5><p class="small">Gold dapat ditambang otomatis setiap jam. Klik ikon <i class="bi bi-gem me-2"></i> di atas untuk klaim.</p>
+  <h5>⛏️ Mining Gold</h5><p class="small">Gold dapat ditambang otomatis setiap jam. Klik ikon <i class="bi bi-coin me-2"></i> di atas untuk klaim.</p>
   <h5>🛒 Toko</h5><ul class="small"><li><strong>Beli Hero</strong> - Hero baru memiliki skill pasif unik.</li><li><strong>Beli Diamond</strong> - Tukar gold dengan diamond.</li><li><strong>Upgrade</strong> - Tingkatkan ATK, DEF, HP, Critical Chance.</li></ul>
   <h5>⚔️ Pertarungan</h5><ul class="small"><li>Setiap serangan memiliki peluang critical, block, dan miss.</li><li>Hero & musuh memiliki skill pasif/spesial.</li></ul>
   <h5>📈 Level & EXP</h5><p class="small">User level & hero level meningkat seiring EXP.</p>
@@ -497,7 +497,7 @@
   <div class="small text-muted">${dateStr}, ${timeStr}</div>
   <div class="small">
   <span class="me-3">⚔️ +${h.exp_gained}</span>
-  <span><i class="bi bi-gem"></i> +${h.gold_gained}</span>
+  <span><i class="bi bi-coin"></i> +${h.gold_gained}</span>
   </div>
   <div class="small">
   <button class="btn btn-sm btn-outline-info view-log-btn" data-index='${index}'>
