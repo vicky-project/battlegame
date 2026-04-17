@@ -6,6 +6,7 @@ use Modules\BattleGame\Characters\Base\Enemy;
 use Modules\BattleGame\Characters\CharacterRegistry;
 use Modules\BattleGame\Enums\BattleResult;
 use Modules\BattleGame\Enums\BattleType;
+use Modules\BattleGame\Enums\SkillType;
 use Modules\BattleGame\Models\BattleHistory;
 use Modules\BattleGame\Models\BattleUserHero;
 use Modules\BattleGame\Models\BattleUserProgress;
