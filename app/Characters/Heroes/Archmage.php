@@ -14,7 +14,7 @@ class Archmage extends Hero
       name: 'Archmage',
       type: HeroType::MAGE, // Bisa pakai MAGE atau buat enum baru ARCHMAGE
       description: 'Penyihir legendaris dengan kekuatan sihir tak terbatas.',
-      emoji: '🧙‍♂️🔥',
+      emoji: '🧙🔥',
       unlockRequirements: [
         'required_user_level' => 25,
         'unlock_cost_diamond' => 500,

@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class Necromancer extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'necromancer', name: 'Necromancer', emoji: '🧙‍♂️💀', minLevel: 6, maxLevel: 9, rewards: ['exp' => 100, 'gold' => 70]);
+    parent::__construct(id: 'necromancer', name: 'Necromancer', emoji: '🧙💀', minLevel: 6, maxLevel: 9, rewards: ['exp' => 100, 'gold' => 70]);
   }
   public function baseHp(): int {
     return 280;
