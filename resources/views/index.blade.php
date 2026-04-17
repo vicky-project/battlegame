@@ -258,7 +258,7 @@
   <div class="card">
   <div class="card-body text-center">
   <span style="font-size:48px;">${r.player_emoji}</span>
-  <h5>${r.player_name} <span class="badge bg-secondary">Lv.${state.battleResult.player_level || '?'}${state.battleResult.player_level > 30 ? ' P' : ''}</span></h5>
+  <h5>${r.player_name}</h5>
   <div class="d-flex justify-content-center align-items-center gap-2 small">
   <span class="badge bg-secondary">Lv.${state.battleResult.player_level || '?'}</span>
   <span><span style="font-size: 14px;">❤️ </span>${r.player_hp_remaining}/${playerMaxHp}</span>
