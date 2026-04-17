@@ -65,8 +65,20 @@ class BattleSimulator
       return;
     }
 
-    if ($passive['type'] === SkillType::HOLY_SHIELD->value) {
-      $this->playerSkillCooldown['holy_shield'] = 0;
+    switch ($passive['type']) {
+      case SkillType::HOLY_SHIELD->value:
+        $this->playerSkillCooldown['holy_shield'] = 0;
+        break;
+      case SkillType::EVASION->value:
+        $this->playerStats['evasion'] = ($this->playerStats['evasion'] ?? 0) + $passive['value'];
+        break;
+      case SkillType::CRITICAL_DAMAGE->value:
+        $this->playerStats['crit_multiplier_bonus'] = ($this->playerStats['crit_multiplier_bonus'] ?? 0) + $passive['value'];
+        break;
+      case SkillType::BERSERK->value:
+        break;
+      case SkillType::DAMAGE_REDUCTION->value:
+        break;
     }
   }
 
@@ -191,6 +203,25 @@ class BattleSimulator
       ];
     }
 
+    if ($attackerSide === 'player') {
+      $passive = $this->playerStats['passive_skill'] ?? null;
+      if ($passive && $passive['type'] === SkillType::BERSERK->value) {
+        $missingHpPercent = 1 - ($attackerHp / $this->playerStats['max_hp']);
+        $attacker['atk'] *= (1 + $missingHpPercent * $passive['value']);
+      }
+    }
+    
+    if ($attackerSide === 'enemy') {
+      $ability = $this->enemy->specialAbility();
+      if ($ability['type'] === SkillType::ENRAGE) {
+        $enemyHpPercent = $attackerHp / $this->enemyStats['max_hp'];
+        if ($enemyHpPercent < 0.3) {
+          $attacker['atk'] *= (1 + $ability['value']);
+          $this->enemyStats['enrage_active'] = true;
+        }
+      }
+    }
+
     // 2. Raw damage
     $rawDamage = $attacker['atk'] - $defender['def'];
 
@@ -293,6 +324,12 @@ class BattleSimulator
         unset($this->playerStatus[StatusEffect::POISON->value]);
       }
     }
+    if (isset($this->playerStatus[StatusEffect::STUN->value])) {
+      $this->playerStatus[StatusEffect::STUN->value]['duration']--;
+      if ($this->playerStatus[StatusEffect::STUN->value]['duration'] <= 0) {
+        unset($this->playerStatus[StatusEffect::STUN->value]);
+      }
+    }
   }
 
   protected function processSkillCooldowns(&$pHp): void
@@ -365,9 +402,8 @@ class BattleSimulator
 
   protected function isStunned(string $side): bool
   {
-    return isset($this-> {
-      $side . 'Status'
-    }[StatusEffect::STUN->value]);
+    $statusArray = $side . 'Status';
+    return isset($this-> {$statusArray}[StatusEffect::STUN->value]);
   }
 
   public function getLog(): array
