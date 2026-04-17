@@ -304,8 +304,7 @@
   state.storeData.gold = d.gold;
   if (d.earned > 0) showOverlay('mining-claim-overlay', `<span style="font-size:80px;">⛏️💰</span><h2 style="color:#FFD700;">+${d.earned} Gold</h2><p>Berhasil diklaim!</p>`, 2000);
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Tambang Gold</h2></div>
+  ${renderHeader('btn-back-home', 'Tambang Gold')}
   <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <i class="bi bi-coin"></i>${d.gold}</h4><p>Gold per jam: <i class="bi bi-coin"></i>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
   `);
   startMiningTimer(d.next_claim_seconds, d.can_claim);
@@ -377,8 +376,7 @@
   if (!resp.success) return;
   state.diamondPackages = resp.data;
   setAppContent(`
-  ${renderCurrencyBar()}
-  <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-store"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Beli Diamond</h2></div>
+  ${renderHeader('btn-back-store', 'Beli Diamond')}
   <div class="row g-3">${state.diamondPackages.map(p=>`<div class="col-6"><div class="card h-100"><div class="card-body text-center d-flex flex-column"><h5>${p.name}</h5><p class="display-6 my-2"><i class="bi bi-gem"></i> ${p.diamond}</p><button class="btn ${state.storeData.gold>=p.gold_cost?'btn-primary':'btn-secondary'} mt-auto w-100 buy-diamond-btn" data-package-id="${p.id}" ${state.storeData.gold<p.gold_cost?'disabled':''}>Beli <i class="bi bi-coin"></i>${p.gold_cost}</button></div></div></div>`).join('')}</div>
   `);
   document.querySelectorAll('.buy-diamond-btn').forEach(b=>b.addEventListener('click',async(e)=>{const pid=b.dataset.packageId;tg.showLoading();try{const r=await apiFetch('/store/buy-diamond',{method:'POST',body:JSON.stringify({package_id:pid})});r.success?(tg.showToast(r.data.message,'success'),state.storeData.gold=r.data.new_gold,state.storeData.diamond=r.data.new_diamond,renderStoreDiamond()):tg.showToast(r.message,'danger');}finally{tg.hideLoading();}}));
