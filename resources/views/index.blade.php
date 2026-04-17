@@ -129,6 +129,33 @@
   };
   const hideBattleLoading = () => battleLoadingOverlay?.remove() || (battleLoadingOverlay = null);
 
+  /**
+  * Memisahkan emoji dari string. Jika terdapat lebih dari satu emoji,
+  * emoji pertama menjadi main, sisanya menjadi layer.
+  * @param {string} emojiString - String emoji dari backend (contoh: "🧙‍♂️🔥")
+  * @param {number} size - Ukuran font dalam px
+  * @returns {string} HTML string
+  */
+  function renderLayeredEmoji(emojiString, size = 48) {
+  // Regex untuk mencocokkan emoji (termasuk variasi dan ZWJ)
+  const emojiRegex = /\p{Extended_Pictographic}|\p{Emoji_Component}/gu;
+  const emojis = emojiString.match(emojiRegex) || [emojiString];
+
+  if (emojis.length === 1) {
+  return `<span style="font-size:${size}px;">${emojis[0]}</span>`;
+  }
+
+  const mainEmoji = emojis[0];
+  const layerEmoji = emojis.slice(1).join('');
+
+  return `
+  <span style="display:inline-block; position:relative; width:${size}px; height:${size}px; vertical-align:middle;">
+  <span style="position:absolute; top:0; left:0; font-size:${size}px; opacity:0.7;">${layerEmoji}</span>
+  <span style="position:absolute; top:0; left:0; font-size:${size-6}px; transform:translate(3px, 3px);">${mainEmoji}</span>
+  </span>
+  `;
+  }
+
   // ======================== HOME SCREEN ========================
   async function renderHomeScreen() {
   const user = state.user || {};
@@ -140,7 +167,7 @@
   setAppContent(`
   ${renderHeader(null)}
   <div class="d-flex align-items-center mb-3"><div style="font-size:48px;margin-right:12px;">😊</div><div><h2 class="h5 mb-0">Selamat datang, ${state.user?.first_name || 'Petarung'}!</h2><span class="badge bg-secondary">Lv. ${levelLabel}</span></div></div>
-  ${selectedHero ? `<div class="card mb-3"><div class="card-body d-flex align-items-center"><span style="font-size:40px;margin-right:16px;">${selectedHero.emoji||'👤'}</span><div class="flex-grow-1"><h5 class="card-title mb-1">${selectedHero.name} Lv.${selectedHero.level} ${selectedHero.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5><div class="row small"><div class="col-4">❤️ ${selectedHero.stats.hp}</div><div class="col-4">⚔️ ${selectedHero.stats.atk}</div><div class="col-4">🛡️ ${selectedHero.stats.def}</div></div></div><button class="btn btn-sm btn-outline-secondary" id="btn-change-hero"><i class="bi bi-arrow-repeat"></i></button></div></div>`
+  ${selectedHero ? `<div class="card mb-3"><div class="card-body d-flex align-items-center"><span style="font-size:40px;margin-right:16px;">${renderLayeredEmoji(selectedHero.emoji||'👤', 40)}</span><div class="flex-grow-1"><h5 class="card-title mb-1">${selectedHero.name} Lv.${selectedHero.level} ${selectedHero.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5><div class="row small"><div class="col-4">❤️ ${selectedHero.stats.hp}</div><div class="col-4">⚔️ ${selectedHero.stats.atk}</div><div class="col-4">🛡️ ${selectedHero.stats.def}</div></div></div><button class="btn btn-sm btn-outline-secondary" id="btn-change-hero"><i class="bi bi-arrow-repeat"></i></button></div></div>`
   : `<div class="card mb-3"><div class="card-body text-center py-3"><p class="mb-2">Belum ada hero dipilih</p><button class="btn btn-primary btn-sm" id="btn-select-hero-empty">Pilih Hero</button></div></div>`}
   <div class="card mb-3"><div class="card-body"><div class="d-flex justify-content-between mb-1"><span>Level ${levelLabel}</span><span>${expDisplay}</span></div><div class="progress" style="height:20px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width:${expPercent}%">${Math.floor(expPercent)}%</div></div></div></div>
   <div class="row g-2 mb-3">
@@ -185,7 +212,7 @@
   }
   setAppContent(`
   ${renderHeader('btn-back-home', 'Pilih Hero')}
-  <div class="row">${state.userHeroes.map(h=>`<div class="col-12 mb-3"><div class="card ${h.id===state.selectedHeroId?'border-primary':''}"><div class="card-body d-flex align-items-center"><span style="font-size:48px;margin-right:16px;">${h.emoji||'👤'}</span><div class="flex-grow-1"><div class="d-flex justify-content-between"><h5 class="card-title">${h.name} Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5>${h.id===state.selectedHeroId?'<span class="badge bg-primary mb-2">✔️️</span>':''}</div><div class="row small mb-1"><div class="col-6">❤️ HP: ${h.stats.hp}</div><div class="col-6">⚔️ ATK: ${h.stats.atk}</div><div class="col-6">🛡️ DEF: ${h.stats.def}</div><div class="col-6">⏱️ ASPD: ${h.stats.aspd}s</div></div><div class="row small text-muted mb-2"><div class="col-6">🎯 Akurasi: ${Math.round(h.stats.accuracy * 100)}%</div><div class="col-6">👟 Evasi: ${Math.round(h.stats.evasion * 100)}%</div><div class="col-6">🛡️ Block: ${Math.round(h.stats.block_chance * 100)}%</div><div class="col-6">⚡ Crit: +${Math.round((h.stats.crit_chance_bonus || 0) * 100)}%</div><div class="col-6">🔄 Counter: +${Math.round((h.stats.counter_chance_bonus || 0) * 100)}%</div></div><button class="btn btn-sm ${h.id===state.selectedHeroId?'btn-success':'btn-outline-primary'} w-100 mt-2 select-hero-btn" data-hero-id="${h.id}" ${h.id===state.selectedHeroId?'disabled':''}>${h.id===state.selectedHeroId?'Terpilih':'Pilih Hero Ini'}</button></div></div></div></div>`).join('')}</div>
+  <div class="row">${state.userHeroes.map(h=>`<div class="col-12 mb-3"><div class="card ${h.id===state.selectedHeroId?'border-primary':''}"><div class="card-body d-flex align-items-center"><span style="font-size:48px;margin-right:16px;">${renderLayeredEmoji(h.emoji||'👤', 16)}</span><div class="flex-grow-1"><div class="d-flex justify-content-between"><h5 class="card-title">${h.name} Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5>${h.id===state.selectedHeroId?'<span class="badge bg-primary mb-2">✔️️</span>':''}</div><div class="row small mb-1"><div class="col-6">❤️ HP: ${h.stats.hp}</div><div class="col-6">⚔️ ATK: ${h.stats.atk}</div><div class="col-6">🛡️ DEF: ${h.stats.def}</div><div class="col-6">⏱️ ASPD: ${h.stats.aspd}s</div></div><div class="row small text-muted mb-2"><div class="col-6">🎯 Akurasi: ${Math.round(h.stats.accuracy * 100)}%</div><div class="col-6">👟 Evasi: ${Math.round(h.stats.evasion * 100)}%</div><div class="col-6">🛡️ Block: ${Math.round(h.stats.block_chance * 100)}%</div><div class="col-6">⚡ Crit: +${Math.round((h.stats.crit_chance_bonus || 0) * 100)}%</div><div class="col-6">🔄 Counter: +${Math.round((h.stats.counter_chance_bonus || 0) * 100)}%</div></div><button class="btn btn-sm ${h.id===state.selectedHeroId?'btn-success':'btn-outline-primary'} w-100 mt-2 select-hero-btn" data-hero-id="${h.id}" ${h.id===state.selectedHeroId?'disabled':''}>${h.id===state.selectedHeroId?'Terpilih':'Pilih Hero Ini'}</button></div></div></div></div>`).join('')}</div>
   <div class="d-grid mt-3"><button class="btn btn-primary" id="btn-done-select">Selesai</button></div>
   `);
   document.querySelectorAll('.select-hero-btn').forEach(b=>b.addEventListener('click',async(e)=>{
