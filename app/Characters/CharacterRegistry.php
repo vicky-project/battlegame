@@ -20,6 +20,7 @@ class CharacterRegistry
       'mage' => new Heroes\Mage(),
       'berserker' => new Heroes\Berserker(),
       'paladin' => new Heroes\Paladin(),
+      'archmage' => new Heroes\Archmage(),
     ];
   }
 
@@ -38,6 +39,7 @@ class CharacterRegistry
       'ancient_dragon' => new Enemies\AncientDragon(),
       'lich_king' => new Enemies\LichKing(),
       'demon_lord' => new Enemies\DemonLord(),
+      'void_lord' => new Enemies\VoidLord()
     ];
   }
 

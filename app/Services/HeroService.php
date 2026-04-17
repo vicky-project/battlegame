@@ -50,13 +50,18 @@ class HeroService
     $req = $hero->unlockRequirements;
     $requiredLevel = $req['required_user_level'] ?? 1;
     $costGold = $req['unlock_cost_gold'] ?? 0;
+    $costDiamond = $req['unlock_cost_diamond'] ?? 0;
 
     if ($progress->level < $requiredLevel) {
       throw new \Exception('Level user belum mencukupi');
     }
 
     $currency = UserCurrency::forUser($user);
-    if (!$currency->deductGold($costGold)) {
+    if ($costDiamond > 0 && !$currency->deductDiamond($costDiamond)) {
+      throw new \Exception('Diamond tidak cukup');
+    }
+
+    if ($costGold > 0 && !$currency->deductGold($costGold)) {
       throw new \Exception('Gold tidak cukup');
     }
 
@@ -89,6 +94,7 @@ class HeroService
       $req = $hero->unlockRequirements;
       $requiredLevel = $req['required_user_level'] ?? 1;
       $costGold = $req['unlock_cost_gold'] ?? 0;
+      $costDiamond = $req['unlock_cost_diamond'] ?? 0;
 
       $canBuy = !$owned && $progress->level >= $requiredLevel && $currency->gold >= $costGold;
 
@@ -112,6 +118,7 @@ class HeroService
         ],
         'required_level' => $requiredLevel,
         'cost_gold' => $costGold,
+        'cost_diamond' => $costDiamond,
         'owned' => $owned,
         'can_buy' => $canBuy,
       ];

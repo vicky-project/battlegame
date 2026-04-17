@@ -47,6 +47,16 @@ class UserCurrency extends Model
     return true;
   }
 
+  public function deductDiamond(int $amount): bool
+  {
+    if ($this->diamond < $amount) {
+      return false;
+    }
+    $this->diamond -= $amount;
+    $this->save();
+    return true;
+  }
+
   /**
   * Klaim gold mining jika interval sudah terlewati.
   * Mengembalikan jumlah gold yang didapat (0 jika belum waktunya).
