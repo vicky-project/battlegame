@@ -136,7 +136,7 @@
   * @param {number} size - Ukuran font dalam px
   * @returns {string} HTML string
   */
-  function renderLayeredEmoji(emojiString, size = 48) {
+  function renderLayeredEmoji(emojiString, size = 60) {
   // Regex untuk mencocokkan emoji (termasuk variasi dan ZWJ)
   const emojiRegex = /\p{Extended_Pictographic}|\p{Emoji_Component}/gu;
   const emojis = emojiString.match(emojiRegex) || [emojiString];
@@ -296,7 +296,7 @@
   <div class="col-6">
   <div class="card">
   <div class="card-body text-center">
-  <span style="font-size:48px;">${r.enemy_emoji}</span>
+  <span style="font-size:48px;">${renderLayeredEmoji(r.enemy_emoji)}</span>
   <h5>${r.enemy_name}</h5>
   <div class="d-flex justify-content-center align-items-center gap-2 small">
   <span class="badge bg-secondary">Lv.${state.battleResult.enemy_level || '?'}</span>
