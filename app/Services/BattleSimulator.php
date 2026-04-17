@@ -26,9 +26,11 @@ class BattleSimulator
   protected const BASE_CRIT_MULTIPLIER = 1.5;
   protected const COUNTER_CHANCE = 0.3;
   protected const COUNTER_DAMAGE_RATIO = 0.5;
+  
+  protected const SIMULATION_SPEED_FACTOR = 0.05;
 
   public function __construct(
-    protected array $playerStats, // Statistik final hero (sudah termasuk level & upgrade)
+    protected array $playerStats,
     protected Enemy $enemy,
     protected int $enemyLevel
   ) {
@@ -163,6 +165,8 @@ class BattleSimulator
           break;
         }
       }
+      
+      usleep((int) ($delta * 1000000 * self::SIMULATION_SPEED_FACTOR));
     }
 
     $this->winner = $pHp > 0 ? $this->playerName : $this->enemyName;
