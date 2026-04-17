@@ -306,7 +306,7 @@
   setAppContent(`
   ${renderCurrencyBar()}
   <div class="d-flex align-items-center mb-3"><button class="btn btn-link p-0 me-2" id="btn-back-home"><i class="bi bi-arrow-left fs-5"></i></button><h2 class="h4 mb-0">Tambang Gold</h2></div>
-  <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <span class="me-2">$</span>${d.gold}</h4><p>Gold per jam: <span class="me-2">$</span>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
+  <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <span>$</span>${d.gold}</h4><p>Gold per jam: <span>$</span>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
   `);
   startMiningTimer(d.next_claim_seconds, d.can_claim);
   } finally { tg.hideLoading(); }
