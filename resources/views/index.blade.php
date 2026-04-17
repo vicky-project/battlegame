@@ -145,7 +145,7 @@
   ${[['⚔️','Total',user.total_battles],['🏆','Menang',user.total_wins],['💀','Kalah',user.total_losses]].map(([icon,label,val])=>`<div class="col-4"><div class="card text-center"><div class="card-body py-2"><div class="fs-4">${icon}</div><div class="fw-bold ${label==='Menang'?'text-success':label==='Kalah'?'text-danger':''}">${val||0}</div><small>${label}</small></div></div></div>`).join('')}
   </div>
   <div class="card mb-3"><div class="card-body d-flex justify-content-between align-items-center"><div><i class="bi bi-minecart-loaded"></i> Tambang Gold <span class="badge bg-warning text-dark ms-2" id="mining-preview-timer">--:--</span></div><button class="btn btn-sm btn-outline-warning" id="btn-mining-preview">Klaim <i class="bi bi-arrow-right"></i></button></div></div>
-  <div class="d-grid gap-2"><button class="btn btn-primary btn-lg" id="btn-start-battle"><i class="bi bi-play-fill"></i> Mulai Bertarung (<span>$</span> ${BATTLE_COST})</button></div>
+  <div class="d-grid gap-2"><button class="btn btn-primary btn-lg" id="btn-start-battle"><i class="bi bi-play-fill"></i> Mulai Bertarung (<span>$</span>${BATTLE_COST})</button></div>
   `);
   startMiningPreviewTimer();
   document.getElementById('btn-start-battle')?.addEventListener('click', ()=> state.selectedHeroId ? startBattleVsComputer(state.selectedHeroId) : (tg.showToast('Pilih hero', 'warning'), renderSelectHeroScreen()));
@@ -278,7 +278,7 @@
   </div>
   </div>
   <div class="d-grid gap-2 mb-3">
-  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (<span>$</span> ${BATTLE_COST})</button>
+  <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (<span>$</span>${BATTLE_COST})</button>
   <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
   </div>
   <div class="card">
@@ -394,7 +394,7 @@
   state.upgrades = resp.data;
   setAppContent(`
   ${renderHeader('btn-back-store', 'Upgrade')}
-  <div class="row g-3">${state.upgrades.map(u=>{const cost=u.next_cost,canBuy=u.can_upgrade&&((u.cost_type==='gold'&&state.storeData.gold>=cost)||(u.cost_type==='diamond'&&state.storeData.diamond>=cost));return`<div class="col-12"><div class="card"><div class="card-body"><h5>${u.name}</h5><p>${u.description}</p><p>Level: ${u.current_level}/${u.max_level}</p><button class="btn ${canBuy?'btn-primary':'btn-secondary'} w-100 buy-upgrade-btn" data-upgrade-id="${u.id}" ${!canBuy?'disabled':''}>${u.current_level>=u.max_level?'Maksimal':`Level ${u.current_level+1} (${u.cost_type==='gold'?'💰':'💎'}${cost})`}</button></div></div></div>`}).join('')}</div>
+  <div class="row g-3">${state.upgrades.map(u=>{const cost=u.next_cost,canBuy=u.can_upgrade&&((u.cost_type==='gold'&&state.storeData.gold>=cost)||(u.cost_type==='diamond'&&state.storeData.diamond>=cost));return`<div class="col-12"><div class="card"><div class="card-body"><h5>${u.name}</h5><p>${u.description}</p><p>Level: ${u.current_level}/${u.max_level}</p><button class="btn ${canBuy?'btn-primary':'btn-secondary'} w-100 buy-upgrade-btn" data-upgrade-id="${u.id}" ${!canBuy?'disabled':''}>${u.current_level>=u.max_level?'Maksimal':`Level ${u.current_level+1} (${u.cost_type==='gold'?'<i class="bi bi-coin"></i>':'💎'}${cost})`}</button></div></div></div>`}).join('')}</div>
   `);
   document.querySelectorAll('.buy-upgrade-btn').forEach(b=>b.addEventListener('click',async(e)=>{const uid=b.dataset.upgradeId;tg.showLoading();try{const r=await apiFetch('/store/buy-upgrade',{method:'POST',body:JSON.stringify({upgrade_id:uid})});r.success?(tg.showToast(r.data.message,'success'),state.storeData.gold=r.data.new_gold,state.storeData.diamond=r.data.new_diamond,renderStoreUpgrade()):tg.showToast(r.message,'danger');}finally{tg.hideLoading();}}));
   document.getElementById('btn-back-store')?.addEventListener('click', renderStoreHome);
