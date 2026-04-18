@@ -17,6 +17,36 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+  .custom-tooltip .tooltip-inner {
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    max-width: 200px;
+  }
+
+  .custom-tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #212529 !important;
+  }
+
+  .custom-tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+    border-bottom-color: #212529 !important;
+  }
+
+  .custom-tooltip.bs-tooltip-start .tooltip-arrow::before {
+    border-left-color: #212529 !important;
+  }
+
+  .custom-tooltip.bs-tooltip-end .tooltip-arrow::before {
+    border-right-color: #212529 !important;
+  }
+</style>
+@endpush
+
 @push('scripts')
 <script>
   (function() {
@@ -170,14 +200,18 @@
   `;
   }
 
-  function initTooltips() {
+  function initTooltips(selector = '[data-bs-toggle="tooltip"]') {
   // Hapus tooltip yang sudah ada untuk mencegah duplikasi
-  const tooltips = bootstrap.Tooltip.getInstance('.stat-item');
+  document.querySelectorAll(selector).forEach(el => {
+  const tooltips = bootstrap.Tooltip.getInstance(el);
   if (tooltips) tooltips.dispose();
+  });
 
   // Inisialisasi ulang semua elemen dengan class .stat-item
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+  const tooltipTriggerList = document.querySelectorAll(selector);
+  [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el, {
+  customClass: 'custom-tooltip'
+  }));
   }
 
   // ======================== HOME SCREEN ========================
