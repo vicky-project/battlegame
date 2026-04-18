@@ -238,8 +238,8 @@
   <div class="flex-grow-1">
   <div class="d-flex justify-content-between align-items-start">
   <div>
-  <h5 class="card-title mb-0">${h.name}</h5>
-  <span class="badge bg-secondary">Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</span>
+  <h5 class="card-title mb-0">${h.name}<span class="badge bg-secondary">Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</span>
+  </h5>
   </div>
   ${isSelected ? '<span class="badge bg-primary">✔️</span>' : ''}
   </div>
