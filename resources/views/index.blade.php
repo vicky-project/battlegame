@@ -228,13 +228,13 @@
   <div class="col-12 mb-3">
   <div class="card ${isSelected ? 'border-primary' : ''}">
   <div class="card-body">
-  <!-- Baris 1: Emoji + Stats Dasar -->
+  <!-- Baris 1: Emoji + Stats Dasar (dalam satu baris) -->
   <div class="d-flex align-items-start">
-  <!-- Emoji Hero -->
+  <!-- Emoji Hero (kiri) -->
   <div class="me-3">
-  ${renderLayeredEmoji(h.emoji || '👤', 56)}
+  ${renderLayeredEmoji(h.emoji || '👤', 48)}
   </div>
-  <!-- Nama, Level, dan Stats Dasar -->
+  <!-- Nama, Level, dan Stats Dasar (kanan) -->
   <div class="flex-grow-1">
   <div class="d-flex justify-content-between align-items-center">
   <div>
@@ -252,8 +252,8 @@
   </div>
   </div>
   </div>
-  <!-- Baris 2: Skill Tambahan (di bawah emoji, dengan indentasi) -->
-  <div class="row small text-muted mt-2" style="margin-left: 72px;">
+  <!-- Baris 2: Skill Tambahan (di bawah baris pertama, dengan indentasi) -->
+  <div class="row small text-muted mt-2" style="margin-left: 56px;">
   <div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}% ${bonusAccuracy > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusAccuracy * 100)}%</span>` : ''}</div>
   <div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div>
   <div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div>
