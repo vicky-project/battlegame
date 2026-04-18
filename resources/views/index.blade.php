@@ -952,14 +952,32 @@
   const leftPart = firstLine.substring(0, vsIndex).replace(/^Pertarungan dimulai!\s*/, '');
   const rightPart = firstLine.substring(vsIndex + 4);
 
-  // Fungsi helper untuk ekstrak nama dan HP dari bagian string
+  // Fungsi ekstraksi yang lebih toleran
   function extractCharacterInfo(part, isEnemy = false) {
-  // Pola: (emoji) Nama (HP: XXX)   atau untuk enemy: (emoji) Nama (Level X, HP: XXX)
-  const regex = isEnemy
-  ? /^(.+?)\s+([^()]+?)\s*\(Level\s*\d+,\s*HP:\s*([\d.]+)\)/
-  : /^(.+?)\s+([^()]+?)\s*\(HP:\s*([\d.]+)\)/;
-  const match = part.match(regex);
-  if (!match) return null;
+  // Pola dasar: (emoji) Nama (HP: XXX) atau (emoji) Nama (Level X, HP: XXX)
+  let regex;
+  if (isEnemy) {
+  regex = /^(.+?)\s+([^()]+?)\s*\(Level\s*\d+,\s*HP:\s*([\d.]+)\)/;
+  } else {
+  regex = /^(.+?)\s+([^()]+?)\s*\(HP:\s*([\d.]+)\)/;
+  }
+  let match = part.match(regex);
+
+  // Fallback: jika formatnya berbeda, coba ekstrak dengan lebih longgar
+  if (!match) {
+  // Cari pola HP: XXX di bagian akhir
+  const hpMatch = part.match(/HP:\s*([\d.]+)\)?/);
+  if (!hpMatch) return null;
+  const maxHp = parseFloat(hpMatch[1]);
+  // Ambil teks sebelum tanda kurung
+  const beforeParen = part.split('(')[0].trim();
+  // Pisahkan emoji dan nama (asumsi emoji di depan)
+  const emojiMatch = beforeParen.match(/^(\S+)\s+(.+)$/);
+  if (emojiMatch) {
+  return { emoji: emojiMatch[1], name: emojiMatch[2].trim(), maxHp };
+  }
+  return { emoji: '👤', name: beforeParen, maxHp };
+  }
   return {
   emoji: match[1].trim(),
   name: match[2].trim(),
@@ -1000,6 +1018,7 @@
   <div class="position-relative d-inline-block">
   <div id="replay-player-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(playerInfo.emoji, 80)}</div>
   <div id="player-damage-popup" class="damage-popup"></div>
+  <div id="player-heal-popup" class="heal-popup"></div>
   </div>
   <div class="text-white fw-bold mt-2">${playerInfo.name}</div>
   <div class="hp-bar-container mt-2">
@@ -1017,6 +1036,7 @@
   <div class="position-relative d-inline-block">
   <div id="replay-enemy-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(enemyInfo.emoji, 80)}</div>
   <div id="enemy-damage-popup" class="damage-popup"></div>
+  <div id="enemy-heal-popup" class="heal-popup"></div>
   </div>
   <div class="text-white fw-bold mt-2">${enemyInfo.name}</div>
   <div class="hp-bar-container mt-2">
@@ -1030,15 +1050,17 @@
   `;
   document.body.appendChild(overlay);
 
-  // === 3. CSS ===
+  // === 3. CSS (ditambah popup heal) ===
   const style = document.createElement('style');
   style.textContent = `
   .hp-bar-container { width: 100%; height: 16px; background: #333; border-radius: 20px; position: relative; overflow: hidden; margin: 0 auto; }
   .hp-bar-fill { height: 100%; background: linear-gradient(90deg, #e74c3c, #c0392b); border-radius: 20px; transition: width 0.3s ease; }
   .hp-text { position: absolute; left: 0; right: 0; top: -2px; color: white; font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px black; }
   .damage-popup { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; color: #ff6b6b; opacity: 0; white-space: nowrap; pointer-events: none; text-shadow: 2px 2px 4px black; z-index: 10; }
+  .heal-popup { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: bold; color: #2ecc71; opacity: 0; white-space: nowrap; pointer-events: none; text-shadow: 2px 2px 4px black; z-index: 10; }
   .splash-message { position: absolute; top: -60px; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #f1c40f; opacity: 0; white-space: nowrap; background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 30px; pointer-events: none; z-index: 20; border: 1px solid #f1c40f; }
   @keyframes popDamage { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 20% { opacity: 1; transform: translateX(-50%) translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-30px); } }
+  @keyframes popHeal { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 20% { opacity: 1; transform: translateX(-50%) translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-30px); } }
   @keyframes popSplash { 0% { opacity: 0; transform: translateX(-50%) scale(0.5); } 20% { opacity: 1; transform: translateX(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) scale(1.2); } }
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
   @keyframes attackPlayer { 0%,100% { transform: scale(1) translateX(0); } 50% { transform: scale(1.2) translateX(20px); } }
@@ -1055,6 +1077,8 @@
   const enemyHpText = document.getElementById('replay-enemy-hp');
   const playerDmgPopup = document.getElementById('player-damage-popup');
   const enemyDmgPopup = document.getElementById('enemy-damage-popup');
+  const playerHealPopup = document.getElementById('player-heal-popup');
+  const enemyHealPopup = document.getElementById('enemy-heal-popup');
   const splashMsg = document.getElementById('splash-message');
   const logMini = document.getElementById('replay-log-mini');
 
@@ -1065,6 +1089,14 @@
   popup.style.animation = 'none';
   popup.offsetHeight;
   popup.style.animation = 'popDamage 1s ease-out forwards';
+  }
+
+  function showHeal(target, amount) {
+  const popup = target === 'player' ? playerHealPopup : enemyHealPopup;
+  popup.textContent = `+${Math.floor(amount)}`;
+  popup.style.animation = 'none';
+  popup.offsetHeight;
+  popup.style.animation = 'popHeal 1s ease-out forwards';
   }
 
   function showSplash(text, color = '#f1c40f') {
@@ -1099,7 +1131,7 @@
   const line = log[logIndex];
   logMini.innerHTML = `<div style="color:#ccc;">${escapeHtml(line)}</div>`;
 
-  // Deteksi aksi berdasarkan substring
+  // === Deteksi aksi ===
   const hasPlayerAttack = line.includes(playerInfo.name) && line.includes('menyerang');
   const hasEnemyAttack = line.includes(enemyInfo.name) && line.includes('menyerang');
   const hasCounter = line.includes('membalas');
@@ -1138,23 +1170,29 @@
   }
   }
 
-  // Heal/Shield (langsung tambah HP)
+  // === Heal (Perisai Suci / mencuri nyawa) ===
   const healMatch = line.match(/(?:mendapatkan|mencuri nyawa)\s.*?\+(\d+)\s*HP/i);
   if (healMatch) {
   const healAmount = parseInt(healMatch[1]);
   if (line.includes(playerInfo.name)) {
   pHp = Math.min(playerInfo.maxHp, pHp + healAmount);
-  showSplash(`+${healAmount} HP`, '#2ecc71');
+  showHeal('player', healAmount);
   } else if (line.includes(enemyInfo.name)) {
   eHp = Math.min(enemyInfo.maxHp, eHp + healAmount);
-  showSplash(`+${healAmount} HP`, '#2ecc71');
+  showHeal('enemy', healAmount);
   }
   updateHpBars();
   }
 
-  // Cari klausa "tersisa" untuk update HP
-  const playerRemaining = line.match(new RegExp(`${playerInfo.name}.*?tersisa\\s+([\\d.]+)`));
-  const enemyRemaining = line.match(new RegExp(`${enemyInfo.name}.*?tersisa\\s+([\\d.]+)`));
+  // === Update HP dari klausa "tersisa" ===
+  // Cari pola: "HP Nama tersisa XXX" atau "Nama tersisa XXX"
+  const playerRemaining1 = line.match(new RegExp(`HP\\s+${playerInfo.name}\\s+tersisa\\s+([\\d.]+)`));
+  const playerRemaining2 = line.match(new RegExp(`${playerInfo.name}\\s+tersisa\\s+([\\d.]+)`));
+  const enemyRemaining1 = line.match(new RegExp(`HP\\s+${enemyInfo.name}\\s+tersisa\\s+([\\d.]+)`));
+  const enemyRemaining2 = line.match(new RegExp(`${enemyInfo.name}\\s+tersisa\\s+([\\d.]+)`));
+
+  const playerRemaining = playerRemaining1 || playerRemaining2;
+  const enemyRemaining = enemyRemaining1 || enemyRemaining2;
 
   if (playerRemaining) {
   const newHp = parseFloat(playerRemaining[1]);
