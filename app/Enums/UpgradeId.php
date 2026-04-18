@@ -38,7 +38,7 @@ enum UpgradeId: string
         self::CRITICAL_CHANCE => 'Kesempatan critical hit +2% per level',
         self::ACCURACY_BOOST => 'Meningkatkan akurasi sebesar 2% per level',
         self::COUNTER_ATTACK_BOOST => 'Meningkatkan peluang counterattack sebesar 2% per level',
-        self::POISON_RESISTANCE => 'Mengurangi damage racun sebesar 5% per level (maks 50%)',
+        self::POISON_RESISTANCE => 'Mengurangi damage & durasi racun sebesar 5% per level (maks 50%)',
         self::STUN_RESISTANCE => 'Mengurangi durasi stun sebesar 10% per level (maks 50%)',
         self::LIFESTEAL_BREAK => 'Mengurangi lifesteal musuh sebesar 6% per level (maks 30%)',
       };

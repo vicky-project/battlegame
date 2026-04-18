@@ -315,17 +315,13 @@ class BattleSimulator
   protected function processStatusEffects(&$pHp, &$eHp): void
   {
     if (isset($this->playerStatus[StatusEffect::POISON->value])) {
-      $baseDmg = $this->playerStatus[StatusEffect::POISON->value]['damage'];
-      $resistance = $this->playerStats['poison_resistance'] ?? 0;
-      $dmg = (int) max(1, $baseDmg * (1 - $resistance));
-
+      $dmg = $this->playerStatus[StatusEffect::POISON->value]['damage'];
       $pHp -= $dmg;
       $this->log[] = sprintf(
-        "[%.1fs] %s terkena racun! -%d HP%s",
+        "[%.1fs] %s terkena racun! -%d HP",
         $this->simulationTime,
         $this->playerName,
-        $dmg,
-        $resistance > 0 ? " (dikurangi " . round($resistance * 100) . "%)" : ""
+        $dmg
       );
       $this->playerStatus[StatusEffect::POISON->value]['duration']--;
       if ($this->playerStatus[StatusEffect::POISON->value]['duration'] <= 0) {
@@ -374,14 +370,24 @@ class BattleSimulator
 
       if ($ability['type'] === SkillType::POISON) {
         if (mt_rand(1, 100) <= $ability['chance'] * 100) {
+          $baseDamage = $ability['damage_per_tick'];
+          $baseDuration = $ability['duration'];
+
+          $resistance = $this->playerStats['poison_resistance'] ?? 0;
+          $damage = (int) max(1, $baseDamage * (1 - $resistance));
+          $duration = (int) max(1, $baseDuration * (1 - $resistance * 0.5)); // resistensi mengurangi durasi 50% dari nilai resistensi
+
           $this->playerStatus[StatusEffect::POISON->value] = [
-            'damage' => $ability['damage_per_tick'],
-            'duration' => $ability['duration']
+            'damage' => $damage,
+            'duration' => $duration
           ];
           $this->log[] = sprintf(
-            "[%.1fs] %s terkena racun!",
+            "[%.1fs] %s terkena racun selama %d detik (damage %d)!%s",
             $this->simulationTime,
-            $this->playerName
+            $this->playerName,
+            $duration,
+            $damage,
+            $resistance > 0 ? " (dikurangi " . round($resistance * 100) . "%)" : ""
           );
         }
       }
@@ -390,7 +396,16 @@ class BattleSimulator
         $baseHeal = (int)($damageData['value'] * $ability['value']);
         $break = $this->playerStats['lifesteal_break'] ?? 0;
         $heal = (int) max(1, $baseHeal * (1 - $break));
-        $attackerHp += $heal;
+
+        // Batasi agar tidak melebihi max_hp
+        $newHp = $attackerHp + $heal;
+        $maxHp = $this->enemyStats['max_hp'];
+        if ($newHp > $maxHp) {
+          $heal = $maxHp - $attackerHp;
+          $newHp = $maxHp;
+        }
+        $attackerHp = $newHp;
+
         $this->log[] = sprintf(
           "[%.1fs] %s mencuri nyawa +%d HP!%s",
           $this->simulationTime,
