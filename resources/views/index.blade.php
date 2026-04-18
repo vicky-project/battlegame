@@ -231,11 +231,11 @@
   <!-- Baris 1: Emoji + Stats Dasar (dalam satu baris) -->
   <div class="row d-flex">
   <!-- Emoji Hero (kiri) -->
-  <div class="col-6 me-3">
+  <div class="col-6 flex-grow-1 me-3">
   ${renderLayeredEmoji(h.emoji || '👤', 48)}
   </div>
   <!-- Nama, Level, dan Stats Dasar (kanan) -->
-  <div class="col-6 flex-grow-1">
+  <div class="col-6">
   <div class="d-flex justify-content-between align-items-center">
   <div>
   <h5 class="card-title mb-0">${h.name}</h5>
@@ -252,6 +252,7 @@
   </div>
   </div>
   </div>
+  </div>
   <!-- Baris 2: Skill Tambahan (di bawah baris pertama, dengan indentasi) -->
   <div class="row small text-muted mt-2" style="margin-left: 56px;">
   <div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}% ${bonusAccuracy > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusAccuracy * 100)}%</span>` : ''}</div>
@@ -264,7 +265,6 @@
   <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-3 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
   ${isSelected ? 'Terpilih' : 'Pilih Hero Ini'}
   </button>
-  </div>
   </div>
   </div>
   `;
