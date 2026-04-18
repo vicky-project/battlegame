@@ -688,8 +688,8 @@
   showLogViewer(logData);
   } else if(simBtn) {
   const index = parseInt(simBtn.dataset.index);
-  const historyItem = state.historyList[index]?.log || [];
-  if(historyItem && historyItem.length) {
+  const historyItem = state.historyList[index] || [];
+  if(historyItem && historyItem.log) {
   animateBattleReplay(historyItem);
   } else {
   tg.showToast('Log tidak tersedia', 'warning');
@@ -897,7 +897,7 @@
   btn.addEventListener('click', (e) => {
   e.stopPropagation();
   const index = parseInt(btn.dataset.index);
-  const simData = state.historyList[index]?.log || [];
+  const simData = state.historyList[index] || [];
   animateBattleReplay(simData);
   });
   });
@@ -933,25 +933,40 @@
   return new Promise((resolve) => {
   removeOverlays();
 
-  const log = historyItem;
+  const log = historyItem.log || [];
   if (log.length === 0) {
   tg.showToast('Log kosong', 'warning');
   resolve();
   return;
   }
 
-  // Ekstrak informasi dari log pertama
+  // Ekstrak info dari log pertama dengan regex yang lebih toleran terhadap spasi
   const firstLine = log[0];
-  // Format: "Pertarungan dimulai! 🛡️✨ Paladin (HP: 382.0) vs 👹 Orc Warrior (Level 10, HP: 587.0)"
-  const playerMatch = firstLine.match(/(\S+)\s+\(HP:\s*([\d.]+)\)/);
-  const enemyMatch = firstLine.match(/vs\s+(\S+)\s+[^\(]*\([^\)]*HP:\s*([\d.]+)\)/);
+  // Pola: "Pertarungan dimulai! (emoji) Nama Hero (HP: 382.0) vs (emoji) Nama Musuh (Level 10, HP: 587.0)"
+  const vsIndex = firstLine.indexOf(' vs ');
+  if (vsIndex === -1) {
+  tg.showToast('Format log tidak dikenali', 'danger');
+  resolve();
+  return;
+  }
 
-  const playerName = playerMatch ? playerMatch[1].trim() : historyItem.hero_name;
-  const playerMaxHp = playerMatch ? parseFloat(playerMatch[2]) : 100;
-  const enemyName = enemyMatch ? enemyMatch[1].trim() : historyItem.enemy_name;
-  const enemyMaxHp = enemyMatch ? parseFloat(enemyMatch[2]) : 100;
+  const leftPart = firstLine.substring(0, vsIndex);
+  const rightPart = firstLine.substring(vsIndex + 4);
 
-  // Emoji dari historyItem
+  // Ambil nama dan HP Hero
+  const playerHpMatch = leftPart.match(/\(HP:\s*([\d.]+)\)/);
+  const playerNameMatch = leftPart.match(/\s+([^()]+?)\s*\(HP:/);
+  const playerName = playerNameMatch ? playerNameMatch[1].trim() : historyItem.hero_name;
+  const playerMaxHp = playerHpMatch ? parseFloat(playerHpMatch[1]) : 100;
+
+  // Ambil nama dan HP Musuh
+  const enemyHpMatch = rightPart.match(/\(HP:\s*([\d.]+)\)/);
+  const enemyNameMatch = rightPart.match(/\)\s*([^()]+?)\s*\(/);
+  let enemyName = enemyNameMatch ? enemyNameMatch[1].trim() : historyItem.enemy_name;
+  // Bersihkan level jika ada
+  enemyName = enemyName.replace(/\s*\(Level\s*\d+\)/, '').trim();
+  const enemyMaxHp = enemyHpMatch ? parseFloat(enemyHpMatch[1]) : 100;
+
   const playerEmoji = historyItem.hero_emoji || '👤';
   const enemyEmoji = historyItem.enemy_emoji || '👾';
 
@@ -959,7 +974,7 @@
   let eHp = enemyMaxHp;
   let logIndex = 0;
 
-  // Overlay replay
+  // Overlay
   const overlay = document.createElement('div');
   overlay.id = 'battle-replay-overlay';
   overlay.style.cssText = `
@@ -974,9 +989,7 @@
   <button class="btn btn-sm btn-outline-light" id="close-replay"><i class="bi bi-x-lg"></i></button>
   </div>
 
-  <!-- Arena -->
   <div class="d-flex justify-content-around align-items-center flex-grow-1">
-  <!-- Player -->
   <div class="text-center" style="width: 40%;">
   <div class="position-relative d-inline-block">
   <div id="replay-player-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(playerEmoji, 80)}</div>
@@ -989,13 +1002,11 @@
   </div>
   </div>
 
-  <!-- VS + Splash -->
   <div style="font-size: 40px; color: gold; position: relative;">
   ⚔️
   <div id="splash-message" class="splash-message"></div>
   </div>
 
-  <!-- Enemy -->
   <div class="text-center" style="width: 40%;">
   <div class="position-relative d-inline-block">
   <div id="replay-enemy-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(enemyEmoji, 80)}</div>
@@ -1009,12 +1020,11 @@
   </div>
   </div>
 
-  <!-- Log mini -->
-  <div style="max-height: 80px; overflow-y: auto; font-size: 12px; color: #aaa;" id="replay-log-mini"></div>
+  <div style="max-height: 60px; overflow-y: auto; font-size: 12px; color: #aaa;" id="replay-log-mini"></div>
   `;
   document.body.appendChild(overlay);
 
-  // CSS (sama seperti sebelumnya, pastikan sudah ada di global)
+  // CSS
   const style = document.createElement('style');
   style.textContent = `
   .hp-bar-container { width: 100%; height: 16px; background: #333; border-radius: 20px; position: relative; overflow: hidden; margin: 0 auto; }
@@ -1030,7 +1040,6 @@
   `;
   document.head.appendChild(style);
 
-  // Elemen UI
   const playerEmojiEl = document.getElementById('replay-player-emoji');
   const enemyEmojiEl = document.getElementById('replay-enemy-emoji');
   const playerHpFill = document.getElementById('player-hp-fill');
@@ -1083,10 +1092,10 @@
   const line = log[logIndex];
   logMini.innerHTML = `<div style="color:#ccc;">${escapeHtml(line)}</div>`;
 
+  // Deteksi siapa yang menyerang dengan lebih akurat
   const isPlayerAttacking = line.includes(playerName) && line.includes('menyerang');
   const isEnemyAttacking = line.includes(enemyName) && line.includes('menyerang');
   const isCritical = line.includes('Critical');
-  const isBlocked = line.includes('Diblok');
   const isPoison = line.includes('racun');
   const isStun = line.includes('stun');
   const isLifesteal = line.includes('mencuri nyawa');
@@ -1099,28 +1108,53 @@
   else if (isShield) showSplash('🛡️ Perisai Suci!', '#2ecc71');
   else if (isCounter) showSplash('⚡ Counter!', '#f39c12');
 
+  // Reset animasi
   playerEmojiEl.style.animation = '';
   enemyEmojiEl.style.animation = '';
+
   if (isPlayerAttacking) {
   playerEmojiEl.style.animation = 'attackPlayer 0.3s ease-out';
   enemyEmojiEl.style.animation = 'shake 0.2s ease-out';
   } else if (isEnemyAttacking) {
   enemyEmojiEl.style.animation = 'attackEnemy 0.3s ease-out';
   playerEmojiEl.style.animation = 'shake 0.2s ease-out';
+  } else if (isCounter) {
+  // Counter: yang membalas adalah defender
+  if (line.includes(playerName)) {
+  playerEmojiEl.style.animation = 'attackPlayer 0.25s ease-out';
+  enemyEmojiEl.style.animation = 'shake 0.2s ease-out';
+  } else {
+  enemyEmojiEl.style.animation = 'attackEnemy 0.25s ease-out';
+  playerEmojiEl.style.animation = 'shake 0.2s ease-out';
+  }
   }
 
-  const playerHpMatch = line.match(new RegExp(`${playerName}.*?tersisa\\s+([\\d.]+)`));
-  const enemyHpMatch = line.match(new RegExp(`${enemyName}.*?tersisa\\s+([\\d.]+)`));
+  // Update HP: cari "tersisa XXX" setelah nama karakter yang sesuai
+  const playerHpIndex = line.indexOf(playerName);
+  const enemyHpIndex = line.indexOf(enemyName);
 
-  if (playerHpMatch) {
-  const newHp = parseFloat(playerHpMatch[1]);
-  if (newHp < pHp) showDamage('player', pHp - newHp, isCritical);
-  pHp = newHp;
+  if (playerHpIndex !== -1) {
+  const afterPlayer = line.substring(playerHpIndex + playerName.length);
+  const match = afterPlayer.match(/tersisa\s+([\d.]+)/);
+  if (match) {
+  const newHp = parseFloat(match[1]);
+  if (!isNaN(newHp) && newHp < pHp) {
+  showDamage('player', pHp - newHp, isCritical);
   }
-  if (enemyHpMatch) {
-  const newHp = parseFloat(enemyHpMatch[1]);
-  if (newHp < eHp) showDamage('enemy', eHp - newHp, isCritical);
-  eHp = newHp;
+  if (!isNaN(newHp)) pHp = newHp;
+  }
+  }
+
+  if (enemyHpIndex !== -1) {
+  const afterEnemy = line.substring(enemyHpIndex + enemyName.length);
+  const match = afterEnemy.match(/tersisa\s+([\d.]+)/);
+  if (match) {
+  const newHp = parseFloat(match[1]);
+  if (!isNaN(newHp) && newHp < eHp) {
+  showDamage('enemy', eHp - newHp, isCritical);
+  }
+  if (!isNaN(newHp)) eHp = newHp;
+  }
   }
 
   updateHpBars();
