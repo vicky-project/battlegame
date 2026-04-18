@@ -284,7 +284,7 @@
   <div class="col-6">
   <div class="card">
   <div class="card-body text-center">
-  <span style="font-size:48px;">${renderLayeredEmoji(r.player_emoji)}</span>
+  ${renderLayeredEmoji(r.player_emoji, 48)}
   <h5>${r.player_name}</h5>
   <div class="d-flex justify-content-center align-items-center gap-2 small">
   <span class="badge bg-secondary">Lv.${state.battleResult.player_level || '?'}</span>
@@ -296,7 +296,7 @@
   <div class="col-6">
   <div class="card">
   <div class="card-body text-center">
-  <span style="font-size:48px;">${renderLayeredEmoji(r.enemy_emoji)}</span>
+  ${renderLayeredEmoji(r.enemy_emoji, 48)}
   <h5>${r.enemy_name}</h5>
   <div class="d-flex justify-content-center align-items-center gap-2 small">
   <span class="badge bg-secondary">Lv.${state.battleResult.enemy_level || '?'}</span>
