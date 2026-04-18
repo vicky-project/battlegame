@@ -105,7 +105,7 @@
   <div>
   <span class="badge bg-warning text-dark me-1" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${state.storeData.gold}</span>
   <span class="badge bg-info text-dark me-1" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${state.storeData.diamond}</span>
-  <span class="badge bg-secondary me-1" style="cursor:pointer;" id="btn-store-bar">🛒</span>
+  <span class="badge bg-secondary text-light me-1" style="cursor:pointer;" id="btn-store-bar">🛒</span>
   <span class="badge bg-success" style="cursor:pointer;" id="btn-history-bar"><i class="bi bi-clock-history"></i></span>
   </div>
   </div>
