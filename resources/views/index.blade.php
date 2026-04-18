@@ -285,7 +285,7 @@
   <div class="card">
   <div class="card-body text-center">
   ${renderLayeredEmoji(r.player_emoji, 48)}
-  <h5>${r.player_name}</h5>
+  <h5 class="mt-2">${r.player_name}</h5>
   <div class="d-flex justify-content-center align-items-center gap-2 small">
   <span class="badge bg-secondary">Lv.${state.battleResult.player_level || '?'}</span>
   <span><span style="font-size: 14px;">❤️ </span>${r.player_hp_remaining}/${playerMaxHp}</span>
@@ -297,7 +297,7 @@
   <div class="card">
   <div class="card-body text-center">
   ${renderLayeredEmoji(r.enemy_emoji, 48)}
-  <h5>${r.enemy_name}</h5>
+  <h5 class="mt-2">${r.enemy_name}</h5>
   <div class="d-flex justify-content-center align-items-center gap-2 small">
   <span class="badge bg-secondary">Lv.${state.battleResult.enemy_level || '?'}</span>
   <span><span style="font-size: 14px;">❤️ </span>${r.enemy_hp_remaining}/${enemyMaxHp}</span>
