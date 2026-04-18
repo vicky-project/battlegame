@@ -44,6 +44,7 @@ class UserProgressService
         'hero_id' => $userHero->hero_id,
         'name' => $stats['name'],
         'type' => $heroClass?->type->value ?? '',
+        'description' => $heroClass->description,
         'emoji' => $stats['emoji'],
         'level' => $userHero->level,
         'exp' => $userHero->exp,
