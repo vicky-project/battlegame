@@ -550,7 +550,7 @@
   state.diamondPackages = resp.data;
   setAppContent(`
   ${renderHeader('btn-back-store', 'Beli Diamond')}
-  <div class="row g-3">${state.diamondPackages.map(p=>`<div class="col-6"><div class="card h-100"><div class="card-body text-center d-flex flex-column"><h5>${p.name}</h5><p class="display-6 my-2"><i class="bi bi-gem"></i> ${p.diamond}</p><button class="btn ${state.storeData.gold>=p.gold_cost?'btn-primary':'btn-secondary'} mt-auto w-100 buy-diamond-btn" data-package-id="${p.id}" ${state.storeData.gold<p.gold_cost?'disabled':''}>Beli <i class="bi bi-coin"></i>${p.gold_cost}</button></div></div></div>`).join('')}</div>
+  <div class="row g-3">${state.diamondPackages.map(p=>`<div class="col-6"><div class="card h-100"><div class="card-body text-center d-flex flex-column"><h5>${p.name}</h5><p class="display-6 my-2"><i class="bi bi-gem text-info"></i> ${p.diamond}</p><button class="btn ${state.storeData.gold>=p.gold_cost?'btn-primary':'btn-secondary'} mt-auto w-100 buy-diamond-btn" data-package-id="${p.id}" ${state.storeData.gold<p.gold_cost?'disabled':''}>Beli <i class="bi bi-coin"></i>${p.gold_cost}</button></div></div></div>`).join('')}</div>
   `);
   document.querySelectorAll('.buy-diamond-btn').forEach(b=>b.addEventListener('click',async(e)=>{const pid=b.dataset.packageId;tg.showLoading();try{const r=await apiFetch('/store/buy-diamond',{method:'POST',body:JSON.stringify({package_id:pid})});r.success?(tg.showToast(r.data.message,'success'),state.storeData.gold=r.data.new_gold,state.storeData.diamond=r.data.new_diamond,renderStoreDiamond()):tg.showToast(r.message,'danger');}finally{tg.hideLoading();}}));
   document.getElementById('btn-back-store')?.addEventListener('click', renderStoreHome);
