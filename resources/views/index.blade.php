@@ -707,7 +707,7 @@
   <!-- Hero Column -->
   <div class="text-center" style="min-width: 70px;">
   <div style="font-size: 32px;">${renderLayeredEmoji(h.hero_emoji)}</div>
-  <div class="fw-bold">${h.hero_name}</div>
+  <div class="fw-bold mt-3">${h.hero_name}</div>
   <div class="small">❤️ ${h.player_hp_remaining}</div>
   </div>
 
@@ -720,7 +720,7 @@
   <!-- Enemy Column -->
   <div class="text-center" style="min-width: 70px;">
   <div style="font-size: 32px;">${renderLayeredEmoji(h.enemy_emoji || '👾')}</div>
-  <div class="fw-bold">${h.enemy_name}</div>
+  <div class="fw-bold mt-3">${h.enemy_name}</div>
   <div class="small">❤️ ${h.enemy_hp_remaining}</div>
   </div>
   </div>
