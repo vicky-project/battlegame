@@ -301,7 +301,7 @@
   </div>
   ${isSelected ? '<span class="badge bg-primary">✔️</span>' : ''}
   </div>
-  <div class="row mt-2 ms-2">${h.description}</div>
+  <div class="d-flex align-items-start mt-2">${h.description}</div>
   <div class="row mt-2">
   <!-- Stats Dasar (2 kolom) -->
   <div class="col-6">
