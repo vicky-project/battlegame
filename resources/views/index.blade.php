@@ -290,7 +290,7 @@
   <div class="d-flex">
   <!-- Emoji -->
   <div class="text-center me-3">
-  ${renderLayeredEmoji(h.emoji || '👤', 60)}
+  ${renderLayeredEmoji(h.emoji || '👤', 100)}
   </div>
   <!-- Nama, Level, Stats Dasar -->
   <div class="flex-grow-1">
