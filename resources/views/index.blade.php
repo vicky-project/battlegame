@@ -229,13 +229,13 @@
   <div class="card ${isSelected ? 'border-primary' : ''}">
   <div class="card-body">
   <!-- Baris 1: Emoji + Stats Dasar (dalam satu baris) -->
-  <div class="row d-flex align-items-start">
+  <div class="row d-flex">
   <!-- Emoji Hero (kiri) -->
-  <div class="me-3">
+  <div class="col-6 me-3">
   ${renderLayeredEmoji(h.emoji || '👤', 48)}
   </div>
   <!-- Nama, Level, dan Stats Dasar (kanan) -->
-  <div class="flex-grow-1">
+  <div class="col-6 flex-grow-1">
   <div class="d-flex justify-content-between align-items-center">
   <div>
   <h5 class="card-title mb-0">${h.name}</h5>
