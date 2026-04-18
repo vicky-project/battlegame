@@ -15,6 +15,7 @@ return new class extends Migration
         $table->integer('total_battles')->default(0);
         $table->integer('total_wins')->default(0);
         $table->integer('total_losses')->default(0);
+        $table->json('upgrades')->nullable();
         $table->timestamps();
       });
     }

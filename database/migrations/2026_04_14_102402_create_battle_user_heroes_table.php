@@ -10,7 +10,7 @@ return new class extends Migration
     Schema::create('battle_user_heroes', function (Blueprint $table) {
       $table->id();
       $table->foreignId('telegram_user_id')->constrained('telegram_users')->cascadeOnDelete();
-      $table->foreignId('battle_hero_id')->constrained('battle_heroes')->cascadeOnDelete();
+      $table->string('hero_id');
       $table->integer('level')->default(1);
         $table->integer('exp')->default(0);
         $table->boolean('is_selected')->default(false);
