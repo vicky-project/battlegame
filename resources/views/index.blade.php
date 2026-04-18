@@ -118,7 +118,7 @@
   battleLoadingOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;flex-direction:column;';
   battleLoadingOverlay.innerHTML = `
   <div style="display:flex;align-items:center;gap:40px;margin-bottom:30px;">
-  <div style="text-align:center;"><div style="font-size:64px;animation:attackLeft 1s infinite alternate;">${pEmoji}</div><div>${pName}</div></div>
+  <div style="text-align:center;"><div style="font-size:64px;animation:attackLeft 1s infinite alternate;">${renderLayeredEmoji(pEmoji)}</div><div>${pName}</div></div>
   <div style="font-size:48px;animation:clash 0.5s infinite;">⚡</div>
   <div style="text-align:center;"><div style="font-size:64px;animation:attackRight 1s infinite alternate;">${eEmoji}</div><div>${eName}</div></div>
   </div>
