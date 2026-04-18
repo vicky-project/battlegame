@@ -227,30 +227,43 @@
   return `
   <div class="col-12 mb-3">
   <div class="card ${isSelected ? 'border-primary' : ''}">
-  <div class="card-body d-flex align-items-center">
-  ${renderLayeredEmoji(h.emoji || '👤', 48)}
-  <div class="flex-grow-1 ms-3">
-  <div class="d-flex justify-content-between">
-  <h5 class="card-title">${h.name} Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5>
-  ${isSelected ? '<span class="badge bg-primary mb-2">✔️</span>' : ''}
+  <div class="card-body">
+  <!-- Baris 1: Emoji + Nama/Level & Stats Dasar -->
+  <div class="d-flex">
+  <!-- Emoji Hero -->
+  <div class="me-3">
+  ${renderLayeredEmoji(h.emoji || '👤', 56)}
   </div>
-  <div class="row small mb-1">
+  <!-- Nama, Level, Stats Dasar -->
+  <div class="flex-grow-1">
+  <div class="d-flex justify-content-between align-items-start">
+  <div>
+  <h5 class="card-title mb-0">${h.name}</h5>
+  <span class="badge bg-secondary">Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</span>
+  </div>
+  ${isSelected ? '<span class="badge bg-primary">✔️</span>' : ''}
+  </div>
+  <!-- Stats Dasar (2 kolom) -->
+  <div class="row small mt-2">
   <div class="col-6">❤️ HP: ${stats.hp} ${bonusHp > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusHp}</span>` : ''}</div>
   <div class="col-6">⚔️ ATK: ${stats.atk} ${bonusAtk > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusAtk}</span>` : ''}</div>
   <div class="col-6">🛡️ DEF: ${stats.def} ${bonusDef > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusDef}</span>` : ''}</div>
   <div class="col-6">⏱️ ASPD: ${stats.aspd}s</div>
   </div>
-  <div class="row small text-muted mb-2">
+  </div>
+  </div>
+  <!-- Baris 2: Skill Tambahan (di bawah emoji, dengan offset) -->
+  <div class="row small text-muted mt-2" style="margin-left: 72px;">
   <div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}% ${bonusAccuracy > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusAccuracy * 100)}%</span>` : ''}</div>
   <div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div>
   <div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div>
   <div class="col-6">⚡ Crit: +${Math.round((stats.crit_chance_bonus || 0) * 100)}% ${bonusCrit > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCrit * 100)}%</span>` : ''}</div>
   <div class="col-6">🔄 Counter: +${Math.round((stats.counter_chance_bonus || 0) * 100)}% ${bonusCounter > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCounter * 100)}%</span>` : ''}</div>
   </div>
-  <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-2 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
+  <!-- Baris 3: Tombol -->
+  <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-3 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
   ${isSelected ? 'Terpilih' : 'Pilih Hero Ini'}
   </button>
-  </div>
   </div>
   </div>
   </div>
