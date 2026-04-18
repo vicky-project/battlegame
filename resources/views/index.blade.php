@@ -156,6 +156,30 @@
   `;
   }
 
+  function renderStat(icon, value, label, bonus = 0) {
+  const bonusText = bonus > 0 ? ` (+${bonus} bonus)` : '';
+  const displayBonus = bonus > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonus}</span>` : '';
+  return `
+  <span class="d-inline-block me-3 stat-item"
+  style="cursor: help;"
+  data-bs-toggle="tooltip"
+  data-bs-placement="top"
+  title="${label}: ${value}${bonusText}">
+  ${icon} ${value} ${displayBonus}
+  </span>
+  `;
+  }
+
+  function initTooltips() {
+  // Hapus tooltip yang sudah ada untuk mencegah duplikasi
+  const tooltips = bootstrap.Tooltip.getInstance('.stat-item');
+  if (tooltips) tooltips.dispose();
+
+  // Inisialisasi ulang semua elemen dengan class .stat-item
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+  }
+
   // ======================== HOME SCREEN ========================
   async function renderHomeScreen() {
   const user = state.user || {};
@@ -244,11 +268,11 @@
   ${isSelected ? '<span class="badge bg-primary">✔️</span>' : ''}
   </div>
   <!-- Stats Dasar (2 kolom) -->
-  <div class="row small mt-2">
-  <span class="badge bg-light text-dark p-2" style="cursor:help;" title="Health Points: ${stats.hp}${bonusHp > 0 ? '(+' + bonusHp + ' bonus' : ''}">❤️ ${stats.hp} ${bonusHp > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusHp}</span>` : ''}</span>
-  <div class="col-6">⚔️ ATK: ${stats.atk} ${bonusAtk > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusAtk}</span>` : ''}</div>
-  <div class="col-6">🛡️ DEF: ${stats.def} ${bonusDef > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusDef}</span>` : ''}</div>
-  <div class="col-6">⏱️ ASPD: ${stats.aspd}s</div>
+  <div class="mt-2">
+  ${renderStat('❤️', stats.hp, 'Health Point', bonusHp)}
+  ${renderStat('⚔️', stats.atk, 'Attack', bonusAtk)}
+  ${renderStat('🛡️', stats.def, 'Defense', bonusDef)}
+  ${renderStat('⏱️', stats.aspd+'s', 'Attack Speed', 0)}
   </div>
   </div>
   </div>
@@ -281,6 +305,8 @@
   }));
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-done-select')?.addEventListener('click', renderHomeScreen);
+
+  initTooltips();
   }
 
   // ======================== BATTLE ========================
