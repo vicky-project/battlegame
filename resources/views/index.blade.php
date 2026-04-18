@@ -228,15 +228,15 @@
   <div class="col-12 mb-3">
   <div class="card ${isSelected ? 'border-primary' : ''}">
   <div class="card-body">
-  <!-- Baris 1: Emoji + Stats Dasar (dalam satu baris) -->
-  <div class="row d-flex justify-content-between align-items-center">
-  <!-- Emoji Hero (kiri) -->
-  <div class="col-6 flex-grow-1 me-3">
+  <!-- Baris 1: Emoji (kiri) + Nama/Level/Stats (kanan) -->
+  <div class="d-flex">
+  <!-- Emoji -->
+  <div class="me-3">
   ${renderLayeredEmoji(h.emoji || '👤', 48)}
   </div>
-  <!-- Nama, Level, dan Stats Dasar (kanan) -->
-  <div class="col-6">
-  <div class="d-flex justify-content-between align-items-center">
+  <!-- Nama, Level, Stats Dasar -->
+  <div class="flex-grow-1">
+  <div class="d-flex justify-content-between align-items-start">
   <div>
   <h5 class="card-title mb-0">${h.name}</h5>
   <span class="badge bg-secondary">Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</span>
@@ -252,19 +252,19 @@
   </div>
   </div>
   </div>
-  </div>
-  <!-- Baris 2: Skill Tambahan (di bawah baris pertama, dengan indentasi) -->
-  <div class="row small text-muted mt-2" style="margin-left: 56px;">
+  <!-- Baris 2: Skill Tambahan (2 kolom) -->
+  <div class="row small text-muted mt-3">
   <div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}% ${bonusAccuracy > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusAccuracy * 100)}%</span>` : ''}</div>
   <div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div>
   <div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div>
   <div class="col-6">⚡ Crit: +${Math.round((stats.crit_chance_bonus || 0) * 100)}% ${bonusCrit > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCrit * 100)}%</span>` : ''}</div>
   <div class="col-6">🔄 Counter: +${Math.round((stats.counter_chance_bonus || 0) * 100)}% ${bonusCounter > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCounter * 100)}%</span>` : ''}</div>
   </div>
-  <!-- Baris 3: Tombol -->
+  <!-- Tombol -->
   <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-3 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
   ${isSelected ? 'Terpilih' : 'Pilih Hero Ini'}
   </button>
+  </div>
   </div>
   </div>
   `;
