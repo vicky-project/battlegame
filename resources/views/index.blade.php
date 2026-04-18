@@ -186,7 +186,7 @@
   `;
   }
 
-  function renderStat(icon, value, label, bonus = 0) {
+  function renderTooltip(icon, value, label, bonus = 0) {
   const bonusText = bonus > 0 ? ` (+${bonus} bonus)` : '';
   const displayBonus = bonus > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonus}</span>` : '';
   return `
@@ -303,20 +303,20 @@
   </div>
   <!-- Stats Dasar (2 kolom) -->
   <div class="mt-2">
-  ${renderStat('❤️', stats.hp, 'Health Point', bonusHp)}
-  ${renderStat('⚔️', stats.atk, 'Attack', bonusAtk)}
-  ${renderStat('🛡️', stats.def, 'Defense', bonusDef)}
-  ${renderStat('⏱️', stats.aspd+'s', 'Attack Speed', 0)}
+  ${renderTooltip('❤️', stats.hp, 'Health Point', bonusHp)}
+  ${renderTooltip('⚔️', stats.atk, 'Attack', bonusAtk)}
+  ${renderTooltip('🛡️', stats.def, 'Defense', bonusDef)}
+  ${renderTooltip('⏱️', stats.aspd+'s', 'Attack Speed', 0)}
   </div>
   </div>
   </div>
   <!-- Baris 2: Skill Tambahan (2 kolom) -->
-  <div class="row small text-muted mt-3">
-  <div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}% ${bonusAccuracy > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusAccuracy * 100)}%</span>` : ''}</div>
-  <div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div>
-  <div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div>
-  <div class="col-6">⚡ Crit: +${Math.round((stats.crit_chance_bonus || 0) * 100)}% ${bonusCrit > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCrit * 100)}%</span>` : ''}</div>
-  <div class="col-6">🔄 Counter: +${Math.round((stats.counter_chance_bonus || 0) * 100)}% ${bonusCounter > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCounter * 100)}%</span>` : ''}</div>
+  <div class="mt-2">
+  ${renderTooltip('🎯', Math.round(stats.accuracy * 100) + '%', 'Accuracy', bonusAccuracy)}
+  ${renderTooltip('👟', Math.round(stats.evasion * 100) + '%', 'Evasion', 0)}
+  ${renderTooltip('🛡', Math.round(stats.block_chance * 100) + '%', 'Block Chance', 0)}
+  ${renderTooltip('⚡', '+' + Math.round((stats.crit_chance_bonus || 0) * 100) + '%', 'Critical Chance Bonus', bonusCrit)}
+  ${renderTooltip('🔄', '+' + Math.round((stats.counter_chance_bonus || 0) * 100) + '%', 'Counter Chance Bonus', bonusCounter)}
   </div>
   <!-- Tombol -->
   <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-3 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
