@@ -575,19 +575,81 @@
   stopMiningPreviewTimer();
   setAppContent(`
   ${renderHeader('btn-back-home', 'Pusat Bantuan')}
-  <div class="card"><div class="card-body">
-  <h5>🎮 Cara Bermain</h5><p>Battle Arena adalah game pertarungan otomatis di mana kamu mengendalikan hero melawan musuh komputer.</p><ol class="small"><li><strong>Pilih Hero</strong> - Pilih hero yang sudah kamu miliki dari menu "Pilih Hero".</li><li><strong>Mulai Bertarung</strong> - Klik "Mulai Bertarung" untuk melawan musuh secara otomatis. Biaya: ${BATTLE_COST} gold.</li><li><strong>Hasil Pertarungan</strong> - Dapatkan EXP dan gold jika menang. Jika kalah, tetap dapat sedikit hadiah.</li><li><strong>Tingkatkan Hero</strong> - EXP akan menaikkan level hero, meningkatkan HP, ATK, DEF.</li></ol>
-  <h5>💰 Mata Uang</h5><ul class="small"><li><strong>Gold</strong> - Diperoleh dari battle, mining, atau kemenangan.</li><li><strong>Diamond</strong> - Mata uang premium, untuk upgrade spesial.</li></ul>
-  <h5>⛏️ Mining Gold</h5><p class="small">Gold dapat ditambang otomatis setiap jam. Klik ikon <i class="bi bi-coin me-2"></i> di atas untuk klaim.</p>
-  <h5>🛒 Toko</h5><ul class="small"><li><strong>Beli Hero</strong> - Hero baru memiliki skill pasif unik.</li><li><strong>Beli Diamond</strong> - Tukar gold dengan diamond.</li><li><strong>Upgrade</strong> - Tingkatkan ATK, DEF, HP, Critical Chance.</li></ul>
-  <h5>⚔️ Pertarungan</h5><ul class="small"><li>Setiap serangan memiliki peluang critical, block, dan miss.</li><li>Hero & musuh memiliki skill pasif/spesial.</li></ul>
-  <h5>📈 Level & EXP</h5><p class="small">User level & hero level meningkat seiring EXP.</p>
-  <h5>❓ Tips</h5><ul class="small"><li>Kumpulkan gold dengan mining dan battle rutin.</li><li>Fokus upgrade ATK/DEF terlebih dahulu.</li><li>Jangan lupa klaim mining setiap jam!</li></ul>
-  </div></div>
-  <div class="d-grid mt-3"><button class="btn btn-primary" id="btn-back-home-help">Kembali ke Beranda</button></div>
+  <div class="card">
+  <div class="card-body">
+  <h5>🎮 Selamat Datang di Battle Arena</h5>
+  <p class="small">Game pertarungan otomatis di mana kamu mengendalikan hero melawan musuh komputer. Kumpulkan Gold & Diamond, tingkatkan hero dan skill, lalu taklukkan musuh yang semakin kuat!</p>
+
+  <h5 class="mt-4">🕹️ Cara Bermain Dasar</h5>
+  <ol class="small">
+  <li><strong>Pilih Hero</strong> – Buka menu <i class="bi bi-person-lines-fill"></i> Pilih Hero, lalu pilih salah satu hero milikmu.</li>
+  <li><strong>Mulai Bertarung</strong> – Klik tombol <strong>Mulai Bertarung</strong> (biaya ${BATTLE_COST}💰). Pertarungan berlangsung otomatis.</li>
+  <li><strong>Hasil Pertarungan</strong> – Jika menang dapat EXP, Gold, dan kesempatan level up. Kalah tetap dapat hadiah kecil.</li>
+  <li><strong>Tingkatkan Hero & User</strong> – EXP menaikkan level user (membuka hero baru) dan level hero (meningkatkan statistik).</li>
+  </ol>
+
+  <h5 class="mt-4">💰 Mata Uang</h5>
+  <ul class="small">
+  <li><i class="bi bi-coin text-warning"></i> <strong>Gold</strong> – Diperoleh dari battle, mining, atau kemenangan. Digunakan untuk unlock hero, upgrade, dan beli diamond.</li>
+  <li><i class="bi bi-gem text-info"></i> <strong>Diamond</strong> – Mata uang premium. Dibeli dengan gold atau event. Untuk upgrade spesial.</li>
+  </ul>
+
+  <h5 class="mt-4">⛏️ Mining Gold</h5>
+  <p class="small">Gold ditambang otomatis setiap jam. Klik ikon <i class="bi bi-coin"></i> di kanan atas untuk klaim. Waktu tersisa ditampilkan di beranda.</p>
+
+  <h5 class="mt-4">🛒 Toko & Upgrade</h5>
+  <ul class="small">
+  <li><strong>Beli Hero</strong> – Hero baru punya skill pasif unik. Syarat level & gold/diamond.</li>
+  <li><strong>Beli Diamond</strong> – Tukar gold dengan diamond.</li>
+  <li><strong>Upgrade</strong> – Tingkatkan ATK, DEF, HP, Critical Chance, Akurasi, Counter, dan Resistensi (Poison, Stun, Lifesteal).</li>
+  </ul>
+
+  <h5 class="mt-4">📊 Statistik & Ikon</h5>
+  <p class="small mb-2">Arahkan kursor ke ikon untuk melihat detail. Berikut legendanya:</p>
+  <div class="row small">
+  <div class="col-6"><i class="bi bi-heart-fill text-danger"></i> HP (Health Point)</div>
+  <div class="col-6"><i class="bi bi-lightning-fill text-warning"></i> ATK (Attack)</div>
+  <div class="col-6"><i class="bi bi-shield-fill"></i> DEF (Defense)</div>
+  <div class="col-6"><i class="bi bi-clock"></i> ASPD (Attack Speed)</div>
+  <div class="col-6"><i class="bi bi-bullseye"></i> Akurasi (peluang hit)</div>
+  <div class="col-6"><i class="bi bi-person-walking"></i> Evasi (peluang menghindar)</div>
+  <div class="col-6"><i class="bi bi-shield-shaded"></i> Block Chance</div>
+  <div class="col-6"><i class="bi bi-arrow-up-short text-success"></i> Bonus upgrade</div>
+  <div class="col-6"><i class="bi bi-star-fill text-warning"></i> Critical Chance</div>
+  <div class="col-6"><i class="bi bi-arrow-return-left"></i> Counter Chance</div>
+  </div>
+
+  <h5 class="mt-4">⚔️ Mekanik Pertarungan</h5>
+  <ul class="small">
+  <li><strong>Akurasi vs Evasi</strong> – Peluang serangan mengenai = akurasi penyerang - evasi defender.</li>
+  <li><strong>Critical Hit</strong> – Peluang 5% + bonus, damage 1.5x + bonus.</li>
+  <li><strong>Block</strong> – Mengurangi damage sesuai block reduction.</li>
+  <li><strong>Counterattack</strong> – Setelah block, 30% + bonus chance membalas 50% damage.</li>
+  <li><strong>Poison</strong> – Damage per detik, bisa dikurangi resistensi.</li>
+  <li><strong>Stun</strong> – Menghentikan serangan selama beberapa detik.</li>
+  <li><strong>Lifesteal</strong> – Musuh memulihkan HP berdasarkan damage.</li>
+  </ul>
+
+  <h5 class="mt-4">📈 Level & Paragon</h5>
+  <p class="small">User & hero tidak memiliki batas level maksimal. Setelah level 50 (user) atau 30 (hero), kenaikan exp melambat drastis – disebut <strong>Paragon</strong>. Bonus stat per level juga berkurang, tetapi progres tetap berjalan.</p>
+
+  <h5 class="mt-4">💡 Tips Pro</h5>
+  <ul class="small">
+  <li>💰 Kumpulkan gold dengan mining rutin dan battle.</li>
+  <li>⚔️ Fokus upgrade ATK/DEF terlebih dahulu.</li>
+  <li>🛡️ Jika sering kena poison/stun, beli upgrade resistensi.</li>
+  <li>🔄 Counterattack sangat berguna untuk hero dengan block tinggi.</li>
+  <li>⏳ Jangan lupa klaim mining – gratis gold setiap jam!</li>
+  </ul>
+  </div>
+  </div>
+  <div class="d-grid mt-3">
+  <button class="btn btn-primary" id="btn-back-home-help">Kembali ke Beranda</button>
+  </div>
   `);
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-back-home-help')?.addEventListener('click', renderHomeScreen);
+  initTooltips(); // jika ada ikon dengan tooltip di sini
   }
 
   async function renderHistoryScreen() {
