@@ -301,20 +301,36 @@
   </div>
   ${isSelected ? '<span class="badge bg-primary">✔️</span>' : ''}
   </div>
+  <div class="row mt-2">
   <!-- Stats Dasar (2 kolom) -->
-  <div class="mt-2">
+  <div class="col-6">
   ${renderTooltip('❤️', stats.hp, 'Health Point', bonusHp)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('⚔️', stats.atk, 'Attack', bonusAtk)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('🛡️', stats.def, 'Defense', bonusDef)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('⏱️', stats.aspd+'s', 'Attack Speed', 0)}
   </div>
   <!-- Baris 2: Skill Tambahan (2 kolom) -->
-  <div class="mt-2">
+  <div class="col-6">
   ${renderTooltip('🎯', Math.round(stats.accuracy * 100) + '%', 'Accuracy', bonusAccuracy)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('👟', Math.round(stats.evasion * 100) + '%', 'Evasion', 0)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('🛡', Math.round(stats.block_chance * 100) + '%', 'Block Chance', 0)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('⚡', '+' + Math.round((stats.crit_chance_bonus || 0) * 100) + '%', 'Critical Chance Bonus', bonusCrit)}
+  </div>
+  <div class="col-6">
   ${renderTooltip('🔄', '+' + Math.round((stats.counter_chance_bonus || 0) * 100) + '%', 'Counter Chance Bonus', bonusCounter)}
+  </div>
   </div>
   </div>
   </div>
