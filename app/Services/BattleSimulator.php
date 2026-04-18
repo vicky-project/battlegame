@@ -26,7 +26,7 @@ class BattleSimulator
   protected const BASE_CRIT_MULTIPLIER = 1.5;
   protected const COUNTER_CHANCE = 0.3;
   protected const COUNTER_DAMAGE_RATIO = 0.5;
-  
+
   protected const SIMULATION_SPEED_FACTOR = 0.05;
 
   public function __construct(
@@ -165,7 +165,7 @@ class BattleSimulator
           break;
         }
       }
-      
+
       usleep((int) ($delta * 1000000 * self::SIMULATION_SPEED_FACTOR));
     }
 
@@ -214,7 +214,7 @@ class BattleSimulator
         $attacker['atk'] *= (1 + $missingHpPercent * $passive['value']);
       }
     }
-    
+
     if ($attackerSide === 'enemy') {
       $ability = $this->enemy->specialAbility();
       if ($ability['type'] === SkillType::ENRAGE) {
@@ -315,19 +315,24 @@ class BattleSimulator
   protected function processStatusEffects(&$pHp, &$eHp): void
   {
     if (isset($this->playerStatus[StatusEffect::POISON->value])) {
-      $dmg = $this->playerStatus[StatusEffect::POISON->value]['damage'];
+      $baseDmg = $this->playerStatus[StatusEffect::POISON->value]['damage'];
+      $resistance = $this->playerStats['poison_resistance'] ?? 0;
+      $dmg = (int) max(1, $baseDmg * (1 - $resistance));
+
       $pHp -= $dmg;
       $this->log[] = sprintf(
-        "[%.1fs] %s terkena racun! -%d HP",
+        "[%.1fs] %s terkena racun! -%d HP%s",
         $this->simulationTime,
         $this->playerName,
-        $dmg
+        $dmg,
+        $resistance > 0 ? " (dikurangi " . round($resistance * 100) . "%)" : ""
       );
       $this->playerStatus[StatusEffect::POISON->value]['duration']--;
       if ($this->playerStatus[StatusEffect::POISON->value]['duration'] <= 0) {
         unset($this->playerStatus[StatusEffect::POISON->value]);
       }
     }
+
     if (isset($this->playerStatus[StatusEffect::STUN->value])) {
       $this->playerStatus[StatusEffect::STUN->value]['duration']--;
       if ($this->playerStatus[StatusEffect::STUN->value]['duration'] <= 0) {
@@ -366,6 +371,7 @@ class BattleSimulator
   {
     if ($attackerSide === 'enemy') {
       $ability = $this->enemy->specialAbility();
+
       if ($ability['type'] === SkillType::POISON) {
         if (mt_rand(1, 100) <= $ability['chance'] * 100) {
           $this->playerStatus[StatusEffect::POISON->value] = [
@@ -379,25 +385,33 @@ class BattleSimulator
           );
         }
       }
+
       if ($ability['type'] === SkillType::LIFESTEAL) {
-        $heal = (int)($damageData['value'] * $ability['value']);
+        $baseHeal = (int)($damageData['value'] * $ability['value']);
+        $break = $this->playerStats['lifesteal_break'] ?? 0;
+        $heal = (int) max(1, $baseHeal * (1 - $break));
         $attackerHp += $heal;
         $this->log[] = sprintf(
-          "[%.1fs] %s mencuri nyawa +%d HP!",
+          "[%.1fs] %s mencuri nyawa +%d HP!%s",
           $this->simulationTime,
           $this->enemyName,
-          $heal
+          $heal,
+          $break > 0 ? " (dikurangi " . round($break * 100) . "%)" : ""
         );
       }
+
       if ($ability['type'] === SkillType::STUN) {
         if (mt_rand(1, 100) <= $ability['chance'] * 100) {
-          $this->playerStatus[StatusEffect::STUN->value] = [
-            'duration' => $ability['duration']
-          ];
+          $baseDuration = $ability['duration'];
+          $resistance = $this->playerStats['stun_resistance'] ?? 0;
+          $duration = (int) max(1, $baseDuration * (1 - $resistance));
+          $this->playerStatus[StatusEffect::STUN->value] = ['duration' => $duration];
           $this->log[] = sprintf(
-            "[%.1fs] %s terkena stun!",
+            "[%.1fs] %s terkena stun selama %d detik!%s",
             $this->simulationTime,
-            $this->playerName
+            $this->playerName,
+            $duration,
+            $resistance > 0 ? " (dikurangi " . round($resistance * 100) . "%)" : ""
           );
         }
       }
@@ -407,7 +421,7 @@ class BattleSimulator
   protected function isStunned(string $side): bool
   {
     $statusArray = $side . 'Status';
-    return isset($this-> {$statusArray}[StatusEffect::STUN->value]);
+    return isset($this->{$statusArray}[StatusEffect::STUN->value]);
   }
 
   public function getLog(): array

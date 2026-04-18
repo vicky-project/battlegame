@@ -10,6 +10,9 @@ enum UpgradeId: string
   case CRITICAL_CHANCE = 'critical_chance';
   case ACCURACY_BOOST = 'accuracy_boost';
   case COUNTER_ATTACK_BOOST = 'counter_attack_boost';
+  case POISON_RESISTANCE = 'poison_resistance';
+  case STUN_RESISTANCE = 'stun_resistance';
+  case LIFESTEAL_BREAK = 'lifesteal_break';
 
     public function label(): string
     {
@@ -20,6 +23,9 @@ enum UpgradeId: string
         self::CRITICAL_CHANCE => 'Critical Chance',
         self::ACCURACY_BOOST => 'Akurasi',
         self::COUNTER_ATTACK_BOOST => 'Counter Attack',
+        self::POISON_RESISTANCE => 'Ketahanan Racun',
+        self::STUN_RESISTANCE => 'Ketahanan Stun',
+        self::LIFESTEAL_BREAK => 'Pemutus Lifesteal',
       };
     }
 
@@ -32,6 +38,9 @@ enum UpgradeId: string
         self::CRITICAL_CHANCE => 'Kesempatan critical hit +2% per level',
         self::ACCURACY_BOOST => 'Meningkatkan akurasi sebesar 2% per level',
         self::COUNTER_ATTACK_BOOST => 'Meningkatkan peluang counterattack sebesar 2% per level',
+        self::POISON_RESISTANCE => 'Mengurangi damage racun sebesar 5% per level (maks 50%)',
+        self::STUN_RESISTANCE => 'Mengurangi durasi stun sebesar 10% per level (maks 50%)',
+        self::LIFESTEAL_BREAK => 'Mengurangi lifesteal musuh sebesar 6% per level (maks 30%)',
       };
     }
 
@@ -44,6 +53,9 @@ enum UpgradeId: string
         self::CRITICAL_CHANCE => 0.02,
         self::ACCURACY_BOOST => 0.02,
         self::COUNTER_ATTACK_BOOST => 0.02,
+        self::POISON_RESISTANCE => 0.05,
+        self::STUN_RESISTANCE => 0.10,
+        self::LIFESTEAL_BREAK => 0.06,
       };
     }
 
@@ -53,9 +65,12 @@ enum UpgradeId: string
         self::ATTACK_BOOST,
         self::DEFENSE_BOOST,
         self::ACCURACY_BOOST,
-        self::COUNTER_ATTACK_BOOST => CurrencyType::GOLD,
+        self::COUNTER_ATTACK_BOOST,
+        self::POISON_RESISTANCE => CurrencyType::GOLD,
         self::HP_BOOST,
-        self::CRITICAL_CHANCE => CurrencyType::DIAMOND,
+        self::CRITICAL_CHANCE,
+        self::STUN_RESISTANCE,
+        self::LIFESTEAL_BREAK => CurrencyType::DIAMOND,
       };
     }
 
@@ -68,6 +83,9 @@ enum UpgradeId: string
         self::CRITICAL_CHANCE => 30,
         self::ACCURACY_BOOST => 150,
         self::COUNTER_ATTACK_BOOST => 150,
+        self::POISON_RESISTANCE => 120,
+        self::STUN_RESISTANCE => 40,
+        self::LIFESTEAL_BREAK => 50,
       };
     }
 
@@ -88,6 +106,9 @@ enum UpgradeId: string
         self::ACCURACY_BOOST,
         self::COUNTER_ATTACK_BOOST => 10,
         self::HP_BOOST => 5,
+        self::POISON_RESISTANCE => 10,
+        self::STUN_RESISTANCE => 5,
+        self::LIFESTEAL_BREAK => 5,
       };
     }
 }

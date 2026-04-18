@@ -25,9 +25,12 @@ class BattleUserHero extends Model
     return CharacterRegistry::getHero($this->hero_id);
   }
 
-  /**
-  * Statistik final hero setelah memperhitungkan level dan upgrade user.
-  */
+  public function getNextLevelExpAttribute(): int
+  {
+    $battleService = app(BattleService::class);
+    return $battleService->getHeroExpForNextLevel($this->level);
+  }
+
   public function getCalculatedStatsAttribute(): array
   {
     $hero = $this->hero;
@@ -46,23 +49,23 @@ class BattleUserHero extends Model
     $accuracyBonus = ($upgrades['accuracy_boost'] ?? 0) * 0.02;
     $counterBonus = ($upgrades['counter_attack_boost'] ?? 0) * 0.02;
     $critChanceBonus = ($upgrades['critical_chance'] ?? 0) * 0.02;
+    $poisonResistance = ($upgrades['poison_resistance'] ?? 0) * 0.05;
+    $stunResistance = ($upgrades['stun_resistance'] ?? 0) * 0.10;
+    $lifestealBreak = ($upgrades['lifesteal_break'] ?? 0) * 0.06;
 
-    // Scaling level: +10% per level sampai level 30, lalu +2% per level setelahnya
+    // Scaling level
     if ($level <= 30) {
       $levelMultiplier = 1 + 0.1 * ($level - 1);
     } else {
       $levelMultiplier = 1 + 0.1 * 29 + 0.02 * ($level - 30);
     }
 
-    // Hitung final HP
     $finalHp = round($hero->baseHp() * $levelMultiplier) + $hpBonus;
 
-    // Ambil skill pasif dasar
     $basePassive = $hero->passiveSkill();
     $passiveType = $basePassive['type']->value;
     $passiveValue = $basePassive['value'];
 
-    // Scaling skill pasif: +5% per level sampai level 30, lalu +1% per level setelahnya
     if ($level <= 30) {
       $skillLevelMultiplier = 1 + 0.05 * ($level - 1);
     } else {
@@ -70,7 +73,6 @@ class BattleUserHero extends Model
     }
     $scaledPassiveValue = $passiveValue * $skillLevelMultiplier;
 
-    // Batasan tertentu
     switch ($passiveType) {
       case 'evasion':
         $scaledPassiveValue = min(0.6, $scaledPassiveValue);
@@ -94,19 +96,13 @@ class BattleUserHero extends Model
       'evasion' => $hero->baseEvasion(),
       'crit_chance_bonus' => $critChanceBonus,
       'counter_chance_bonus' => $counterBonus,
+      'poison_resistance' => min(0.5, $poisonResistance),
+      'stun_resistance' => min(0.5, $stunResistance),
+      'lifesteal_break' => min(0.3, $lifestealBreak),
       'passive_skill' => [
         'type' => $passiveType,
         'value' => $scaledPassiveValue,
       ],
     ];
-  }
-
-  /**
-  * Exp yang dibutuhkan untuk naik ke level berikutnya.
-  */
-  public function getNextLevelExpAttribute(): int
-  {
-    $battleService = app(BattleService::class);
-    return $battleService->getHeroExpForNextLevel($this->level);
   }
 }
