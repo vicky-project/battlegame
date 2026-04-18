@@ -31,6 +31,9 @@ class BattleUserHero extends Model
     return $battleService->getHeroExpForNextLevel($this->level);
   }
 
+  /**
+  * Statistik final hero setelah memperhitungkan level dan upgrade user.
+  */
   public function getCalculatedStatsAttribute(): array
   {
     $hero = $this->hero;
@@ -60,8 +63,19 @@ class BattleUserHero extends Model
       $levelMultiplier = 1 + 0.1 * 29 + 0.02 * ($level - 30);
     }
 
-    $finalHp = round($hero->baseHp() * $levelMultiplier) + $hpBonus;
+    // Base stats (tanpa upgrade)
+    $baseHp = round($hero->baseHp() * $levelMultiplier);
+    $baseAtk = round($hero->baseAtk() * $levelMultiplier);
+    $baseDef = round($hero->baseDef() * $levelMultiplier);
+    $baseAccuracy = $hero->baseAccuracy();
 
+    // Final stats (dengan upgrade)
+    $finalHp = $baseHp + $hpBonus;
+    $finalAtk = $baseAtk + $atkBonus;
+    $finalDef = $baseDef + $defBonus;
+    $finalAccuracy = min(1.0, $baseAccuracy + $accuracyBonus);
+
+    // Skill pasif
     $basePassive = $hero->passiveSkill();
     $passiveType = $basePassive['type']->value;
     $passiveValue = $basePassive['value'];
@@ -87,18 +101,25 @@ class BattleUserHero extends Model
       'emoji' => $hero->emoji,
       'hp' => $finalHp,
       'max_hp' => $finalHp,
-      'atk' => round($hero->baseAtk() * $levelMultiplier) + $atkBonus,
-      'def' => round($hero->baseDef() * $levelMultiplier) + $defBonus,
+      'atk' => $finalAtk,
+      'def' => $finalDef,
       'aspd' => $hero->baseAspd(),
       'block_chance' => min($hero->baseBlockChance() + 0.02 * ($level - 1), 0.8),
       'block_reduction' => $hero->baseBlockReduction(),
-      'accuracy' => min(1.0, $hero->baseAccuracy() + $accuracyBonus),
+      'accuracy' => $finalAccuracy,
       'evasion' => $hero->baseEvasion(),
       'crit_chance_bonus' => $critChanceBonus,
       'counter_chance_bonus' => $counterBonus,
       'poison_resistance' => min(0.5, $poisonResistance),
       'stun_resistance' => min(0.5, $stunResistance),
       'lifesteal_break' => min(0.3, $lifestealBreak),
+      // Bonus (selisih)
+      'bonus_hp' => $hpBonus,
+      'bonus_atk' => $atkBonus,
+      'bonus_def' => $defBonus,
+      'bonus_accuracy' => $accuracyBonus,
+      'bonus_crit_chance' => $critChanceBonus,
+      'bonus_counter_chance' => $counterBonus,
       'passive_skill' => [
         'type' => $passiveType,
         'value' => $scaledPassiveValue,

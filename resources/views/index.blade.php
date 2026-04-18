@@ -204,20 +204,67 @@
   async function renderSelectHeroScreen() {
   stopMiningPreviewTimer(); removeOverlays();
   await loadUserData();
+
   if (!state.userHeroes.length) {
   setAppContent(`${renderCurrencyBar()}<div class="text-center py-5"><span style="font-size:64px;">😢</span><h4>Kamu belum memiliki hero</h4><p>Kunjungi Toko untuk membeli hero pertama mu!</p><button class="btn btn-primary" id="btn-goto-store">Ke Toko Hero</button><button class="btn btn-link" id="btn-back-home">Kembali</button></div>`);
   document.getElementById('btn-goto-store')?.addEventListener('click', renderStoreHero);
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   return;
   }
+
   setAppContent(`
   ${renderHeader('btn-back-home', 'Pilih Hero')}
-  <div class="row">${state.userHeroes.map(h=>`<div class="col-12 mb-3"><div class="card ${h.id===state.selectedHeroId?'border-primary':''}"><div class="card-body d-flex align-items-center"><span style="font-size:48px;margin-right:16px;">${h.emoji||'👤'}</span><div class="flex-grow-1"><div class="d-flex justify-content-between"><h5 class="card-title">${h.name} Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5>${h.id===state.selectedHeroId?'<span class="badge bg-primary mb-2">✔️️</span>':''}</div><div class="row small mb-1"><div class="col-6">❤️ HP: ${h.stats.hp}</div><div class="col-6">⚔️ ATK: ${h.stats.atk}</div><div class="col-6">🛡️ DEF: ${h.stats.def}</div><div class="col-6">⏱️ ASPD: ${h.stats.aspd}s</div></div><div class="row small text-muted mb-2"><div class="col-6">🎯 Akurasi: ${Math.round(h.stats.accuracy * 100)}%</div><div class="col-6">👟 Evasi: ${Math.round(h.stats.evasion * 100)}%</div><div class="col-6">🛡️ Block: ${Math.round(h.stats.block_chance * 100)}%</div><div class="col-6">⚡ Crit: +${Math.round((h.stats.crit_chance_bonus || 0) * 100)}%</div><div class="col-6">🔄 Counter: +${Math.round((h.stats.counter_chance_bonus || 0) * 100)}%</div></div><button class="btn btn-sm ${h.id===state.selectedHeroId?'btn-success':'btn-outline-primary'} w-100 mt-2 select-hero-btn" data-hero-id="${h.id}" ${h.id===state.selectedHeroId?'disabled':''}>${h.id===state.selectedHeroId?'Terpilih':'Pilih Hero Ini'}</button></div></div></div></div>`).join('')}</div>
+  <div class="row">${state.userHeroes.map(h => {
+  const isSelected = h.id === state.selectedHeroId;
+  const stats = h.stats;
+  const bonusHp = stats.bonus_hp || 0;
+  const bonusAtk = stats.bonus_atk || 0;
+  const bonusDef = stats.bonus_def || 0;
+  const bonusAccuracy = stats.bonus_accuracy || 0;
+  const bonusCrit = stats.bonus_crit_chance || 0;
+  const bonusCounter = stats.bonus_counter_chance || 0;
+
+  return `
+  <div class="col-12 mb-3">
+  <div class="card ${isSelected ? 'border-primary' : ''}">
+  <div class="card-body d-flex align-items-center">
+  ${renderLayeredEmoji(h.emoji || '👤', 48)}
+  <div class="flex-grow-1 ms-3">
+  <div class="d-flex justify-content-between">
+  <h5 class="card-title">${h.name} Lv.${h.level} ${h.level > 30 ? '<small class="text-muted">(Paragon)</small>' : ''}</h5>
+  ${isSelected ? '<span class="badge bg-primary mb-2">✔️</span>' : ''}
+  </div>
+  <div class="row small mb-1">
+  <div class="col-6">❤️ HP: ${stats.hp} ${bonusHp > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusHp}</span>` : ''}</div>
+  <div class="col-6">⚔️ ATK: ${stats.atk} ${bonusAtk > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusAtk}</span>` : ''}</div>
+  <div class="col-6">🛡️ DEF: ${stats.def} ${bonusDef > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusDef}</span>` : ''}</div>
+  <div class="col-6">⏱️ ASPD: ${stats.aspd}s</div>
+  </div>
+  <div class="row small text-muted mb-2">
+  <div class="col-6">🎯 Akurasi: ${Math.round(stats.accuracy * 100)}% ${bonusAccuracy > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusAccuracy * 100)}%</span>` : ''}</div>
+  <div class="col-6">👟 Evasi: ${Math.round(stats.evasion * 100)}%</div>
+  <div class="col-6">🛡️ Block: ${Math.round(stats.block_chance * 100)}%</div>
+  <div class="col-6">⚡ Crit: +${Math.round((stats.crit_chance_bonus || 0) * 100)}% ${bonusCrit > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCrit * 100)}%</span>` : ''}</div>
+  <div class="col-6">🔄 Counter: +${Math.round((stats.counter_chance_bonus || 0) * 100)}% ${bonusCounter > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${Math.round(bonusCounter * 100)}%</span>` : ''}</div>
+  </div>
+  <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-2 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
+  ${isSelected ? 'Terpilih' : 'Pilih Hero Ini'}
+  </button>
+  </div>
+  </div>
+  </div>
+  </div>
+  `;
+  }).join('')}</div>
   <div class="d-grid mt-3"><button class="btn btn-primary" id="btn-done-select">Selesai</button></div>
   `);
-  document.querySelectorAll('.select-hero-btn').forEach(b=>b.addEventListener('click',async(e)=>{
-  const hid=b.dataset.heroId; tg.showLoading();
-  try{const r=await apiFetch('/select-hero',{method:'POST',body:JSON.stringify({user_hero_id:hid})}); r.success?(state.selectedHeroId=parseInt(hid),await loadUserData(),tg.showToast(r.message,'success'),renderSelectHeroScreen()):tg.showToast(r.message,'danger');} finally{tg.hideLoading();}
+
+  document.querySelectorAll('.select-hero-btn').forEach(b => b.addEventListener('click', async (e) => {
+  const hid = b.dataset.heroId; tg.showLoading();
+  try {
+  const r = await apiFetch('/select-hero', { method: 'POST', body: JSON.stringify({ user_hero_id: hid }) });
+  r.success ? (state.selectedHeroId = parseInt(hid), await loadUserData(), tg.showToast(r.message, 'success'), renderSelectHeroScreen()) : tg.showToast(r.message, 'danger');
+  } finally { tg.hideLoading(); }
   }));
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-done-select')?.addEventListener('click', renderHomeScreen);
