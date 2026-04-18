@@ -451,7 +451,7 @@
   </div>
   <div class="d-grid gap-2 mb-3">
   <button class="btn btn-primary" id="btn-battle-again">Bertarung Lagi (<i class="bi bi-coin"></i>${BATTLE_COST})</button>
-  <button class="btn btn-outline-info" id="btn-replay-battle"><i class="bi bi-play-circle me-2"></i>Replay</button>
+  <button class="btn btn-outline-info" id="btn-replay-battle"><i class="bi bi-play-circle me-1"></i>Replay</button>
   <button class="btn btn-outline-secondary" id="btn-back-home-from-result">Beranda</button>
   </div>
   <div class="card">
