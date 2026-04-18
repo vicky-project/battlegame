@@ -98,13 +98,15 @@
   // ======================== UI COMPONENTS ========================
   const renderCurrencyBar = () => `
   <div class="currency-bar d-flex justify-content-between align-items-center mb-2">
+  <div>
   <span class="badge bg-secondary"><i class="bi bi-star-fill"></i> Lv. ${state.user?.user_level ?? 1}</span>
+  <span class="badge bg-secondary" style="cursor:pointer;" id="btn-help-bar"><i class="bi bi-question-circle"></i></span>
+  </div>
   <div>
   <span class="badge bg-warning text-dark me-2" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${state.storeData.gold}</span>
   <span class="badge bg-info text-dark me-2" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${state.storeData.diamond}</span>
   <span class="badge bg-primary me-2" style="cursor:pointer;" id="btn-store-bar"><i class="bi bi-shop"></i></span>
   <span class="badge bg-success me-2" style="cursor:pointer;" id="btn-history-bar"><i class="bi bi-clock-history"></i></span>
-  <span class="badge bg-secondary" style="cursor:pointer;" id="btn-help-bar"><i class="bi bi-question-circle"></i></span>
   </div>
   </div>
   `;
@@ -595,7 +597,7 @@
   </ul>
 
   <h5 class="mt-4">⛏️ Mining Gold</h5>
-  <p class="small">Gold ditambang otomatis setiap jam. Klik ikon <i class="bi bi-coin"></i> di kanan atas untuk klaim. Waktu tersisa ditampilkan di beranda.</p>
+  <p class="small">Gold ditambang otomatis setiap jam. Klik ikon <i class="bi bi-coin"></i> di menubar atas untuk klaim. Waktu tersisa ditampilkan di beranda.</p>
 
   <h5 class="mt-4">🛒 Toko & Upgrade</h5>
   <ul class="small">
