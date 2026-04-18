@@ -199,7 +199,7 @@ class BattleService
     return $selected['enemy'];
   }
 
-  protected function getHeroExpForNextLevel(int $currentLevel): int
+  public function getHeroExpForNextLevel(int $currentLevel): int
   {
     if ($currentLevel <= 30) {
       return (int) (150 * pow(1.5, $currentLevel - 1));
