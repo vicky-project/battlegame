@@ -47,6 +47,7 @@ class UserProgressService
         'emoji' => $stats['emoji'],
         'level' => $userHero->level,
         'exp' => $userHero->exp,
+        'next_level_exp' => $userHero->next_level_exp,
         'stats' => $stats,
         'is_selected' => $userHero->is_selected,
       ];

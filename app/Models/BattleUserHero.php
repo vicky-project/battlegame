@@ -4,6 +4,7 @@ namespace Modules\BattleGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Modules\BattleGame\Characters\CharacterRegistry;
+use Modules\BattleGame\Services\BattleService;
 use Modules\Telegram\Models\TelegramUser;
 
 class BattleUserHero extends Model
@@ -98,5 +99,14 @@ class BattleUserHero extends Model
         'value' => $scaledPassiveValue,
       ],
     ];
+  }
+
+  /**
+  * Exp yang dibutuhkan untuk naik ke level berikutnya.
+  */
+  public function getNextLevelExpAttribute(): int
+  {
+    $battleService = app(BattleService::class);
+    return $battleService->getHeroExpForNextLevel($this->level);
   }
 }
