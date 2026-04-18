@@ -245,7 +245,7 @@
   </div>
   <!-- Stats Dasar (2 kolom) -->
   <div class="row small mt-2">
-  <div class="col-6">❤️ HP: ${stats.hp} ${bonusHp > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusHp}</span>` : ''}</div>
+  <span class="badge bg-light text-dark p-2" style="cursor:help;" title="Health Points: ${stats.hp}${bonusHp > 0 ? '(+' + bonusHp + ' bonus' : ''}">❤️ ${stats.hp} ${bonusHp > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusHp}</span>` : ''}</span>
   <div class="col-6">⚔️ ATK: ${stats.atk} ${bonusAtk > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusAtk}</span>` : ''}</div>
   <div class="col-6">🛡️ DEF: ${stats.def} ${bonusDef > 0 ? `<span class="text-success small"><i class="bi bi-arrow-up"></i>+${bonusDef}</span>` : ''}</div>
   <div class="col-6">⏱️ ASPD: ${stats.aspd}s</div>
