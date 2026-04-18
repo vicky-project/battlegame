@@ -231,7 +231,7 @@
   <!-- Baris 1: Emoji (kiri) + Nama/Level/Stats (kanan) -->
   <div class="d-flex">
   <!-- Emoji -->
-  <div class="me-3">
+  <div class="text-center me-3">
   ${renderLayeredEmoji(h.emoji || '👤', 48)}
   </div>
   <!-- Nama, Level, Stats Dasar -->
