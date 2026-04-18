@@ -301,7 +301,11 @@
   </div>
   ${isSelected ? '<span class="badge bg-primary">✔️</span>' : ''}
   </div>
-  <div class="d-flex align-items-start mt-2"><p>${h.description}</p></div>
+  <div class="d-flex align-items-start mt-2">
+  <p>${h.description}</p>
+  </div>
+  </div>
+  </div>
   <div class="row mt-2">
   <!-- Stats Dasar (2 kolom) -->
   <div class="col-6">
@@ -331,8 +335,6 @@
   </div>
   <div class="col-6">
   ${renderTooltip('🔄', '+' + Math.round((stats.counter_chance_bonus || 0) * 100) + '%', 'Counter Chance Bonus', bonusCounter)}
-  </div>
-  </div>
   </div>
   </div>
   <!-- Tombol -->
