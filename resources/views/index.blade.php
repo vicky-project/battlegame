@@ -105,7 +105,7 @@
   <div>
   <span class="badge bg-warning text-dark me-1" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${state.storeData.gold}</span>
   <span class="badge bg-info text-dark me-1" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${state.storeData.diamond}</span>
-  <span class="badge bg-light me-1" style="cursor:pointer;" id="btn-store-bar">🛒</span>
+  <span class="badge bg-secondary me-1" style="cursor:pointer;" id="btn-store-bar">🛒</span>
   <span class="badge bg-success" style="cursor:pointer;" id="btn-history-bar"><i class="bi bi-clock-history"></i></span>
   </div>
   </div>
@@ -680,11 +680,21 @@
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
   document.getElementById('btn-load-more')?.addEventListener('click', loadMoreHistory);
   document.getElementById('history-list-container')?.addEventListener('click', e => {
-  const btn = e.target.closest('.view-log-btn');
-  if(!btn) return;
-  const index = parseInt(btn.dataset.index);
+  const logBtn = e.target.closest('.view-log-btn');
+  const simBtn = e.target.closest('.replay-btn');
+  if(logBtn) {
+  const index = parseInt(logBtn.dataset.index);
   const logData = state.historyList[index]?.log || [];
   showLogViewer(logData);
+  } else if(simBtn) {
+  const index = parseInt(simBtn.dataset.index);
+  const historyItem = state.historyList[index]?.log || [];
+  if(historyItem && historyItem.length) {
+  animateBattleReplay(historyItem);
+  } else {
+  tg.showToast('Log tidak tersedia', 'warning');
+  }
+  }
   });
   }
 
@@ -737,6 +747,9 @@
   <div class="small">
   <button class="btn btn-sm btn-outline-info view-log-btn" data-index='${index}'>
   <i class="bi bi-file-check"></i>
+  </button>
+  <button class="btn btn-sm btn-outline-warning replay-btn" data-index='${index}'>
+  <i class="bi bi-play-fill"></i>
   </button>
   </div>
   </div>
@@ -880,6 +893,14 @@
   showLogViewer(logData);
   });
   });
+  container.querySelectorAll('.replay-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const index = parseInt(btn.dataset.index);
+  const simData = state.historyList[index]?.log || [];
+  animateBattleReplay(simData);
+  });
+  });
   }
 
   // Update tombol load more
@@ -907,6 +928,221 @@
   ` : ''}
   </div>
   `;
+
+  function animateBattleReplay(historyItem) {
+  return new Promise((resolve) => {
+  removeOverlays();
+
+  const log = historyItem;
+  if (log.length === 0) {
+  tg.showToast('Log kosong', 'warning');
+  resolve();
+  return;
+  }
+
+  // Ekstrak informasi dari log pertama
+  const firstLine = log[0];
+  // Format: "Pertarungan dimulai! 🛡️✨ Paladin (HP: 382.0) vs 👹 Orc Warrior (Level 10, HP: 587.0)"
+  const playerMatch = firstLine.match(/(\S+)\s+\(HP:\s*([\d.]+)\)/);
+  const enemyMatch = firstLine.match(/vs\s+(\S+)\s+[^\(]*\([^\)]*HP:\s*([\d.]+)\)/);
+
+  const playerName = playerMatch ? playerMatch[1].trim() : historyItem.hero_name;
+  const playerMaxHp = playerMatch ? parseFloat(playerMatch[2]) : 100;
+  const enemyName = enemyMatch ? enemyMatch[1].trim() : historyItem.enemy_name;
+  const enemyMaxHp = enemyMatch ? parseFloat(enemyMatch[2]) : 100;
+
+  // Emoji dari historyItem
+  const playerEmoji = historyItem.hero_emoji || '👤';
+  const enemyEmoji = historyItem.enemy_emoji || '👾';
+
+  let pHp = playerMaxHp;
+  let eHp = enemyMaxHp;
+  let logIndex = 0;
+
+  // Overlay replay
+  const overlay = document.createElement('div');
+  overlay.id = 'battle-replay-overlay';
+  overlay.style.cssText = `
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  z-index: 10001; display: flex; flex-direction: column; padding: 16px;
+  `;
+
+  overlay.innerHTML = `
+  <div class="d-flex justify-content-between align-items-center mb-2">
+  <h5 class="text-white mb-0"><i class="bi bi-play-circle"></i> Replay Pertarungan</h5>
+  <button class="btn btn-sm btn-outline-light" id="close-replay"><i class="bi bi-x-lg"></i></button>
+  </div>
+
+  <!-- Arena -->
+  <div class="d-flex justify-content-around align-items-center flex-grow-1">
+  <!-- Player -->
+  <div class="text-center" style="width: 40%;">
+  <div class="position-relative d-inline-block">
+  <div id="replay-player-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(playerEmoji, 80)}</div>
+  <div id="player-damage-popup" class="damage-popup"></div>
+  </div>
+  <div class="text-white fw-bold mt-2">${playerName}</div>
+  <div class="hp-bar-container mt-2">
+  <div class="hp-bar-fill" id="player-hp-fill" style="width: 100%;"></div>
+  <span class="hp-text" id="replay-player-hp">❤️ ${pHp}/${playerMaxHp}</span>
+  </div>
+  </div>
+
+  <!-- VS + Splash -->
+  <div style="font-size: 40px; color: gold; position: relative;">
+  ⚔️
+  <div id="splash-message" class="splash-message"></div>
+  </div>
+
+  <!-- Enemy -->
+  <div class="text-center" style="width: 40%;">
+  <div class="position-relative d-inline-block">
+  <div id="replay-enemy-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(enemyEmoji, 80)}</div>
+  <div id="enemy-damage-popup" class="damage-popup"></div>
+  </div>
+  <div class="text-white fw-bold mt-2">${enemyName}</div>
+  <div class="hp-bar-container mt-2">
+  <div class="hp-bar-fill" id="enemy-hp-fill" style="width: 100%;"></div>
+  <span class="hp-text" id="replay-enemy-hp">❤️ ${eHp}/${enemyMaxHp}</span>
+  </div>
+  </div>
+  </div>
+
+  <!-- Log mini -->
+  <div style="max-height: 80px; overflow-y: auto; font-size: 12px; color: #aaa;" id="replay-log-mini"></div>
+  `;
+  document.body.appendChild(overlay);
+
+  // CSS (sama seperti sebelumnya, pastikan sudah ada di global)
+  const style = document.createElement('style');
+  style.textContent = `
+  .hp-bar-container { width: 100%; height: 16px; background: #333; border-radius: 20px; position: relative; overflow: hidden; margin: 0 auto; }
+  .hp-bar-fill { height: 100%; background: linear-gradient(90deg, #e74c3c, #c0392b); border-radius: 20px; transition: width 0.3s ease; }
+  .hp-text { position: absolute; left: 0; right: 0; top: -2px; color: white; font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px black; }
+  .damage-popup { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; color: #ff6b6b; opacity: 0; white-space: nowrap; pointer-events: none; text-shadow: 2px 2px 4px black; z-index: 10; }
+  .splash-message { position: absolute; top: -60px; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: bold; color: #f1c40f; opacity: 0; white-space: nowrap; background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 30px; pointer-events: none; z-index: 20; border: 1px solid #f1c40f; }
+  @keyframes popDamage { 0% { opacity: 0; transform: translateX(-50%) translateY(10px); } 20% { opacity: 1; transform: translateX(-50%) translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-30px); } }
+  @keyframes popSplash { 0% { opacity: 0; transform: translateX(-50%) scale(0.5); } 20% { opacity: 1; transform: translateX(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) scale(1.2); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  @keyframes attackPlayer { 0%,100% { transform: scale(1) translateX(0); } 50% { transform: scale(1.2) translateX(20px); } }
+  @keyframes attackEnemy { 0%,100% { transform: scale(1) translateX(0); } 50% { transform: scale(1.2) translateX(-20px); } }
+  `;
+  document.head.appendChild(style);
+
+  // Elemen UI
+  const playerEmojiEl = document.getElementById('replay-player-emoji');
+  const enemyEmojiEl = document.getElementById('replay-enemy-emoji');
+  const playerHpFill = document.getElementById('player-hp-fill');
+  const enemyHpFill = document.getElementById('enemy-hp-fill');
+  const playerHpText = document.getElementById('replay-player-hp');
+  const enemyHpText = document.getElementById('replay-enemy-hp');
+  const playerDmgPopup = document.getElementById('player-damage-popup');
+  const enemyDmgPopup = document.getElementById('enemy-damage-popup');
+  const splashMsg = document.getElementById('splash-message');
+  const logMini = document.getElementById('replay-log-mini');
+
+  function showDamage(target, amount, isCrit = false) {
+  const popup = target === 'player' ? playerDmgPopup : enemyDmgPopup;
+  popup.textContent = `-${Math.floor(amount)}`;
+  popup.style.color = isCrit ? '#ffaa00' : '#ff6b6b';
+  popup.style.animation = 'none';
+  popup.offsetHeight;
+  popup.style.animation = 'popDamage 1s ease-out forwards';
+  }
+
+  function showSplash(text, color = '#f1c40f') {
+  splashMsg.textContent = text;
+  splashMsg.style.color = color;
+  splashMsg.style.animation = 'none';
+  splashMsg.offsetHeight;
+  splashMsg.style.animation = 'popSplash 1.5s ease-out forwards';
+  }
+
+  function updateHpBars() {
+  const playerPercent = Math.max(0, (pHp / playerMaxHp) * 100);
+  const enemyPercent = Math.max(0, (eHp / enemyMaxHp) * 100);
+  playerHpFill.style.width = `${playerPercent}%`;
+  enemyHpFill.style.width = `${enemyPercent}%`;
+  playerHpText.textContent = `❤️ ${Math.floor(pHp)}/${playerMaxHp}`;
+  enemyHpText.textContent = `❤️ ${Math.floor(eHp)}/${enemyMaxHp}`;
+  }
+
+  function processNextLog() {
+  if (logIndex >= log.length) {
+  const winner = pHp > 0 ? playerName : enemyName;
+  showSplash(`🏆 ${winner} Menang!`, '#2ecc71');
+  setTimeout(() => {
+  overlay.remove();
+  style.remove();
+  resolve();
+  }, 2500);
+  return;
+  }
+
+  const line = log[logIndex];
+  logMini.innerHTML = `<div style="color:#ccc;">${escapeHtml(line)}</div>`;
+
+  const isPlayerAttacking = line.includes(playerName) && line.includes('menyerang');
+  const isEnemyAttacking = line.includes(enemyName) && line.includes('menyerang');
+  const isCritical = line.includes('Critical');
+  const isBlocked = line.includes('Diblok');
+  const isPoison = line.includes('racun');
+  const isStun = line.includes('stun');
+  const isLifesteal = line.includes('mencuri nyawa');
+  const isShield = line.includes('Perisai Suci');
+  const isCounter = line.includes('membalas');
+
+  if (isPoison) showSplash('☠️ Racun!', '#9b59b6');
+  else if (isStun) showSplash('💫 Stun!', '#3498db');
+  else if (isLifesteal) showSplash('🩸 Lifesteal!', '#e74c3c');
+  else if (isShield) showSplash('🛡️ Perisai Suci!', '#2ecc71');
+  else if (isCounter) showSplash('⚡ Counter!', '#f39c12');
+
+  playerEmojiEl.style.animation = '';
+  enemyEmojiEl.style.animation = '';
+  if (isPlayerAttacking) {
+  playerEmojiEl.style.animation = 'attackPlayer 0.3s ease-out';
+  enemyEmojiEl.style.animation = 'shake 0.2s ease-out';
+  } else if (isEnemyAttacking) {
+  enemyEmojiEl.style.animation = 'attackEnemy 0.3s ease-out';
+  playerEmojiEl.style.animation = 'shake 0.2s ease-out';
+  }
+
+  const playerHpMatch = line.match(new RegExp(`${playerName}.*?tersisa\\s+([\\d.]+)`));
+  const enemyHpMatch = line.match(new RegExp(`${enemyName}.*?tersisa\\s+([\\d.]+)`));
+
+  if (playerHpMatch) {
+  const newHp = parseFloat(playerHpMatch[1]);
+  if (newHp < pHp) showDamage('player', pHp - newHp, isCritical);
+  pHp = newHp;
+  }
+  if (enemyHpMatch) {
+  const newHp = parseFloat(enemyHpMatch[1]);
+  if (newHp < eHp) showDamage('enemy', eHp - newHp, isCritical);
+  eHp = newHp;
+  }
+
+  updateHpBars();
+  logIndex++;
+
+  let delay = 700;
+  if (isPlayerAttacking || isEnemyAttacking) delay = 500;
+  if (isCounter) delay = 400;
+  if (line.includes('Pertarungan selesai')) delay = 2000;
+  setTimeout(processNextLog, delay);
+  }
+
+  setTimeout(processNextLog, 500);
+  updateHpBars();
+
+  document.getElementById('close-replay')?.addEventListener('click', () => {
+  overlay.remove();
+  style.remove();
+  resolve();
+  });
+  });
+  }
 
   // ======================== INIT ========================
   async function init() {
