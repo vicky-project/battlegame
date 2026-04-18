@@ -308,8 +308,6 @@
   ${renderTooltip('🛡️', stats.def, 'Defense', bonusDef)}
   ${renderTooltip('⏱️', stats.aspd+'s', 'Attack Speed', 0)}
   </div>
-  </div>
-  </div>
   <!-- Baris 2: Skill Tambahan (2 kolom) -->
   <div class="mt-2">
   ${renderTooltip('🎯', Math.round(stats.accuracy * 100) + '%', 'Accuracy', bonusAccuracy)}
@@ -317,6 +315,8 @@
   ${renderTooltip('🛡', Math.round(stats.block_chance * 100) + '%', 'Block Chance', 0)}
   ${renderTooltip('⚡', '+' + Math.round((stats.crit_chance_bonus || 0) * 100) + '%', 'Critical Chance Bonus', bonusCrit)}
   ${renderTooltip('🔄', '+' + Math.round((stats.counter_chance_bonus || 0) * 100) + '%', 'Counter Chance Bonus', bonusCounter)}
+  </div>
+  </div>
   </div>
   <!-- Tombol -->
   <button class="btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-primary'} w-100 mt-3 select-hero-btn" data-hero-id="${h.id}" ${isSelected ? 'disabled' : ''}>
