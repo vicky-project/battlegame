@@ -287,7 +287,7 @@
   <div class="card ${isSelected ? 'border-primary' : ''}">
   <div class="card-body">
   <!-- Baris 1: Emoji (kiri) + Nama/Level/Stats (kanan) -->
-  <div class="d-flex">
+  <div class="d-flex mb-3">
   <!-- Emoji -->
   <div class="text-center me-3">
   ${renderLayeredEmoji(h.emoji || '👤', 100)}
@@ -306,7 +306,7 @@
   </div>
   </div>
   </div>
-  <div class="row mt-2">
+  <div class="row mt-3">
   <!-- Stats Dasar (2 kolom) -->
   <div class="col-6">
   ${renderTooltip('❤️', stats.hp, 'Health Point', bonusHp)}
