@@ -827,7 +827,18 @@
   lineIndex++;
   charIndex = 0;
   currentLine = '';
+
+  if(lineIndex < logArray.length) {
+  typeNext();
+  return;
+  } else {
+  clearInterval(state.logViewerInterval);
+  state.logViewerInterval = null;
+  return;
   }
+  }
+
+  contentEl.scrollTop = contentEl.scrollHeight;
   };
 
   state.logViewerInterval = setInterval(typeNext, 20); // kecepatan ketik
