@@ -940,7 +940,7 @@
   return;
   }
 
-  // === 1. Parse baris pertama ===
+  // === 1. Ekstrak data dari baris pertama ===
   const firstLine = log[0];
   const vsIndex = firstLine.indexOf(' vs ');
   if (vsIndex === -1) {
@@ -949,35 +949,35 @@
   return;
   }
 
-  const leftPart = firstLine.substring(0, vsIndex);
+  const leftPart = firstLine.substring(0, vsIndex).replace(/^Pertarungan dimulai!\s*/, '');
   const rightPart = firstLine.substring(vsIndex + 4);
 
-  // Ekstrak player (kiri)
-  const playerMatch = leftPart.match(/^Pertarungan dimulai!\s*(.+?)\s+([^()]+?)\s*\(HP:\s*([\d.]+)\)/);
-  let playerEmoji = historyItem.hero_emoji || '👤';
-  let playerName = historyItem.hero_name || 'Hero';
-  let playerMaxHp = 100;
-
-  if (playerMatch) {
-  playerEmoji = playerMatch[1].trim();
-  playerName = playerMatch[2].trim();
-  playerMaxHp = parseFloat(playerMatch[3]);
+  // Fungsi helper untuk ekstrak nama dan HP dari bagian string
+  function extractCharacterInfo(part, isEnemy = false) {
+  // Pola: (emoji) Nama (HP: XXX)   atau untuk enemy: (emoji) Nama (Level X, HP: XXX)
+  const regex = isEnemy
+  ? /^(.+?)\s+([^()]+?)\s*\(Level\s*\d+,\s*HP:\s*([\d.]+)\)/
+  : /^(.+?)\s+([^()]+?)\s*\(HP:\s*([\d.]+)\)/;
+  const match = part.match(regex);
+  if (!match) return null;
+  return {
+  emoji: match[1].trim(),
+  name: match[2].trim(),
+  maxHp: parseFloat(match[3])
+  };
   }
 
-  // Ekstrak enemy (kanan)
-  const enemyMatch = rightPart.match(/^(.+?)\s+([^()]+?)\s*\(Level\s*\d+,\s*HP:\s*([\d.]+)\)/);
-  let enemyEmoji = historyItem.enemy_emoji || '👾';
-  let enemyName = historyItem.enemy_name || 'Musuh';
-  let enemyMaxHp = 100;
+  const playerInfo = extractCharacterInfo(leftPart, false);
+  const enemyInfo = extractCharacterInfo(rightPart, true);
 
-  if (enemyMatch) {
-  enemyEmoji = enemyMatch[1].trim();
-  enemyName = enemyMatch[2].trim();
-  enemyMaxHp = parseFloat(enemyMatch[3]);
+  if (!playerInfo || !enemyInfo) {
+  tg.showToast('Gagal parsing data karakter', 'danger');
+  resolve();
+  return;
   }
 
-  let pHp = playerMaxHp;
-  let eHp = enemyMaxHp;
+  let pHp = playerInfo.maxHp;
+  let eHp = enemyInfo.maxHp;
   let logIndex = 0;
 
   // === 2. Overlay ===
@@ -998,13 +998,13 @@
   <div class="d-flex justify-content-around align-items-center flex-grow-1">
   <div class="text-center" style="width: 40%;">
   <div class="position-relative d-inline-block">
-  <div id="replay-player-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(playerEmoji, 80)}</div>
+  <div id="replay-player-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(playerInfo.emoji, 80)}</div>
   <div id="player-damage-popup" class="damage-popup"></div>
   </div>
-  <div class="text-white fw-bold mt-2">${playerName}</div>
+  <div class="text-white fw-bold mt-2">${playerInfo.name}</div>
   <div class="hp-bar-container mt-2">
   <div class="hp-bar-fill" id="player-hp-fill" style="width: 100%;"></div>
-  <span class="hp-text" id="replay-player-hp">❤️ ${pHp}/${playerMaxHp}</span>
+  <span class="hp-text" id="replay-player-hp">❤️ ${pHp}/${playerInfo.maxHp}</span>
   </div>
   </div>
 
@@ -1015,13 +1015,13 @@
 
   <div class="text-center" style="width: 40%;">
   <div class="position-relative d-inline-block">
-  <div id="replay-enemy-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(enemyEmoji, 80)}</div>
+  <div id="replay-enemy-emoji" style="font-size: 80px; transition: all 0.2s;">${renderLayeredEmoji(enemyInfo.emoji, 80)}</div>
   <div id="enemy-damage-popup" class="damage-popup"></div>
   </div>
-  <div class="text-white fw-bold mt-2">${enemyName}</div>
+  <div class="text-white fw-bold mt-2">${enemyInfo.name}</div>
   <div class="hp-bar-container mt-2">
   <div class="hp-bar-fill" id="enemy-hp-fill" style="width: 100%;"></div>
-  <span class="hp-text" id="replay-enemy-hp">❤️ ${eHp}/${enemyMaxHp}</span>
+  <span class="hp-text" id="replay-enemy-hp">❤️ ${eHp}/${enemyInfo.maxHp}</span>
   </div>
   </div>
   </div>
@@ -1076,17 +1076,17 @@
   }
 
   function updateHpBars() {
-  const playerPercent = Math.max(0, (pHp / playerMaxHp) * 100);
-  const enemyPercent = Math.max(0, (eHp / enemyMaxHp) * 100);
+  const playerPercent = Math.max(0, (pHp / playerInfo.maxHp) * 100);
+  const enemyPercent = Math.max(0, (eHp / enemyInfo.maxHp) * 100);
   playerHpFill.style.width = `${playerPercent}%`;
   enemyHpFill.style.width = `${enemyPercent}%`;
-  playerHpText.textContent = `❤️ ${Math.floor(pHp)}/${playerMaxHp}`;
-  enemyHpText.textContent = `❤️ ${Math.floor(eHp)}/${enemyMaxHp}`;
+  playerHpText.textContent = `❤️ ${Math.floor(pHp)}/${playerInfo.maxHp}`;
+  enemyHpText.textContent = `❤️ ${Math.floor(eHp)}/${enemyInfo.maxHp}`;
   }
 
   function processNextLog() {
   if (logIndex >= log.length) {
-  const winner = pHp > 0 ? playerName : enemyName;
+  const winner = pHp > 0 ? playerInfo.name : enemyInfo.name;
   showSplash(`🏆 ${winner} Menang!`, '#2ecc71');
   setTimeout(() => {
   overlay.remove();
@@ -1099,8 +1099,10 @@
   const line = log[logIndex];
   logMini.innerHTML = `<div style="color:#ccc;">${escapeHtml(line)}</div>`;
 
-  const isPlayerAttacking = line.includes(playerName) && line.includes('menyerang');
-  const isEnemyAttacking = line.includes(enemyName) && line.includes('menyerang');
+  // Deteksi aksi berdasarkan substring
+  const hasPlayerAttack = line.includes(playerInfo.name) && line.includes('menyerang');
+  const hasEnemyAttack = line.includes(enemyInfo.name) && line.includes('menyerang');
+  const hasCounter = line.includes('membalas');
   const isCritical = line.includes('Critical');
   const isBlocked = line.includes('Diblok');
   const isMiss = line.includes('Meleset');
@@ -1108,26 +1110,26 @@
   const isStun = line.includes('stun');
   const isLifesteal = line.includes('mencuri nyawa');
   const isShield = line.includes('Perisai Suci');
-  const isCounter = line.includes('membalas');
 
+  // Splash spesial
   if (isPoison) showSplash('☠️ Racun!', '#9b59b6');
   else if (isStun) showSplash('💫 Stun!', '#3498db');
   else if (isLifesteal) showSplash('🩸 Lifesteal!', '#e74c3c');
   else if (isShield) showSplash('🛡️ Perisai Suci!', '#2ecc71');
-  else if (isCounter) showSplash('⚡ Counter!', '#f39c12');
   else if (isMiss) showSplash('💨 Meleset!', '#95a5a6');
 
+  // Animasi emoji
   playerEmojiEl.style.animation = '';
   enemyEmojiEl.style.animation = '';
 
-  if (isPlayerAttacking) {
+  if (hasPlayerAttack) {
   playerEmojiEl.style.animation = 'attackPlayer 0.3s ease-out';
   enemyEmojiEl.style.animation = 'shake 0.2s ease-out';
-  } else if (isEnemyAttacking) {
+  } else if (hasEnemyAttack) {
   enemyEmojiEl.style.animation = 'attackEnemy 0.3s ease-out';
   playerEmojiEl.style.animation = 'shake 0.2s ease-out';
-  } else if (isCounter) {
-  if (line.includes(playerName)) {
+  } else if (hasCounter) {
+  if (line.includes(playerInfo.name)) {
   playerEmojiEl.style.animation = 'attackPlayer 0.25s ease-out';
   enemyEmojiEl.style.animation = 'shake 0.2s ease-out';
   } else {
@@ -1136,44 +1138,50 @@
   }
   }
 
-  // Heal/Shield
+  // Heal/Shield (langsung tambah HP)
   const healMatch = line.match(/(?:mendapatkan|mencuri nyawa)\s.*?\+(\d+)\s*HP/i);
   if (healMatch) {
   const healAmount = parseInt(healMatch[1]);
-  if (line.includes(playerName)) {
-  pHp = Math.min(playerMaxHp, pHp + healAmount);
-  } else if (line.includes(enemyName)) {
-  eHp = Math.min(enemyMaxHp, eHp + healAmount);
+  if (line.includes(playerInfo.name)) {
+  pHp = Math.min(playerInfo.maxHp, pHp + healAmount);
+  showSplash(`+${healAmount} HP`, '#2ecc71');
+  } else if (line.includes(enemyInfo.name)) {
+  eHp = Math.min(enemyInfo.maxHp, eHp + healAmount);
+  showSplash(`+${healAmount} HP`, '#2ecc71');
   }
   updateHpBars();
   }
 
-  // Damage (tersisa)
-  const playerRemaining = line.match(new RegExp(`${playerName}.*?tersisa\\s+([\\d.]+)`));
-  const enemyRemaining = line.match(new RegExp(`${enemyName}.*?tersisa\\s+([\\d.]+)`));
+  // Cari klausa "tersisa" untuk update HP
+  const playerRemaining = line.match(new RegExp(`${playerInfo.name}.*?tersisa\\s+([\\d.]+)`));
+  const enemyRemaining = line.match(new RegExp(`${enemyInfo.name}.*?tersisa\\s+([\\d.]+)`));
 
   if (playerRemaining) {
   const newHp = parseFloat(playerRemaining[1]);
-  if (!isNaN(newHp) && newHp < pHp) {
+  if (!isNaN(newHp)) {
+  if (newHp < pHp) {
   showDamage('player', pHp - newHp, isCritical);
   }
-  if (!isNaN(newHp)) pHp = newHp;
+  pHp = newHp;
+  }
   }
 
   if (enemyRemaining) {
   const newHp = parseFloat(enemyRemaining[1]);
-  if (!isNaN(newHp) && newHp < eHp) {
+  if (!isNaN(newHp)) {
+  if (newHp < eHp) {
   showDamage('enemy', eHp - newHp, isCritical);
   }
-  if (!isNaN(newHp)) eHp = newHp;
+  eHp = newHp;
+  }
   }
 
   updateHpBars();
   logIndex++;
 
   let delay = 700;
-  if (isPlayerAttacking || isEnemyAttacking) delay = 500;
-  if (isCounter) delay = 400;
+  if (hasPlayerAttack || hasEnemyAttack) delay = 500;
+  if (hasCounter) delay = 400;
   if (line.includes('Pertarungan selesai')) delay = 2000;
   setTimeout(processNextLog, delay);
   }
