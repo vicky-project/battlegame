@@ -34,4 +34,13 @@ enum StoreCategory: string
         self::UPGRADE => 'Tingkatkan kemampuan',
       };
     }
+
+    public function color(): string
+    {
+      return match($this) {
+        self::HERO => 'text-warning',
+        self::DIAMOND => 'text-info',
+        self::UPGRADE => 'text-danger'
+      };
+    }
 }

@@ -105,7 +105,7 @@
   <div>
   <span class="badge bg-warning text-dark me-2" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${state.storeData.gold}</span>
   <span class="badge bg-info text-dark me-2" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${state.storeData.diamond}</span>
-  <span class="badge bg-primary me-2" style="cursor:pointer;" id="btn-store-bar">🛒</span>
+  <span class="badge me-2" style="cursor:pointer;" id="btn-store-bar">🛒</span>
   <span class="badge bg-success me-2" style="cursor:pointer;" id="btn-history-bar"><i class="bi bi-clock-history"></i></span>
   </div>
   </div>
@@ -519,7 +519,7 @@
   state.storeData = resp.data;
   setAppContent(`
   ${renderHeader('btn-back-home', 'Toko')}
-  <div class="row g-3">${resp.data.categories.map(c=>`<div class="col-6"><div class="card h-100 store-category-card" data-category="${c.id}"><div class="card-body text-center"><i class="bi bi-${c.icon} fs-1"></i><h5 class="card-title">${c.name}</h5><p class="card-text small">${c.description}</p></div></div></div>`).join('')}</div>
+  <div class="row g-3">${resp.data.categories.map(c=>`<div class="col-6"><div class="card h-100 store-category-card" data-category="${c.id}"><div class="card-body text-center"><i class="bi bi-${c.icon} fs-1 ${c.color}"></i><h5 class="card-title">${c.name}</h5><p class="card-text small">${c.description}</p></div></div></div>`).join('')}</div>
   `);
   document.querySelectorAll('.store-category-card').forEach(c=>c.addEventListener('click', ()=> ({hero:renderStoreHero, diamond:renderStoreDiamond, upgrade:renderStoreUpgrade})[c.dataset.category]()));
   document.getElementById('btn-back-home')?.addEventListener('click', renderHomeScreen);
