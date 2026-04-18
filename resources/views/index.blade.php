@@ -940,12 +940,14 @@
   return;
   }
 
-  // Ekstrak info dari log pertama dengan regex yang lebih toleran terhadap spasi
+  // === 1. Parse baris pertama untuk mendapatkan data awal ===
   const firstLine = log[0];
-  // Pola: "Pertarungan dimulai! (emoji) Nama Hero (HP: 382.0) vs (emoji) Nama Musuh (Level 10, HP: 587.0)"
+  // Contoh: "Pertarungan dimulai! 🛡️✨ Paladin (HP: 382.0) vs 👑❄️ Lich King (Level 10, HP: 1639.0)"
+
+  // Cari pemisah " vs "
   const vsIndex = firstLine.indexOf(' vs ');
   if (vsIndex === -1) {
-  tg.showToast('Format log tidak dikenali', 'danger');
+  tg.showToast('Format log tidak valid', 'danger');
   resolve();
   return;
   }
@@ -953,28 +955,46 @@
   const leftPart = firstLine.substring(0, vsIndex);
   const rightPart = firstLine.substring(vsIndex + 4);
 
-  // Ambil nama dan HP Hero
-  const playerHpMatch = leftPart.match(/\(HP:\s*([\d.]+)\)/);
-  const playerNameMatch = leftPart.match(/\s+([^()]+?)\s*\(HP:/);
-  const playerName = playerNameMatch ? playerNameMatch[1].trim() : historyItem.hero_name;
-  const playerMaxHp = playerHpMatch ? parseFloat(playerHpMatch[1]) : 100;
+  // Ekstrak emoji, nama, dan HP player
+  const playerMatch = leftPart.match(/^Pertarungan dimulai!\s*(.+?)\s+([^()]+?)\s*\(HP:\s*([\d.]+)\)/);
+  let playerEmoji = '👤';
+  let playerName = 'Hero';
+  let playerMaxHp = 100;
 
-  // Ambil nama dan HP Musuh
-  const enemyHpMatch = rightPart.match(/\(HP:\s*([\d.]+)\)/);
-  const enemyNameMatch = rightPart.match(/\)\s*([^()]+?)\s*\(/);
-  let enemyName = enemyNameMatch ? enemyNameMatch[1].trim() : historyItem.enemy_name;
-  // Bersihkan level jika ada
-  enemyName = enemyName.replace(/\s*\(Level\s*\d+\)/, '').trim();
-  const enemyMaxHp = enemyHpMatch ? parseFloat(enemyHpMatch[1]) : 100;
+  if (playerMatch) {
+  playerEmoji = playerMatch[1].trim(); // emoji bisa gabungan
+  playerName = playerMatch[2].trim();
+  playerMaxHp = parseFloat(playerMatch[3]);
+  } else {
+  // fallback ke historyItem
+  playerEmoji = historyItem.hero_emoji || '👤';
+  playerName = historyItem.hero_name || 'Hero';
+  playerMaxHp = 100;
+  }
 
-  const playerEmoji = historyItem.hero_emoji || '👤';
-  const enemyEmoji = historyItem.enemy_emoji || '👾';
+  // Ekstrak emoji, nama, dan HP enemy
+  // Format kanan: "👑❄️ Lich King (Level 10, HP: 1639.0)"
+  const enemyMatch = rightPart.match(/^(.+?)\s+([^()]+?)\s*\(Level\s*\d+,\s*HP:\s*([\d.]+)\)/);
+  let enemyEmoji = '👾';
+  let enemyName = 'Musuh';
+  let enemyMaxHp = 100;
+
+  if (enemyMatch) {
+  enemyEmoji = enemyMatch[1].trim();
+  enemyName = enemyMatch[2].trim();
+  enemyMaxHp = parseFloat(enemyMatch[3]);
+  } else {
+  // fallback
+  enemyEmoji = historyItem.enemy_emoji || '👾';
+  enemyName = historyItem.enemy_name || 'Musuh';
+  enemyMaxHp = 100;
+  }
 
   let pHp = playerMaxHp;
   let eHp = enemyMaxHp;
   let logIndex = 0;
 
-  // Overlay
+  // === 2. Bangun overlay ===
   const overlay = document.createElement('div');
   overlay.id = 'battle-replay-overlay';
   overlay.style.cssText = `
@@ -1024,7 +1044,7 @@
   `;
   document.body.appendChild(overlay);
 
-  // CSS
+  // CSS (sama)
   const style = document.createElement('style');
   style.textContent = `
   .hp-bar-container { width: 100%; height: 16px; background: #333; border-radius: 20px; position: relative; overflow: hidden; margin: 0 auto; }
@@ -1092,23 +1112,27 @@
   const line = log[logIndex];
   logMini.innerHTML = `<div style="color:#ccc;">${escapeHtml(line)}</div>`;
 
-  // Deteksi siapa yang menyerang dengan lebih akurat
+  // Deteksi aksi
   const isPlayerAttacking = line.includes(playerName) && line.includes('menyerang');
   const isEnemyAttacking = line.includes(enemyName) && line.includes('menyerang');
   const isCritical = line.includes('Critical');
+  const isBlocked = line.includes('Diblok');
+  const isMiss = line.includes('Meleset');
   const isPoison = line.includes('racun');
   const isStun = line.includes('stun');
   const isLifesteal = line.includes('mencuri nyawa');
   const isShield = line.includes('Perisai Suci');
   const isCounter = line.includes('membalas');
 
+  // Splash spesial
   if (isPoison) showSplash('☠️ Racun!', '#9b59b6');
   else if (isStun) showSplash('💫 Stun!', '#3498db');
   else if (isLifesteal) showSplash('🩸 Lifesteal!', '#e74c3c');
   else if (isShield) showSplash('🛡️ Perisai Suci!', '#2ecc71');
   else if (isCounter) showSplash('⚡ Counter!', '#f39c12');
+  else if (isMiss) showSplash('💨 Meleset!', '#95a5a6');
 
-  // Reset animasi
+  // Animasi emoji
   playerEmojiEl.style.animation = '';
   enemyEmojiEl.style.animation = '';
 
@@ -1119,7 +1143,6 @@
   enemyEmojiEl.style.animation = 'attackEnemy 0.3s ease-out';
   playerEmojiEl.style.animation = 'shake 0.2s ease-out';
   } else if (isCounter) {
-  // Counter: yang membalas adalah defender
   if (line.includes(playerName)) {
   playerEmojiEl.style.animation = 'attackPlayer 0.25s ease-out';
   enemyEmojiEl.style.animation = 'shake 0.2s ease-out';
