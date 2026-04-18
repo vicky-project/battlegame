@@ -229,7 +229,7 @@
   <div class="card ${isSelected ? 'border-primary' : ''}">
   <div class="card-body">
   <!-- Baris 1: Emoji + Stats Dasar (dalam satu baris) -->
-  <div class="row d-flex">
+  <div class="row d-flex justify-content-between align-items-center">
   <!-- Emoji Hero (kiri) -->
   <div class="col-6 flex-grow-1 me-3">
   ${renderLayeredEmoji(h.emoji || '👤', 48)}
