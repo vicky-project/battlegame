@@ -239,6 +239,7 @@
   document.getElementById('btn-change-hero')?.addEventListener('click', renderSelectHeroScreen);
   document.getElementById('btn-select-hero-empty')?.addEventListener('click', renderSelectHeroScreen);
   document.getElementById('btn-mining-preview')?.addEventListener('click', renderMiningScreen);
+  initTooltips();
   }
 
   async function startMiningPreviewTimer() {
