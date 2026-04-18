@@ -25,7 +25,7 @@ class StoreService
         'name' => $cat->label(),
         'icon' => $cat->icon(),
         'description' => $cat->description(),
-        'color' => $car->color(),
+        'color' => $cat->color(),
       ],
       StoreCategory::cases()
     );
