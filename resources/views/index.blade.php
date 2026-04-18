@@ -698,6 +698,7 @@
   const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
   const isWin = h.result === 'win';
+  const duration = h.duration ? `${h.duration}s` : '?';
 
   return `
   <div class="card mb-2">
@@ -715,6 +716,7 @@
   <div class="d-flex flex-column align-items-center mx-2" style="min-width: 60px;">
   <span style="font-size: 20px;">⚔️</span>
   <span class="badge ${isWin ? 'bg-success' : 'bg-danger'} mt-1">${isWin ? 'MENANG' : 'KALAH'}</span>
+  <span class="small text-muted mt-1">⏱️ ${duration}</span>
   </div>
 
   <!-- Enemy Column -->
