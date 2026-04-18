@@ -51,7 +51,6 @@ class UserProgressService
         'next_level_exp' => $userHero->next_level_exp,
         'stats' => $stats,
         'is_selected' => $userHero->is_selected,
-        'user' => $userHero->telegramUser
       ];
     })
     ->filter()
@@ -70,6 +69,7 @@ class UserProgressService
       'heroes' => $userHeroes,
       'selected_hero_id' => collect($userHeroes)->firstWhere('is_selected',
         true)['id'] ?? null,
+      'user' => $progress->user
     ];
   }
 }
