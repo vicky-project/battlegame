@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class AncientDragon extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'ancient_dragon', name: 'Ancient Dragon', emoji: '🐉', minLevel: 10, maxLevel: null, rewards: ['exp' => 180, 'gold' => 140]);
+    parent::__construct(id: 'ancient_dragon', name: 'Ancient Dragon', emoji: '🐉', minLevel: 10, maxLevel: null, rewards: ['exp' => 350, 'gold' => 320]);
   }
   public function baseHp(): int {
     return 600;

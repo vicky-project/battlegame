@@ -13,7 +13,7 @@ class Bandit extends Enemy
       emoji: '💰',
       minLevel: 1,
       maxLevel: 2,
-      rewards: ['exp' => 20, 'gold' => 20],
+      rewards: ['exp' => 45, 'gold' => 45],
     );
   }
 

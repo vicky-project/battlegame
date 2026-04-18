@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class LichKing extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'lich_king', name: 'Lich King', emoji: '👑❄️', minLevel: 10, maxLevel: null, rewards: ['exp' => 220, 'gold' => 180]);
+    parent::__construct(id: 'lich_king', name: 'Lich King', emoji: '👑❄️', minLevel: 10, maxLevel: null, rewards: ['exp' => 450, 'gold' => 400]);
   }
   public function baseHp(): int {
     return 550;

@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class ShadowAssassin extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'shadow_assassin', name: 'Shadow Assassin', emoji: '🥷🌑', minLevel: 6, maxLevel: 9, rewards: ['exp' => 90, 'gold' => 80]);
+    parent::__construct(id: 'shadow_assassin', name: 'Shadow Assassin', emoji: '🥷🌑', minLevel: 6, maxLevel: 9, rewards: ['exp' => 180, 'gold' => 180]);
   }
   public function baseHp(): int {
     return 200;

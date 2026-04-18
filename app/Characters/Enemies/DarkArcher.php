@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class DarkArcher extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'dark_archer', name: 'Dark Archer', emoji: '🏹', minLevel: 3, maxLevel: 5, rewards: ['exp' => 40, 'gold' => 35]);
+    parent::__construct(id: 'dark_archer', name: 'Dark Archer', emoji: '🏹', minLevel: 3, maxLevel: 5, rewards: ['exp' => 85, 'gold' => 80]);
   }
   public function baseHp(): int {
     return 160;

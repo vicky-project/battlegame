@@ -14,7 +14,7 @@ class VoidLord extends Enemy
       emoji: '🌑👑',
       minLevel: 30,
       maxLevel: null,
-      rewards: ['exp' => 500, 'gold' => 400],
+      rewards: ['exp' => 700, 'gold' => 600],
     );
   }
 

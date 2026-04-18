@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class Wolf extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'wolf', name: 'Serigala Buas', emoji: '🐺', minLevel: 1, maxLevel: 2, rewards: ['exp' => 25, 'gold' => 15]);
+    parent::__construct(id: 'wolf', name: 'Serigala Buas', emoji: '🐺', minLevel: 1, maxLevel: 2, rewards: ['exp' => 50, 'gold' => 40]);
   }
   public function baseHp(): int {
     return 120;

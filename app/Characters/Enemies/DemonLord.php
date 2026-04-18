@@ -7,7 +7,7 @@ use Modules\BattleGame\Enums\SkillType;
 class DemonLord extends Enemy
 {
   public function __construct() {
-    parent::__construct(id: 'demon_lord', name: 'Demon Lord', emoji: '👿🔥', minLevel: 10, maxLevel: null, rewards: ['exp' => 250, 'gold' => 200]);
+    parent::__construct(id: 'demon_lord', name: 'Demon Lord', emoji: '👿🔥', minLevel: 10, maxLevel: null, rewards: ['exp' => 500, 'gold' => 450]);
   }
   public function baseHp(): int {
     return 700;

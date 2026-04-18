@@ -71,7 +71,7 @@ class BattleService
 
     // 10. Update progress user & reward
     $progress->total_battles++;
-    $rewards = $enemyClass->rewards;
+    $rewards = $enemyClass->getRewardsForLevel($targetLevel);
     $expGained = 0;
     $goldGained = 0;
 

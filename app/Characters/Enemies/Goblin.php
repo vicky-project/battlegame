@@ -13,7 +13,7 @@ class Goblin extends Enemy
       emoji: '👺',
       minLevel: 1,
       maxLevel: 5,
-      rewards: ['exp' => 30, 'gold' => 20],
+      rewards: ['exp' => 60, 'gold' => 50],
     );
   }
 

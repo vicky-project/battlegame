@@ -48,6 +48,19 @@ abstract class Enemy
     ];
   }
 
+  /**
+  * Mendapatkan reward yang sudah diskalakan berdasarkan level.
+  */
+  public function getRewardsForLevel(int $level): array
+  {
+    $baseRewards = $this->rewards;
+    $factor = 1 + 0.1 * ($level - 1); // +10% per level di atas 1
+    return [
+      'exp' => (int) round($baseRewards['exp'] * $factor),
+      'gold' => (int) round($baseRewards['gold'] * $factor),
+    ];
+  }
+
   public function toArray(): array
   {
     return [
