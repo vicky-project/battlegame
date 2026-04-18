@@ -734,7 +734,7 @@
   </div>
   <div class="small">
   <button class="btn btn-sm btn-outline-info view-log-btn" data-index='${index}'>
-  <i class="bi bi-task"></i>
+  <i class="bi bi-file-check"></i>
   </button>
   </div>
   </div>
