@@ -103,8 +103,8 @@
   <span class="badge bg-secondary" style="cursor:pointer;" id="btn-help-bar"><i class="bi bi-question-circle"></i></span>
   </div>
   <div>
-  <span class="badge bg-warning text-dark me-1" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${state.storeData.gold}</span>
-  <span class="badge bg-info text-dark me-1" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${state.storeData.diamond}</span>
+  <span class="badge bg-warning text-dark me-1" style="cursor:pointer;" id="btn-gold-bar"><i class="bi bi-coin"></i> ${formatNumber(state.storeData.gold)}</span>
+  <span class="badge bg-info text-dark me-1" style="cursor:pointer;" id="btn-diamond-bar"><i class="bi bi-gem"></i> ${formatNumber(state.storeData.diamond)}</span>
   <span class="badge bg-dark me-1" style="cursor:pointer;" id="btn-store-bar">🛒</span>
   <span class="badge bg-success" style="cursor:pointer;" id="btn-history-bar"><i class="bi bi-clock-history"></i></span>
   </div>
@@ -214,6 +214,21 @@
   [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el, {
   customClass: 'custom-tooltip'
   }));
+  }
+
+  function formatNumber(num) {
+  if (num === null || num === undefined) return '0';
+  if (num < 1000) return num.toString();
+  if (num < 1000000) {
+  const val = num / 1000;
+  return val % 1 === 0 ? val + 'K' : val.toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  if (num < 1000000000) {
+  const val = num / 1000000;
+  return val % 1 === 0 ? val + 'M' : val.toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  const val = num / 1000000000;
+  return val % 1 === 0 ? val + 'B' : val.toFixed(1).replace(/\.0$/, '') + 'B';
   }
 
   // ======================== HOME SCREEN ========================
@@ -488,7 +503,7 @@
   if (d.earned > 0) showOverlay('mining-claim-overlay', `<span style="font-size:80px;">⛏️💰</span><h2 style="color:#FFD700;">+${d.earned} Gold</h2><p>Berhasil diklaim!</p>`, 2000);
   setAppContent(`
   ${renderHeader('btn-back-home', 'Tambang Gold')}
-  <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <i class="bi bi-coin"></i>${d.gold}</h4><p>Gold per jam: <i class="bi bi-coin"></i>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
+  <div class="card text-center"><div class="card-body"><span style="font-size:64px;">⛏️💰</span><h4>Gold kamu: <i class="bi bi-coin"></i>${formatNumber(d.gold)}</h4><p>Gold per jam: <i class="bi bi-coin"></i>${d.gold_per_interval}</p><p>Waktu ke klaim berikutnya: <span id="mining-timer">${formatTime(d.next_claim_seconds)}</span></p><p class="text-muted small mt-3">Gold akan otomatis diklaim saat waktu habis.</p></div></div>
   `);
   startMiningTimer(d.next_claim_seconds, d.can_claim);
   } finally { tg.hideLoading(); }
